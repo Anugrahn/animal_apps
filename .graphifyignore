@@ -1,0 +1,13 @@
+# Graphify: map the code, not the pictures or recordings
+animal-friends-v2/art/
+animal-friends-v2/voice/
+animal-friends-v2/vendor/
+interface/assets/
+*.png
+*.jpg
+*.webp
+*.mp3
+tools/voice/phrases.json
+tools/voice/priority.json
+tools/voice/.venv/
+tools/voice/node_modules/

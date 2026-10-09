@@ -10,7 +10,7 @@
 import { KokoroTTS } from 'kokoro-js';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { toMp3 } from './mp3.mjs';
 import { readWav } from './wav.mjs';
 
@@ -40,6 +40,11 @@ const bad = /undefined|NaN|\[object|null/;
 // What the voice reads: no HTML, curly quotes made plain.
 const spoken = (t) => t.replace(/<[^>]+>/g, '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 const id = (text, speed) => crypto.createHash('sha1').update(`${VOICE}|${speed}|${text}`).digest('hex').slice(0, 12);
+// The app's file for a take after post.py has made it slower and clearer.
+// (A new name whenever that changes, so phones never keep an old copy.)
+const POST = 'kids-140-v2';
+const outId = (f) => crypto.createHash('sha1').update(`${f}|${POST}`).digest('hex').slice(0, 12);
+const FINAL = new URL('./.wav-final/', import.meta.url);
 
 const presetNames = new Set([...presets.matchAll(/name:\s*'([^']+)'/g)].map(m => m[1]));
 // What to voice first (priority.mjs): lines every subject uses, then each
@@ -57,17 +62,17 @@ for (const [line, kind] of Object.entries(phrases)) {
   if (line.includes('{name}')) {
     allNamed[line] = {};
     for (const n of NAMES) {
-      const text = line.split('{name}').join(n), f = id(text, speed);
-      allNamed[line][n] = f; jobs.push({ text, speed, f, rank: presetNames.has(n) ? rank + 1 : OTHER_NAMES + rank });
+      const text = line.split('{name}').join(n), f = id(text, speed), o = outId(f);
+      allNamed[line][n] = o; jobs.push({ text, speed, f, o, rank: presetNames.has(n) ? rank + 1 : OTHER_NAMES + rank });
     }
   } else {
-    const f = id(line, speed); allClips[line] = f; jobs.push({ text: line, speed, f, rank });
+    const f = id(line, speed), o = outId(f); allClips[line] = o; jobs.push({ text: line, speed, f, o, rank });
   }
 }
 jobs.sort((a, b) => a.rank - b.rank);
 
 const have = (f) => fs.existsSync(new URL(f + '.mp3', OUT));
-const todo = jobs.filter(j => !have(j.f));
+const todo = jobs.filter(j => !have(j.o));
 const ONLY_CONVERT = process.argv.includes('--convert-only');   // take what Chatterbox has made so far
 console.log(`${jobs.length} clips (${Object.keys(allClips).length} lines + ${Object.keys(allNamed).length} name lines × ${NAMES.length} names), ${todo.length} to make, voice ${VOICE}`);
 
@@ -75,9 +80,16 @@ console.log(`${jobs.length} clips (${Object.keys(allClips).length} lines + ${Obj
    and rewrites voice/index.js and voice/files.js. Run now and then while
    recording, so the app gets the new voice bit by bit (reload to hear it). */
 function publish(quiet) {
-  for (const j of todo) {
-    const wav = new URL(j.f + '.wav', WAVS);
-    if (!have(j.f) && fs.existsSync(wav)) { const w = readWav(wav.pathname); fs.writeFileSync(new URL(j.f + '.mp3', OUT), toMp3(w.samples, w.rate, 48)); }
+  // new takes: slower and clearer (post.py), then a 64 kbps MP3 so consonants stay crisp
+  const ready = todo.filter(j => !have(j.o) && fs.existsSync(new URL(j.f + '.wav', WAVS)));
+  if (ready.length) {
+    fs.mkdirSync(FINAL, { recursive: true });
+    const list = new URL('./.post.json', import.meta.url);
+    fs.writeFileSync(list, JSON.stringify(ready.map(j => ({ in: new URL(j.f + '.wav', WAVS).pathname, out: new URL(j.o + '.wav', FINAL).pathname,
+      words: j.text.split(/\s+/).filter(Boolean).length, sound: j.speed === SOUND_SPEED }))));
+    const r = spawnSync(new URL('./.venv/bin/python', import.meta.url).pathname, [new URL('./post.py', import.meta.url).pathname, list.pathname], { stdio: ['ignore', 'inherit', 'inherit'] });
+    if (r.status !== 0) { console.error('post.py failed'); process.exit(1); }
+    for (const j of ready) { const w = readWav(new URL(j.o + '.wav', FINAL).pathname); fs.writeFileSync(new URL(j.o + '.mp3', OUT), toMp3(w.samples, w.rate, 64)); }
   }
   // Only lines with a recording go in the list; the rest use the device's voice.
   const clips = {}, named = {};
@@ -90,7 +102,7 @@ function publish(quiet) {
   const s = new Float32Array(2400); s[1200] = 0.02;
   fs.writeFileSync(new URL('silence.mp3', OUT), toMp3(s, 24000, 32));
   // drop recordings no line uses any more
-  const keep = new Set(jobs.map(j => j.f + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
+  const keep = new Set(jobs.map(j => j.o + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
   for (const f of fs.readdirSync(OUT)) if (!keep.has(f)) fs.unlinkSync(new URL(f, OUT));
 
   const head = `/* Made by tools/voice/gen.mjs (voice ${VOICE}). Do not edit by hand. */\n`;
@@ -124,7 +136,8 @@ if (todo.length && ENGINE === 'chatterbox' && !ONLY_CONVERT) {
   const t0 = Date.now();
   for (const [i, j] of todo.entries()) {
     const a = await tts.generate(spoken(j.text), { voice: VOICE, speed: j.speed });
-    fs.writeFileSync(new URL(j.f + '.mp3', OUT), toMp3(a.audio, a.sampling_rate));
+    fs.mkdirSync(WAVS, { recursive: true });
+    await a.save(new URL(j.f + '.wav', WAVS).pathname);
     if ((i + 1) % 100 === 0) console.log(`  ${i + 1}/${todo.length}  ${((Date.now() - t0) / 1000 / 60).toFixed(1)} min`);
   }
 }

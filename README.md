@@ -109,7 +109,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.4.0`.
+  `af-v3.4.1`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
@@ -131,6 +131,7 @@ animal-friends-v2/
 | v3.0 | 8 poses for every animal, painted cards, props, game icons and learning pictures |
 | v3.1 | Game-needs batch (feelings faces, body, clothes, jobs, routines). Game icons on the map, and Daily Journey flow fixes |
 | v3.3 | Review fixes: fairer stars, microphone and voice bugs, unlocking, offline on slow networks, content corrections |
+| v3.4 | A natural recorded voice (Chatterbox, made on this Mac), paced for 3-year-olds; device voice only as a fallback. See `tools/voice/` |
 
 The details for each version are in the
 [v2 README](animal-friends-v2/README.md#the-mock-up-redesign-v25).

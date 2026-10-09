@@ -4,3 +4,5 @@ node_modules/
 .todo.json
 probe.mjs
 gen.log
+.wav-final/
+.post.json

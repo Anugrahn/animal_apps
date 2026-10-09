@@ -172,8 +172,10 @@
   }
 
   /* The friend's voice (deep, middle, squeaky) is the same recording
-     played a little lower and slower, or higher and quicker. */
-  const clipRate = (pitch) => Math.max(0.85, Math.min(1.18, 1 + ((pitch || 1) - 1) * 0.4));
+     played a little lower and slower, or higher and quicker. Only a
+     little: the recordings are paced for three-year-olds, and a squeaky
+     friend must not undo that by talking fast. */
+  const clipRate = (pitch) => Math.max(0.93, Math.min(1.06, 1 + ((pitch || 1) - 1) * 0.2));
 
   function stopClip() {
     if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }

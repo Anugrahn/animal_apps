@@ -10,6 +10,11 @@ online service.
   lively it sounds, and it runs on the Mac's GPU (Apple Silicon).
 - **The quicker, flatter option:** [Kokoro](https://www.npmjs.com/package/kokoro-js)
   (Apache-2.0).
+- **Paced for three-year-olds:** `post.py` stretches every take towards
+  about 140 words a minute (never more than 60% longer), adds a little space
+  between words, removes rumble and evens the loudness. To change the pace,
+  edit it, bump `POST` in `gen.mjs`, and run `node gen.mjs --convert-only`.
+  That takes under a minute and records nothing again.
 - **Lines with no recording:** these use the device's own voice. For example,
   a story line naming a friend the child named themselves.
 
@@ -38,7 +43,7 @@ Then bump `VERSION` in `animal-friends-v2/sw.js`.
 cd tools/voice
 npm install                                           # kokoro-js, lamejs (MP3), playwright
 uv venv --python 3.11 .venv                           # https://docs.astral.sh/uv/
-uv pip install --python .venv/bin/python chatterbox-tts "setuptools<81"
+uv pip install --python .venv/bin/python chatterbox-tts "setuptools<81" audiotsm==0.1.2
 ```
 
 The models download on first use, about 2 GB for Chatterbox.

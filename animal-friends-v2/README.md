@@ -295,6 +295,24 @@ they are for a birthday, not this app.
 - Still emoji: animals, food, nature, places, things and vehicles (153 pictures,
   listed in `../interface/GAME_NEEDS.md`).
 
+### v3.4: a natural recorded voice
+
+The device's robotic text-to-speech is replaced by recordings of a warm,
+expressive voice for nearly every line the app says (about 2,150 lines, plus
+the story and greeting lines once for each ready-made and suggested name).
+They are made on this computer with Chatterbox (`../tools/voice/`), so nothing
+is sent anywhere, and paced for three-year-olds: about 140 words a minute,
+with a little space between words and even loudness.
+
+- `voice/index.js` maps each line to its clip, and `core/audio.js` plays it.
+  A friend with a deep or squeaky voice hears the same clip a little lower or
+  higher.
+- A line with no recording (a friend named by the child) uses the device's
+  voice as before.
+- The clips are stored for offline use (`voice/files.js`, `sw.js`).
+- To change what the app says, run `../tools/voice/` harvest and gen again;
+  see its README.
+
 ### v3.3: review fixes
 
 A code review of every engine, core file and content file, plus a headless

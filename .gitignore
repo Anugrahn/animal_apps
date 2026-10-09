@@ -11,3 +11,6 @@
 .env.*
 *.pem
 *.key
+
+# Graphify map (rebuild with: graphify extract . --code-only)
+graphify-out/

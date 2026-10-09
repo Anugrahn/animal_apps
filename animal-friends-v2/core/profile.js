@@ -69,6 +69,10 @@
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* play anyway */ }
   }
 
+  // Another copy of the app open at once (a browser tab and the installed
+  // app) saved: take its copy, so the next save here does not erase it.
+  window.addEventListener('storage', (e) => { if (e.key === KEY && e.newValue && state) load(); });
+
   function dayKey(d) {
     d = d || new Date();
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -188,10 +192,13 @@
       return Profile.minutesToday() >= limit + bonus;
     },
 
+    /** `min` more minutes from now, even if the limit was lowered
+        below what has already been played today. */
     extend(min) {
       const p = Profile.get(), k = dayKey();
       const had = p.extra && p.extra.date === k ? p.extra.min : 0;
-      p.extra = { date: k, min: had + min };
+      const over = Math.max(0, Profile.minutesToday() - (p.settings.limit || 0));
+      p.extra = { date: k, min: Math.max(had, over) + min };
       save();
     },
 

@@ -38,6 +38,10 @@
     return `<button class="opt" data-i="${i}" style="--i:${i}">${face(o)}</button>`;
   }
 
+  /* A second tap on a card that is still shaking is the same slip,
+     not a new one (a quick double tap must not cost two stars). */
+  const shaking = (el) => el.classList.contains('nope') || el.classList.contains('shake');
+
   function nope(S, btn) {
     S.miss();
     AF.Audio.SFX.wrong();
@@ -103,6 +107,7 @@
       const opt = cur.options[btn.dataset.i];
 
       if (opt.key !== cur.answer) {
+        if (shaking(btn)) return;
         wrong++;
         nope(S, btn);
         // No dead ends: after two misses the wrong cards fade out.
@@ -175,6 +180,7 @@
     function place(btn, at, btns, slot) {
       const i = +btn.dataset.i;
       if (i !== at) {
+        if (shaking(btn)) { AF.Drag.home(btn); return false; }
         wrong++;
         nope(S, btn);
         AF.Drag.home(btn);
@@ -233,7 +239,9 @@
       pos = 0; wrong = 0; locked = false;
 
       const letters = word.w.split('');
-      const spare = U.pick((lv.pool || 'satpinmdgock').split(''), lv.extra + (S.api.stretch ? 1 : 0), letters);
+      // c and k make the same sound, so a word with one never offers the other
+      const avoid = /[ck]/.test(word.w) ? letters.concat(['c', 'k']) : letters;
+      const spare = U.pick((lv.pool || 'satpinmdgock').split(''), lv.extra + (S.api.stretch ? 1 : 0), avoid);
       const tiles = U.shuffle(letters.concat(spare));
 
       const stage = E.frame(S, {
@@ -267,6 +275,7 @@
 
     function tap(btn, btns, stage) {
       if (btn.dataset.c !== word.w[pos]) {
+        if (shaking(btn)) { AF.Drag.home(btn); return false; }
         wrong++;
         nope(S, btn);
         AF.Drag.home(btn);
@@ -320,7 +329,8 @@
         or  pairs: [{ w, a: face, b: face }]   face = { e | t | html }
      With `words`, one card of each pair shows the written word.
      With `clay`, the cards are the soft shapes from the toy box.
-     With `peek`, every card is shown for a moment first.
+     With `peek` (and on every Basic level), every card is shown for
+     a moment first.
 
      The cards are chunky clay tiles in a wooden tray: they tip up
      when touched, hop when they match and settle back when they
@@ -389,7 +399,7 @@
 
     /* A first look: the cards lie face up for a moment, then turn
        over one after another like a wave. */
-    if (lv.peek || S.api.help >= 2) {
+    if (lv.peek || (lv.tier || 0) === 0 || S.api.help >= 2) {   // every Basic level gets a first look
       busy = true;
       S.later(() => btns.forEach(b => b.classList.add('up')), 500);
       btns.forEach((b, i) => S.later(() => { b.classList.remove('up'); AF.Audio.SFX.flip(); }, 2600 + i * 90));

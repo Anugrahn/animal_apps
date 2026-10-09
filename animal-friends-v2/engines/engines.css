@@ -468,7 +468,7 @@
 .pop-b.gone { pointer-events: none; animation-play-state: paused; }
 .pop-b.popped { scale: 1.6; opacity: 0; }
 .pop-b.fizz { scale: .25; opacity: 0; transition-duration: .5s; }
-.pop-b.pale { opacity: .32; }
+.pop-b.pale { opacity: .32; pointer-events: none; }
 
 /* ---------- say it ---------- */
 .stage-speak { align-items: center; justify-content: space-evenly; }

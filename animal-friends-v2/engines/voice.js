@@ -105,9 +105,12 @@
           if (!mine()) return;
           listening(false);
           if (res.ok) { win('Great!'); return; }
+          if (res.error === 'cancelled') { status(''); return; }
           if (res.error && res.error !== 'silent') { stepDown(res.error); return; }
           tries++;
-          if (tries >= 2) { S.miss(); win('Good try!'); return; }
+          // two goes is always enough, and a mishearing is the machine's
+          // problem, not the child's: no mistake is counted
+          if (tries >= 2) { win('Good try!'); return; }
           AF.Art.react(S.charEl, 'hmm');
           status(res.heard ? `I heard “${U.esc(res.heard)}”. Let’s try again!` : 'I could not hear you. Try again!');
           S.later(() => { if (mine()) model(true); }, 500);
@@ -121,6 +124,7 @@
       AF.Speech.echo(2600, (res) => {
         if (!mine()) return;
         listening(false);
+        if (res.error === 'cancelled') { status(''); return; }
         if (!res.ok) { stepDown(res.error); return; }
         status('Now listen to me…');
         model(true);

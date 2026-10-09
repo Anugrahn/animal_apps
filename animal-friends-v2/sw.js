@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.2.1';
+const VERSION = 'af-v3.3.0';
 
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -105,11 +105,21 @@ const FILES = [
 ];
 
 /* One file at a time. Asking for all of them at once can overwhelm a
-   small local server (the launcher's) and make the install fail. */
+   small local server (the launcher's) and make the install fail.
+   Each file gets three tries, so one dropped request does not cost the
+   whole offline copy, and skips the browser's own cache, so a new
+   VERSION never stores an old picture. */
+async function store(cache, file) {
+  for (let i = 0; ; i++) {
+    try { return await cache.add(new Request(file, { cache: 'reload' })); }
+    catch (err) { if (i >= 2) throw err; await new Promise(r => setTimeout(r, 800 * (i + 1))); }
+  }
+}
+
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const cache = await caches.open(VERSION);
-    for (const file of FILES) await cache.add(file);
+    for (const file of FILES) await store(cache, file);
     await self.skipWaiting();
   })());
 });
@@ -122,23 +132,32 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-/* Cache first, then the network; a page load with no connection
-   falls back to the app shell. */
+/* Pictures: cache first. Page, code and styles: network first, falling
+   back to the stored copy when offline or slow. */
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   // Pictures never change under the same name: straight from the cache.
   // The page, code and styles do change: network first, so an update is
   // never mixed with old files, and the cache when there is no network.
-  const code = e.request.mode === 'navigate' || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
+  const page = e.request.mode === 'navigate';
+  const code = page || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
   if (code) {
-    e.respondWith(
-      fetch(e.request).then(res => {
-        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
+    // There is only one page, so every ?go=… link is stored as that page.
+    const key = page ? 'index.html' : e.request;
+    const stored = () => caches.match(key, { ignoreSearch: true });
+    e.respondWith((async () => {
+      const net = fetch(e.request).then(res => {
+        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(key, copy)); }
         return res;
-      }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(hit => hit ||
-        (e.request.mode === 'navigate' ? caches.match('index.html') : Response.error())))
-    );
+      });
+      net.catch(() => {});                          // (handled below; may lose the race)
+      // A weak connection must not keep the child waiting: after a few
+      // seconds the stored copy is used (the network still updates it).
+      const slow = new Promise(r => setTimeout(r, 3500)).then(stored).then(hit => hit || net);
+      try { return await Promise.race([net, slow]); }
+      catch (err) { return (await stored()) || Response.error(); }
+    })());
     return;
   }
   e.respondWith(

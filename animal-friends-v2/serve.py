@@ -24,5 +24,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 handler = functools.partial(Handler, directory=here)
 Handler.extensions_map = dict(http.server.SimpleHTTPRequestHandler.extensions_map, **{'.webp': 'image/webp', '.webmanifest': 'application/manifest+json'})
-print(f'Animal Friends is running at http://{host if host != "0.0.0.0" else "localhost"}:{port}/  (close this window to stop it)')
+print(f'Animal Friends is running at http://localhost:{port}/  (close this window to stop it)')
+if host == '0.0.0.0':
+    import socket
+    try:   # the address other devices use: the one a route out would leave from
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('10.255.255.255', 1)); ip = s.getsockname()[0]; s.close()
+    except OSError:
+        ip = 'THIS-COMPUTER-IP'
+    print(f'On a phone on the same Wi-Fi, open http://{ip}:{port}/')
+    print('(Over plain http the phone cannot install it, keep an offline copy or use the microphone.)')
 Server((host, port), handler).serve_forever()

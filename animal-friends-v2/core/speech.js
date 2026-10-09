@@ -87,7 +87,8 @@
      * Listens for one word. cb({ ok, heard, error })
      *   ok    true if the target was heard
      *   heard best guess at what was said ('' if nothing)
-     *   error 'denied' | 'offline' | 'silent' | 'failed' when it could not listen
+     *   error 'denied' | 'offline' | 'silent' | 'failed' when it could not listen,
+     *         'cancelled' when cancel() stopped it (nothing went wrong)
      */
     listen(target, cb) {
       Speech.cancel();
@@ -116,19 +117,25 @@
         else finish({ ok: matches(target, heard), heard: clean(heard[0]) });
       };
       const timer = setTimeout(() => { try { r.stop(); } catch (e) {} }, 6000);
-      active = { stop() { try { r.abort(); } catch (e) {} } };
+      active = { stop() { finish({ ok: false, heard: '', error: 'cancelled' }); try { r.abort(); } catch (e) {} } };
       try { r.start(); } catch (e) { finish({ ok: false, heard: '', error: 'failed' }); }
     },
 
     /**
      * Records `ms` of sound and plays it straight back.
-     * cb({ ok, error }) fires when playback has finished.
+     * cb({ ok, error }) fires when playback has finished, or with
+     * error 'cancelled' if cancel() stopped it first. Once cancelled,
+     * nothing is recorded or played back.
      */
     echo(ms, cb, onRecorded) {
       Speech.cancel();
       if (!Speech.canEcho) { cb({ ok: false, error: 'failed' }); return; }
       let done = false;
       const finish = (r) => { if (done) return; done = true; active = null; cb(r); };
+      const cancelled = () => finish({ ok: false, error: 'cancelled' });
+      // (set before asking for the microphone: the child may leave
+      // while the permission question is still on screen)
+      active = { stop: cancelled };
 
       navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
         if (done) { s.getTracks().forEach(t => t.stop()); return; }
@@ -145,13 +152,13 @@
           const a = new window.Audio(url);
           const over = () => { URL.revokeObjectURL(url); finish({ ok: true }); };
           a.onended = over; a.onerror = over;
-          active = { stop() { try { a.pause(); } catch (e) {} URL.revokeObjectURL(url); } };
+          active = { stop() { try { a.pause(); } catch (e) {} URL.revokeObjectURL(url); cancelled(); } };
           const p = a.play();
           if (p && p.catch) p.catch(over);
           setTimeout(over, ms + 2500);
         };
         const t = setTimeout(() => { try { rec.stop(); } catch (e) {} }, ms);
-        active = { stop() { clearTimeout(t); try { rec.stop(); } catch (e) {} } };
+        active = { stop() { clearTimeout(t); cancelled(); try { rec.stop(); } catch (e) {} } };
         rec.start();
       }).catch(e => {
         finish({ ok: false, error: e && /NotAllowed|Permission|Security/i.test(e.name) ? 'denied' : 'failed' });

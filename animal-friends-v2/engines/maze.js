@@ -279,7 +279,13 @@
       if (!dx && !dy) return null;
       const hor = dx > 0 ? 'e' : 'w', ver = dy > 0 ? 's' : 'n';
       const order = Math.abs(dx) >= Math.abs(dy) ? [dx ? hor : null, dy ? ver : null] : [dy ? ver : null, dx ? hor : null];
-      return order.filter(x => x && open[py][px][x])[0] || null;
+      // Following a finger never walks onto a wrong thing by itself: only
+      // a finger on that very square (or an arrow) goes there.
+      const wrongAt = (d) => {
+        const x = px + DIRS[d][0], y = py + DIRS[d][1], it = items[key(x, y)];
+        return !!(it && !it.target && !it.taken && !it.hit) && !(lead.x === x && lead.y === y);
+      };
+      return order.filter(x => x && open[py][px][x] && !wrongAt(x))[0] || null;
     }
 
     function chase() {
@@ -333,8 +339,10 @@
         el.style.setProperty('--i', i);
         el.classList.add('trail');
       });
-      S.later(clearTrail, 3200);
+      clearTimeout(trailTimer);                     // a newer hint keeps its full time
+      trailTimer = S.later(clearTrail, 3200);
     }
+    let trailTimer = 0;
 
     /* ---- input ---- */
     /* An arrow: press = one step now; keep it down = keep walking. */
@@ -371,19 +379,21 @@
       };
     };
     let down = null;
+    // Only the first finger leads; a resting palm or second finger is ignored.
     board.addEventListener('pointerdown', (e) => {
-      down = { x: e.clientX, y: e.clientY, t: Date.now() };
+      if (down) return;
+      down = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId };
       try { board.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
       lead = square(e);
       chase();
     });
     board.addEventListener('pointermove', (e) => {
-      if (!down) return;
+      if (!down || e.pointerId !== down.id) return;
       lead = square(e);
       chase();
     });
     const lift = (e) => {
-      if (!down) return;
+      if (!down || e.pointerId !== down.id) return;
       const dx = e.clientX - down.x, dy = e.clientY - down.y, quick = Date.now() - down.t < 350;
       down = null;
       lead = null;
@@ -393,6 +403,7 @@
     };
     board.addEventListener('pointerup', lift);
     board.addEventListener('pointercancel', lift);
+    board.addEventListener('lostpointercapture', lift);
 
     /* Adaptive help: on a level the child keeps retrying, the way
        lights up by itself after a pause. */

@@ -19,6 +19,7 @@
   let voice = null;
   let unlocked = false;
   let ctx = null;
+  let saying = 0;           // counts utterances, so a cut-off one knows it was
 
   /* Voices known to be clear and well-articulated for children.
      Higher score wins. Anything not listed still competes on the
@@ -183,16 +184,19 @@
 
     /** Speaks text in the chosen character's pitch and pace.
         opts: { pitch, rate, onEnd }
-        onEnd is guaranteed to fire exactly once, even on devices
-        whose speech engine never reports that it finished. */
+        onEnd fires once when the text has been spoken, even on devices
+        whose speech engine never reports that it finished. It does not
+        fire if newer speech, or stop(), cut this text off: whatever
+        was meant to follow it would talk over the newer speech. */
     say(text, opts) {
       opts = opts || {};
+      const mine = ++saying;
       let ended = false, timer = 0;
       const end = () => {
         if (ended) return;
         ended = true;
         clearTimeout(timer);
-        if (opts.onEnd) opts.onEnd();
+        if (opts.onEnd && mine === saying) opts.onEnd();
       };
       if (!AF.Profile.setting('sound') || !('speechSynthesis' in window)) {
         timer = setTimeout(end, 300);
@@ -231,6 +235,7 @@
     },
 
     stop() {
+      saying++;
       if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
     }
   };

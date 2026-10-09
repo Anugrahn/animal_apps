@@ -78,7 +78,7 @@
   /** A home-screen island: the painted one from art/world/ (the
       drawn version above is kept as a fallback if it is missing). */
   function island(areaId, colour) {
-    return `<img class="isl-art" src="art/world/island-${areaId}.webp" alt="" draggable="false" onerror="this.outerHTML=AF.World.drawnIsland('${areaId}')">`;
+    return `<img class="isl-art" src="art/world/island-${areaId}.webp" alt="" draggable="false" onerror="this.outerHTML=AF.World.drawnIsland('${areaId}','${colour}')">`;
   }
   function drawnIsland(areaId, colour) {
     return `<svg class="isl-art" viewBox="0 0 300 230" aria-hidden="true">

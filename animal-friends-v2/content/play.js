@@ -50,7 +50,7 @@
       { id: 'm5', title: 'Four carrots', icon: '🥕', type: 'maze', w: 7, h: 6, theme: 'beach', want: 'carrots',
         say: 'Count four carrots. Then go home!', text: 'Count <b>4 carrots</b>, then go home',
         targets: many(4, { e: '🥕', label: 'carrot' }),
-        decoys: [{ e: '🍰', label: 'cake' }, { e: '🍬', label: 'candy' }, { e: '👟', label: 'shoe' }] },
+        decoys: [{ e: '🍰', label: 'cake' }, { e: '🍬', label: 'sweet' }, { e: '👟', label: 'shoe' }] },
       { id: 'm9', title: 'Animals only', icon: '🐶', type: 'maze', w: 7, h: 7, theme: 'candy', want: 'animals',
         say: 'Find the four animals. Only animals! Then go home.', text: 'Find the <b>4 animals</b> — only animals!',
         targets: [{ e: '🐶', label: 'dog' }, { e: '🐱', label: 'cat' }, { e: '🐰', label: 'rabbit' }, { e: '🐸', label: 'frog' }],

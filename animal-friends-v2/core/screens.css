@@ -274,6 +274,9 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 #map { gap: var(--space-2); }
 #map .tabs { flex: none; align-self: center; }
 .lv-node { position: absolute; z-index: 2; translate: -50% -50%; width: calc(var(--u) * .66); display: grid; justify-items: center; }
+/* on a short screen (a phone on its side) the stones are drawn small,
+   but each still takes a finger-sized touch */
+.lv-node::after { content: ""; position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: max(100%, 52px); aspect-ratio: 1; border-radius: 50%; }
 /* a flat round stone, seen at an angle */
 .lv-disc {
   position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1.3; border-radius: 50%;
@@ -437,7 +440,7 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 .grown-meta b { color: var(--ink); }
 .grown-btns { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; }
 .btn { background: var(--cream); box-shadow: 0 5px 0 var(--cream-edge); }
-.g-char { width: clamp(90px, 24vmin, 150px); align-self: flex-end; margin-top: -40px; pointer-events: none; }
+.g-char { width: clamp(90px, 24vmin, 150px); align-self: flex-end; margin-top: -8px; pointer-events: none; }
 .grown-card .sheet-foot { text-align: center; }
 
 /* a wide screen: the stage tabs move to the left edge, beside the picture */

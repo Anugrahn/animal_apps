@@ -295,6 +295,42 @@ they are for a birthday, not this app.
 - Still emoji: animals, food, nature, places, things and vehicles (153 pictures,
   listed in `../interface/GAME_NEEDS.md`).
 
+### v3.3: review fixes
+
+A code review of every engine, core file and content file, plus a headless
+bot run of all 192 levels and screenshots at four screen sizes.
+
+- **Fairer stars:** a quick double tap on a wrong card, basket or slot counts
+  as one slip, not two; faded wrong bubbles in Pop can no longer be popped;
+  following a finger in the maze never walks onto a wrong thing by itself;
+  a mishearing in Say It! no longer costs a star.
+- **Voice and microphone:** leaving Say It! while recording no longer plays
+  the recording back on the next screen (or records after the permission
+  question); switching apps mid-listen no longer drops Voice check to Echo;
+  a prompt that is cut off no longer plays its letter sound over newer speech.
+- **Games:** Match shows every pair before repeating any; every Basic Memory
+  level shows the cards first; Build never offers k as a spare for a c word
+  (or c for a k word); a second maze hint keeps its full time; a resting palm
+  no longer stops tracing or the maze.
+- **Progress:** a level that already has stars is never locked (v1 profiles
+  and "Open every level" turned off); `soon` levels are stepped over; a
+  mastered level replays as a stretch without help; "10 more minutes" always
+  gives ten minutes; two open copies of the app no longer erase each other's
+  stars; Daily Journey picks rotate by the local day.
+- **Navigation:** a late timer no longer pulls the child back to a screen
+  they left (picking a friend, Done in the maker, the treasure chest).
+- **Content:** spoken grammar ("Where do the socks go?"), British English
+  throughout, clearer sorts (fish, drinking glass, leaves), a morning routine
+  with one obvious order, science wording (chrysalis, flying in the sky), no
+  champagne bottle or knife, "Same feeling" matches face to face, a tapped
+  thing in Match says its own name.
+- **Offline:** a slow connection no longer holds the app up (the stored copy
+  is used after 3.5 s); install retries each file and skips stale browser
+  caches; deep links no longer pile up in the cache.
+- **Layout:** level stones keep a finger-sized touch on a phone held sideways;
+  the friend no longer covers the privacy line in the grown-up area.
+  `serve.py --lan` prints the address to open on the phone.
+
 ## Look and feel
 
 Taken from the reference images, rebuilt in code so there are still no image
@@ -458,8 +494,8 @@ installed-app flow. Treat those as unverified until tried on hardware.
 - **The voice is the device's text-to-speech.** Letter sounds are spelled
   phonetically ("ssss", "tuh") to coax it, which is approximate. Recorded human
   audio for the phonemes is still the biggest single quality upgrade.
-- **Learning pictures are still emoji**, so they vary by phone, and a few newer ones
-  (🪥 🪨 🪙 🪵) need Android 11 or later.
+- **Learning pictures are still emoji**, so they vary by phone. Every emoji that
+  needs Android 10 or later is either painted or was swapped for an older one in v3.3.
 - **Songs have a tune but no sung vocal.**
 - **One child per device.** No multi-profile, no cloud sync.
 - **Tracing has no capital letters** and no letters beyond the 19 taught.

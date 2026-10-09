@@ -77,6 +77,7 @@
       if (locked) return false;
       el = el || spot.firstChild;
       if (bin.dataset.k !== String(item.bin)) {
+        if (bin.classList.contains('shake')) { AF.Drag.home(el); return false; }   // the same slip, tapped twice
         wrong++;
         S.miss();
         AF.Audio.SFX.wrong();
@@ -145,7 +146,7 @@
 
     function next() {
       // Go through all the pairs before any comes round again.
-      if (bag.length < per) bag = U.shuffle(lv.pairs.filter(p => bag.indexOf(p) < 0)).concat(bag);
+      if (bag.length < per) bag = bag.concat(U.shuffle(lv.pairs.filter(p => bag.indexOf(p) < 0)));
       set = bag.splice(0, per);
       left = per; picked = null; wrong = 0; locked = false;
       const order = U.shuffle(set.map((p, i) => i));
@@ -194,6 +195,7 @@
 
       function join(el, sl) {
         if (el.dataset.i !== sl.dataset.i) {
+          if (sl.classList.contains('shake')) { AF.Drag.home(el); return false; }   // the same slip, tapped twice
           wrong++;
           S.miss();
           AF.Audio.SFX.wrong();
@@ -425,14 +427,17 @@
         advance(to);
       }
 
+      // Only the first finger draws; a resting palm or second finger is ignored.
       svg.addEventListener('pointerdown', (e) => {
-        down = true;
+        if (down !== false) return;
+        down = e.pointerId;
         try { svg.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
         follow(e);
       });
-      svg.addEventListener('pointermove', (e) => { if (down) follow(e); });
-      svg.addEventListener('pointerup', () => { down = false; });
-      svg.addEventListener('pointercancel', () => { down = false; });
+      svg.addEventListener('pointermove', (e) => { if (e.pointerId === down) follow(e); });
+      svg.addEventListener('pointerup', (e) => { if (e.pointerId === down) down = false; });
+      svg.addEventListener('pointercancel', (e) => { if (e.pointerId === down) down = false; });
+      svg.addEventListener('lostpointercapture', (e) => { if (e.pointerId === down) down = false; });
       stage._key = () => advance(idx + 14);
 
       glyph();

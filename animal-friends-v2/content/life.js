@@ -16,6 +16,8 @@
   const G = AF.Gen, W = AF.WORDS, PR = AF.Pairs;
   const step = (e, label, say) => ({ e: e, label: label, say: say });
   const it = (e, word, bin) => ({ e: e, w: word, bin: bin });
+  /* 'goes' or 'go', 'That is' or 'They are': plural words (socks, grapes) take the plural form */
+  const pl = (word, one, many) => /[^su]s$/.test(word) ? many : one;   // (not bus, glass)
 
   /* ---------------- Feelings ---------------- */
 
@@ -71,9 +73,9 @@
   const BIG = [
     big('Zara tied her shoes all by herself.', '👟✨', 'proud', ['bored', 'worried']),
     big('Leo hides behind his mum when he meets new people.', '🙈', 'shy', ['excited', 'proud']),
-    big('Tomorrow Kai is going to the doctor.', '🩺', 'worried', ['bored', 'excited']),
+    big('Tomorrow Kai is going to the doctor.', '🧑‍⚕️', 'worried', ['bored', 'excited']),
     big('It is Nina’s birthday party today!', '🎈🎂', 'excited', ['shy', 'bored']),
-    big('It is raining and there is nothing to do.', '🌧️🪟', 'bored', ['proud', 'excited']),
+    big('It is raining and there is nothing to do.', '🌧️🏠', 'bored', ['proud', 'excited']),
     big('Omar took three slow breaths and his body felt soft.', '🌬️', 'calm', ['worried', 'excited']),
     big('Ella finished a very hard puzzle.', '🧩', 'proud', ['shy', 'worried']),
     big('Ben cannot find his mum in the shop.', '🛒', 'worried', ['calm', 'proud'])
@@ -99,7 +101,7 @@
     kind('Your friend built a tower. You bump it by accident.', '🧱', ['🙏', 'Say sorry and help rebuild', 'Sorry, and helping, fixes it'], ['🏃', 'Run away']),
     kind('Your friend says, stop, I do not like that.', '✋', ['🛑', 'Stop', 'Good friends listen'], ['😜', 'Keep doing it']),
     kind('A friend draws a picture and shows you.', '🖼️', ['👏', 'Say, I like it', 'Kind words feel good'], ['🙄', 'Say it is bad']),
-    kind('You win the game. Your friend loses.', '🏆', ['🤝', 'Say, good game', 'That is good sport'], ['😛', 'Laugh at them']),
+    kind('You win the game. Your friend loses.', '🏆', ['🤝', 'Say, good game', 'You are a good sport'], ['😛', 'Laugh at them']),
     kind('Your friend is too shy to join in.', '😳', ['💛', 'Say, come with me', 'You helped a friend'], ['🚶', 'Leave them']),
     kind('There is one biscuit left and two of you.', '🍪', ['✂️', 'Break it in half', 'Sharing is fair'], ['😋', 'Eat it quickly'])
   ];
@@ -113,8 +115,10 @@
     levels: AF.tiers([
       /* ---- Basic: name the feeling ---- */
       { id: 'f1', title: 'Faces', icon: '😀', type: 'choose', rounds: 6, gen: FACE_GEN },
-      { id: 'fm1', title: 'Same feeling', icon: '🪞', type: 'match', rounds: 2, n: 3, pairs: PR.shadow(W.feelings),
-        say: 'Match each face to its shadow.', text: 'Match each <b>face</b> to its shadow' },
+      // face to the same face: reading the expression is the skill, no reading of words needed
+      { id: 'fm1', title: 'Same feeling', icon: '🙂', type: 'match', rounds: 2, n: 3,
+        pairs: W.feelings.map(x => ({ w: x.w, a: { e: x.e }, b: { e: x.e } })),
+        say: 'Find the face that feels the same.', text: 'Find the <b>same feeling</b>' },
       { id: 'f3', title: 'Calm breathing', icon: '🌬️', type: 'breathe', cycles: 3 },
       { id: 'fp1', title: 'Pop the feeling', icon: '🎈', type: 'pop', rounds: 4, gen: FACE_GEN }
     ], [
@@ -132,7 +136,7 @@
       /* ---- Advanced: bigger feelings and what helps ---- */
       { id: 'f6', title: 'Bigger feelings', icon: '🤩', type: 'choose', rounds: 8, gen: G.ask(BIG) },
       { id: 'f7', title: 'What helps?', icon: '🧰', type: 'choose', rounds: 7, gen: G.ask(HELPS) },
-      { id: 'f8', title: 'Good friends', icon: '🧑‍🤝‍🧑', type: 'choose', rounds: 7, gen: G.ask(FRIENDS) },
+      { id: 'f8', title: 'Good friends', icon: '👫', type: 'choose', rounds: 7, gen: G.ask(FRIENDS) },
       { id: 'f9', title: 'Long, slow breaths', icon: '🌙', type: 'breathe', cycles: 5 }
     ])
   });
@@ -141,8 +145,8 @@
 
   const FOOD = [it('🍎', 'apple', 'daily'), it('🥕', 'carrot', 'daily'), it('🍌', 'banana', 'daily'), it('🥛', 'milk', 'daily'),
     it('🥚', 'egg', 'daily'), it('🥦', 'broccoli', 'daily'), it('💧', 'water', 'daily'), it('🍚', 'rice', 'daily'),
-    it('🍰', 'cake', 'treat'), it('🍬', 'candy', 'treat'), it('🍩', 'doughnut', 'treat'), it('🍦', 'ice cream', 'treat'),
-    it('🍟', 'fries', 'treat'), it('🥤', 'fizzy drink', 'treat')];
+    it('🍰', 'cake', 'treat'), it('🍬', 'sweets', 'treat'), it('🍩', 'doughnut', 'treat'), it('🍦', 'ice cream', 'treat'),
+    it('🍟', 'chips', 'treat'), it('🥤', 'fizzy drink', 'treat')];
   const FOOD_BINS = [{ key: 'daily', emoji: '💪', label: 'Every day', c: '#7BD389' }, { key: 'treat', emoji: '🎉', label: 'Sometimes', c: '#FFB3D1' }];
 
   const SAFE = [
@@ -152,11 +156,11 @@
     kind('You ride your bike.', '🚲', ['⛑️', 'Wear a helmet', 'A helmet protects your head'], ['🧢', 'No helmet']),
     kind('You find some tablets on the table.', '💊', ['🗣️', 'Tell a grown-up', 'Only grown-ups give medicine'], ['👄', 'Taste them']),
     kind('You are lost in the shop.', '🏬', ['🧑‍💼', 'Ask someone who works there', 'Shop helpers can find your grown-up'], ['🚪', 'Go outside alone']),
-    kind('You are at the pool.', '🏊', ['👀', 'Wait for a grown-up', 'Always swim with a grown-up'], ['🤿', 'Jump in alone'])
+    kind('You are at the pool.', '🏊', ['👀', 'Wait for a grown-up', 'Always swim with a grown-up'], ['💦', 'Jump in alone'])
   ];
   const BODY = [
     kind('It is bed time.', '🌙', ['😴', 'Go to sleep', 'Sleep helps you grow'], ['📺', 'Watch more TV']),
-    kind('You have been sitting all morning.', '🪑', ['🤸', 'Run and play', 'Moving makes you strong'], ['🛋️', 'Sit some more']),
+    kind('You have been sitting all morning.', '💺', ['🤸', 'Run and play', 'Moving makes you strong'], ['🛋️', 'Sit some more']),
     kind('You are thirsty.', '🥵', ['💧', 'Drink water', 'Water is the best drink'], ['🥤', 'A big fizzy drink']),
     kind('You come in from the garden.', '🌱', ['🧼', 'Wash your hands', 'Washing sends germs away'], ['🍪', 'Eat straight away']),
     kind('The sun is very strong.', '☀️', ['🧴', 'Sun cream and a hat', 'That protects your skin'], ['🙅', 'Nothing']),
@@ -186,12 +190,12 @@
       ] },
       { id: 'h3', title: 'Good food', icon: '🥕', type: 'sort', rounds: 8, items: FOOD, bins: FOOD_BINS,
         ask: i => `${i.w}. Every day, or sometimes?`,
-        tell: (i, b) => b.key === 'daily' ? `${i.w} helps you grow` : `${i.w} is a sometimes food` }
+        tell: (i, b) => b.key === 'daily' ? `${i.w}! ${pl(i.w, 'That helps', 'They help')} you grow` : `${i.w}! ${pl(i.w, 'That is', 'They are')} a sometimes food` }
     ], [
       /* ---- Intermediate: the whole day, tidying, staying safe ---- */
       { id: 'h4', title: 'My day', icon: '🌞', type: 'order', sets: [
         { say: 'Good morning! What do we do first?', text: 'Good <b>morning</b>! What comes first?',
-          steps: [step('🌅', 'wake up'), step('🪥', 'brush teeth'), step('👕', 'get dressed'), step('🥣', 'breakfast')],
+          steps: [step('🌅', 'wake up'), step('👕', 'get dressed'), step('👟', 'shoes on'), step('🎒', 'off to school')],
           praise: 'Ready for the day!' },
         { say: 'Time for bed! What do we do first?', text: 'Time for <b>bed</b>! What comes first?',
           steps: [step('🛁', 'bath'), step('🪥', 'brush teeth'), step('📖', 'story'), step('😴', 'sleep')],
@@ -200,11 +204,11 @@
       { id: 'h5', title: 'Tidy up', icon: '🧺', type: 'sort', rounds: 9,
         items: [it('🧸', 'teddy', 'toys'), it('⚽', 'ball', 'toys'), it('🧩', 'puzzle', 'toys'), it('🚗', 'toy car', 'toys'),
           it('👕', 'shirt', 'wash'), it('🧦', 'socks', 'wash'), it('👖', 'trousers', 'wash'),
-          it('🍌', 'banana peel', 'bin'), it('🧃', 'empty carton', 'bin'), it('🍬', 'sweet wrapper', 'bin')],
+          it('🍌', 'banana peel', 'bin'), it('🥤', 'empty cup', 'bin'), it('🍬', 'sweet wrapper', 'bin')],
         bins: [{ key: 'toys', emoji: '🧰', label: 'Toy box', c: '#F2A03D' }, { key: 'wash', emoji: '🧺', label: 'Washing', c: '#4D9DE0' },
           { key: 'bin', emoji: '🗑️', label: 'Bin', c: '#8E96A3' }],
-        ask: i => `Where does the ${i.w} go?`, tell: (i, b) => `The ${i.w} goes in the ${b.label.toLowerCase()}` },
-      { id: 'h6', title: 'Stay safe', icon: '🦺', type: 'choose', rounds: 7, gen: G.ask(SAFE) }
+        ask: i => `Where ${pl(i.w, 'does', 'do')} the ${i.w} go?`, tell: (i, b) => `The ${i.w} ${pl(i.w, 'goes', 'go')} in the ${b.label.toLowerCase()}` },
+      { id: 'h6', title: 'Stay safe', icon: '⛑️', type: 'choose', rounds: 7, gen: G.ask(SAFE) }
     ], [
       /* ---- Advanced: why habits matter, germs, food groups ---- */
       { id: 'h7', title: 'Catch that sneeze', icon: '🤧', type: 'order', sets: [
@@ -220,10 +224,10 @@
       { id: 'h8', title: 'Food groups', icon: '🥗', type: 'sort', rounds: 10,
         items: [it('🍎', 'apple', 'fruit'), it('🍌', 'banana', 'fruit'), it('🍇', 'grapes', 'fruit'), it('🍓', 'strawberry', 'fruit'),
           it('🥕', 'carrot', 'veg'), it('🥦', 'broccoli', 'veg'), it('🌽', 'corn', 'veg'), it('🥒', 'cucumber', 'veg'),
-          it('💧', 'water', 'drink'), it('🥛', 'milk', 'drink'), it('🧃', 'juice', 'drink')],
+          it('💧', 'water', 'drink'), it('🥛', 'milk', 'drink'), it('🥤', 'juice', 'drink')],
         bins: [{ key: 'fruit', emoji: '🍎', label: 'Fruit', c: '#EE5B5B' }, { key: 'veg', emoji: '🥕', label: 'Vegetables', c: '#58B368' },
           { key: 'drink', emoji: '🥤', label: 'Drinks', c: '#4D9DE0' }],
-        ask: i => `${i.w}. Fruit, vegetable or drink?`, tell: (i, b) => `${i.w} is a ${b.key === 'veg' ? 'vegetable' : b.key}` },
+        ask: i => `${i.w}. Fruit, vegetable or drink?`, tell: (i, b) => `${i.w}! ${pl(i.w, 'That is', 'They are')} a ${b.key === 'veg' ? 'vegetable' : b.key}` },
       { id: 'h9', title: 'Healthy body', icon: '💪', type: 'choose', rounds: 7, gen: G.ask(BODY) }
     ])
   });
@@ -232,7 +236,7 @@
 
   const BIN = [it('📰', 'newspaper', 'paper'), it('📦', 'box', 'paper'), it('✉️', 'letter', 'paper'), it('📄', 'paper', 'paper'),
     it('🧴', 'bottle', 'plastic'), it('🥤', 'plastic cup', 'plastic'), it('🛍️', 'plastic bag', 'plastic'),
-    it('🍌', 'banana peel', 'food'), it('🍎', 'apple core', 'food'), it('🥚', 'egg shell', 'food'), it('🍂', 'leaves', 'food')];
+    it('🍌', 'banana peel', 'food'), it('🍎', 'apple core', 'food'), it('🥚', 'egg shell', 'food'), it('🍊', 'orange peel', 'food')];
   const BIN_BINS = [{ key: 'paper', emoji: '📄', label: 'Paper', c: '#7FB6FF' }, { key: 'plastic', emoji: '♻️', label: 'Plastic', c: '#FFD76A' },
     { key: 'food', emoji: '🌱', label: 'Food scraps', c: '#8FD98F' }];
 
@@ -244,7 +248,7 @@
   });
   const EARTH = [
     earth('Planting a tree.', '🌳', true),
-    earth('Dropping rubbish on the ground.', '🗑️', false),
+    earth('Dropping rubbish on the ground.', '🚯', false),
     earth('Turning off the tap while you brush.', '🚰', true),
     earth('Leaving the light on in an empty room.', '💡', false),
     earth('Riding a bike to the park.', '🚲', true),
@@ -253,17 +257,17 @@
     earth('Putting bottles in the recycling bin.', '♻️', true)
   ];
 
-  const WILD = [it('🐧', 'penguin', 'ice'), it('🐻‍❄️', 'polar bear', 'ice'), it('🐪', 'camel', 'desert'), it('🦂', 'scorpion', 'desert'),
+  const WILD = [it('🐧', 'penguin', 'ice'), it('🦌', 'reindeer', 'ice'), it('🐪', 'camel', 'desert'), it('🦂', 'scorpion', 'desert'),
     it('🐵', 'monkey', 'forest'), it('🦉', 'owl', 'forest'), it('🦊', 'fox', 'forest'), it('🐳', 'whale', 'sea'),
     it('🦈', 'shark', 'sea'), it('🐢', 'sea turtle', 'sea')];
   const WILD_BINS = [{ key: 'forest', emoji: '🌲', label: 'Forest', c: '#7BD389' }, { key: 'sea', emoji: '🌊', label: 'Sea', c: '#4CC3FF' },
-    { key: 'ice', emoji: '❄️', label: 'Ice', c: '#DCEBFF' }, { key: 'desert', emoji: '🏜️', label: 'Desert', c: '#FFD9A0' }];
+    { key: 'ice', emoji: '❄️', label: 'Ice and snow', c: '#DCEBFF' }, { key: 'desert', emoji: '🏜️', label: 'Desert', c: '#FFD9A0' }];
 
   const SAVE = [
     earth('Turning off the light when you leave.', '💡', true),
     earth('A dripping tap, left all day.', '🚰', false),
     earth('Taking a short shower.', '🚿', true),
-    earth('Leaving the fridge door open.', '🧊', false),
+    earth('Leaving the TV on when no one is watching.', '📺', false),
     earth('Walking to school.', '🚶', true),
     earth('Using a bag again and again.', '🛍️', true),
     earth('Throwing away good food.', '🍞', false),
@@ -275,8 +279,8 @@
   const NEEDS = [
     need('What do bees need?', 'flowers', [['flowers', '🌸'], ['cars', '🚗'], ['shoes', '👟']], 'Bees need flowers'),
     need('What do fish need?', 'clean water', [['clean water', '💧'], ['sand castles', '🏰'], ['hats', '🎩']], 'Fish need clean water'),
-    need('What do birds build nests in?', 'trees', [['trees', '🌳'], ['buses', '🚌'], ['fridges', '🧊']], 'Birds nest in trees'),
-    need('What do polar bears need?', 'ice', [['ice', '🧊'], ['a desert', '🏜️'], ['a volcano', '🌋']], 'Polar bears need ice'),
+    need('What do birds build nests in?', 'trees', [['trees', '🌳'], ['buses', '🚌'], ['shoes', '👟']], 'Birds nest in trees'),
+    need('What do polar bears need?', 'snow and ice', [['snow and ice', '❄️'], ['a desert', '🏜️'], ['a volcano', '🌋']], 'Polar bears need snow and ice'),
     need('What do plants need?', 'sun and rain', [['sun and rain', '🌦️'], ['sweets', '🍬'], ['toys', '🧸']], 'Plants need sun and rain'),
     need('What do monkeys need?', 'a forest', [['a forest', '🌴'], ['a car park', '🅿️'], ['an ice rink', '⛸️']], 'Monkeys need forests'),
     need('What do we all need?', 'clean air', [['clean air', '🌬️'], ['smoke', '🏭'], ['rubbish', '🗑️']], 'We all need clean air')
@@ -291,7 +295,7 @@
     levels: AF.tiers([
       /* ---- Basic: sort the rubbish, help or hurt ---- */
       { id: 'p1', title: 'Sort it', icon: '♻️', type: 'sort', rounds: 8, items: BIN, bins: BIN_BINS,
-        ask: i => `Where does the ${i.w} go?`, tell: (i, b) => `${i.w} goes with ${b.label.toLowerCase()}` },
+        ask: i => `Where ${pl(i.w, 'does', 'do')} the ${i.w} go?`, tell: (i, b) => `The ${i.w} ${pl(i.w, 'goes', 'go')} with ${b.label.toLowerCase()}` },
       { id: 'p2', title: 'Help the Earth', icon: '💚', type: 'choose', rounds: 6, gen: G.ask(EARTH, false) },
       { id: 'pm1', title: 'Animal shadows', icon: '🐼', type: 'match', rounds: 3, n: 3,
         pairs: PR.shadow(WILD.map(x => ({ w: x.w, e: x.e })).filter(x => x.e.length <= 2)),
@@ -310,11 +314,11 @@
     ], [
       /* ---- Advanced: four bins, reuse, who needs what ---- */
       { id: 'p6', title: 'Four bins', icon: '🗑️', type: 'sort', rounds: 10,
-        items: BIN.concat([it('🍯', 'glass jar', 'glass'), it('🍾', 'glass bottle', 'glass'), it('🥛', 'drinking glass', 'glass')]),
-        bins: BIN_BINS.concat([{ key: 'glass', emoji: '🍾', label: 'Glass', c: '#55B985' }]),
-        ask: i => `Where does the ${i.w} go?`, tell: (i, b) => `${i.w} goes with ${b.label.toLowerCase()}` },
+        items: BIN.concat([it('🍯', 'glass jar', 'glass'), it('🥛', 'glass milk bottle', 'glass')]),
+        bins: BIN_BINS.concat([{ key: 'glass', emoji: '🍯', label: 'Glass', c: '#55B985' }]),
+        ask: i => `Where ${pl(i.w, 'does', 'do')} the ${i.w} go?`, tell: (i, b) => `The ${i.w} ${pl(i.w, 'goes', 'go')} with ${b.label.toLowerCase()}` },
       { id: 'p7', title: 'Use it again', icon: '🔁', type: 'match', rounds: 2, n: 3,
-        pairs: PR.of([['box', '📦', '🏰', 'A box can be a castle'], ['jar', '🥫', '🖍️', 'A tin can hold crayons'],
+        pairs: PR.of([['box', '📦', '🏰', 'A box can be a castle'], ['tin', '🥫', '🖍️', 'A tin can hold crayons'],
           ['old shirt', '👕', '🧽', 'An old shirt can be a cleaning cloth'], ['bottle', '🧴', '🪴', 'A bottle can be a plant pot'],
           ['paper', '📰', '🎁', 'Old paper can wrap a present'], ['sock', '🧦', '🧸', 'An odd sock can be a puppet']]),
         say: 'What can each old thing become?', text: 'What can each old thing <b>become</b>?' },

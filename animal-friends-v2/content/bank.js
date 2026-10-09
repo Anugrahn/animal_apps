@@ -51,8 +51,8 @@
     body: w([['eye', '👁️'], ['ear', '👂'], ['nose', '👃'], ['mouth', '👄'], ['hand', '✋'], ['foot', '🦶'],
       ['tooth', '🦷'], ['leg', '🦵']]),
     go: w([['car', '🚗'], ['bus', '🚌'], ['train', '🚂'], ['boat', '⛵'], ['plane', '✈️'], ['bike', '🚲'],
-      ['rocket', '🚀'], ['truck', '🚚']]),
-    home: w([['bed', '🛏️'], ['chair', '🪑'], ['door', '🚪'], ['book', '📖'], ['ball', '⚽'], ['clock', '⏰'],
+      ['rocket', '🚀'], ['lorry', '🚚']]),
+    home: w([['bed', '🛏️'], ['chair', '💺'], ['door', '🚪'], ['book', '📖'], ['ball', '⚽'], ['clock', '⏰'],
       ['key', '🔑'], ['shoe', '👟'], ['hat', '🎩'], ['shirt', '👕'], ['sock', '🧦']]),
     nature: w([['sun', '☀️'], ['moon', '🌙'], ['star', '⭐'], ['tree', '🌳'], ['flower', '🌸'], ['rain', '🌧️'],
       ['cloud', '☁️'], ['fire', '🔥']]),
@@ -227,8 +227,10 @@
 
     /** "What rhymes with cat?" sets = [[{w,e}, ...], ...] */
     rhyme(sets) {
-      return (ctx) => {
-        const si = U.one(sets.map((s, i) => i).filter(i => i !== ctx.last));
+      let prev = -1;
+      return () => {
+        const si = U.one(sets.map((s, i) => i).filter(i => i !== prev));
+        prev = si;
         const pair = U.shuffle(sets[si]).slice(0, 2);
         const others = U.pick(sets.map((s, i) => i), 2, [si]).map(i => U.one(sets[i]));
         return {

@@ -33,8 +33,13 @@
 
     isUnlocked(moduleId, levels, index) {
       if (index <= 0 || AF.Profile.setting('open')) return true;
-      const prev = levels[index - 1];
-      return AF.Profile.stars(moduleId, prev.id) > 0;
+      // a level already won stays open (levels added before it later,
+      // or played while "Open every level" was on, must not lock it)
+      if (AF.Profile.stars(moduleId, levels[index].id) > 0) return true;
+      // "soon" levels cannot be won, so they are stepped over
+      let prev = index - 1;
+      while (prev > 0 && levels[prev].soon) prev--;
+      return levels[prev].soon || AF.Profile.stars(moduleId, levels[prev].id) > 0;
     },
 
     /** Index of the level the child should play next. */
@@ -69,6 +74,8 @@
 
     /** 0 = none, 1 = dim wrong answers, 2 = also replay the prompt. */
     helpLevel(moduleId, levelId) {
+      // a mastered level is replayed for the "stretch", not for help
+      if (Levels.stretch(moduleId, levelId)) return 0;
       const tries = AF.Profile.attempts(moduleId, levelId);
       if (tries >= 4) return 2;
       if (tries >= 2) return 1;

@@ -24,7 +24,17 @@
 
   /* ---------- screen router ---------- */
 
+  /* A screen change that waits for a little animation first. Only one
+     can wait at a time, and going anywhere else cancels it, so a late
+     timer never pulls the child back to a screen they have left. */
+  let pending = 0;
+  function showSoon(fn, ms) {
+    clearTimeout(pending);
+    pending = setTimeout(() => { pending = 0; fn(); }, ms);
+  }
+
   function show(id) {
+    clearTimeout(pending);
     // The screen being left lingers for a moment and fades back, while
     // the new one grows out of the spot that was touched (motion.css).
     document.querySelectorAll('.screen').forEach(s => {
@@ -120,7 +130,7 @@
   function meet(spec, wait) {
     P.chooseCharacter(spec);
     Audio.say(`Hi! I am ${spec.name}. Let's play!`);
-    setTimeout(() => {
+    showSoon(() => {
       renderHome();
       show('home');
       if (!P.seenTutorial) openTutorial();
@@ -252,7 +262,9 @@
   function todayPicks() {
     const t = P.today();
     if (!t.picks) {
-      const day = Math.floor(Date.now() / 86400000);
+      // counted in local days, like the day itself, so the areas move on one a day
+      const d = new Date();
+      const day = Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
       const picks = [];
       for (let k = 0; k < AF.AREAS.length && picks.length < 3; k++) {
         const area = AF.AREAS[(day + k) % AF.AREAS.length];
@@ -461,7 +473,7 @@
       // The open treasure chest is the door to the next stage.
       Audio.SFX.win();
       AF.FX.sparkleAt($('map-path').querySelector('.lv-chest'), 18);
-      if (tier < count - 1) setTimeout(() => openMap(mod, tier + 1), 450);
+      if (tier < count - 1) showSoon(() => openMap(mod, tier + 1), 450);
       else Audio.say('You found all the treasure!');
     }, from);
     show('map');
@@ -863,6 +875,7 @@
     $('btn-reset').addEventListener('click', function () {
       if (this.dataset.armed) {
         P.reset();
+        applyWorld();                      // the settings are back to their defaults
         this.removeAttribute('data-armed');
         this.textContent = 'Start over';
         sheet('grown', false);
@@ -935,10 +948,14 @@
     else if (part[0] === 'tutorial') openTutorial();
     else if (part[0] === 'area') openArea(part[1]);
     else if (part[0] === 'journey') openJourney();
-    else if (part[0] === 'map' && mod) openMap(mod, part[2] != null ? +part[2] : null);
+    else if (part[0] === 'map' && mod) {
+      const stage = parseInt(part[2], 10);
+      openMap(mod, Number.isFinite(stage) ? stage : null);
+    }
     else if (part[0] === 'play' && mod) {
       const i = Math.max(0, mod.levels.findIndex(l => l.id === part[2]));
-      if (P.setting('speech') === 'ask') P.setSetting('speech', q.get('speech') || 'tap');
+      const speech = ['check', 'echo', 'tap'].indexOf(q.get('speech')) >= 0 ? q.get('speech') : 'tap';
+      if (P.setting('speech') === 'ask') P.setSetting('speech', speech);
       startLevel(mod, mod.levels[i], i);
     }
   }

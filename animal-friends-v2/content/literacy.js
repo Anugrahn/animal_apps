@@ -21,19 +21,19 @@
   const SET4 = SET3.concat(['e', 'u', 'r']);
   const SET5 = SET4.concat(['h', 'b', 'f', 'l']);
   const CVC = w([['cat', '🐱'], ['dog', '🐶'], ['pig', '🐷'], ['sun', '☀️'], ['hat', '🎩'], ['pin', '📌'], ['map', '🗺️'],
-    ['cap', '🧢'], ['pot', '🍲'], ['bed', '🛏️'], ['bus', '🚌'], ['net', '🥅'], ['log', '🪵'], ['bug', '🐛']]);
+    ['cap', '🧢'], ['pot', '🍲'], ['bed', '🛏️'], ['bus', '🚌'], ['net', '🥅'], ['leg', '🦵'], ['bug', '🐛']]);
 
   const RHYMES = [
     w([['cat', '🐱'], ['hat', '🎩'], ['bat', '🦇']]),
-    w([['dog', '🐶'], ['frog', '🐸'], ['log', '🪵']]),
+    w([['dog', '🐶'], ['frog', '🐸'], ['fog', '🌫️']]),
     w([['bee', '🐝'], ['tree', '🌳'], ['key', '🔑']]),
     w([['star', '⭐'], ['car', '🚗'], ['jar', '🍯']]),
     w([['cake', '🍰'], ['snake', '🐍'], ['lake', '🏞️']]),
     w([['moon', '🌙'], ['spoon', '🥄'], ['balloon', '🎈']]),
-    w([['bear', '🐻'], ['pear', '🍐'], ['chair', '🪑']]),
+    w([['bear', '🐻'], ['pear', '🍐'], ['chair', '💺']]),
     w([['goat', '🐐'], ['boat', '⛵'], ['coat', '🧥']]),
     w([['fox', '🦊'], ['box', '📦'], ['socks', '🧦']]),
-    w([['sun', '☀️'], ['bun', '🥯'], ['run', '🏃']])
+    w([['sun', '☀️'], ['bun', '🍞'], ['run', '🏃']])
   ];
 
   AF.register({
@@ -57,7 +57,7 @@
       { id: 'l6', title: 'First sound', icon: '👂', type: 'choose', rounds: 7, gen: G.firstSound(SATPIN, 3) },
       { id: 'lt2', title: 'Trace p i n', icon: '✏️', type: 'trace', kind: 'letter', set: ['p', 'i', 'n', 'm', 'd'], rounds: 4 },
       { id: 'l7', title: 'Build a word', icon: '🧩', type: 'build', rounds: 4, extra: 1, pool: 'satpin',
-        words: w([['pin', '📌'], ['tap', '🚰'], ['nap', '😴'], ['sit', '🪑'], ['pan', '🍳'], ['tin', '🥫'], ['ant', '🐜']]) },
+        words: w([['pin', '📌'], ['tap', '🚰'], ['nap', '😴'], ['sit', '🧘'], ['pan', '🍳'], ['tin', '🥫'], ['ant', '🐜']]) },
       { id: 'l8', title: 'M and D', icon: 'm', type: 'choose', rounds: 8, gen: G.letterSound(SET2, 4, ['m', 'd']) },
       { id: 'lm1', title: 'Letter friends', icon: '🤝', type: 'match', rounds: 3, n: 3, pairs: PR.letter(SET2),
         say: 'Match each letter to its picture.', text: 'Match each <b>letter</b> to its picture' },
@@ -79,7 +79,7 @@
         words: w([['frog', '🐸'], ['hand', '✋'], ['milk', '🥛'], ['tent', '⛺'], ['lamp', '💡'], ['drum', '🥁'],
           ['flag', '🚩'], ['sock', '🧦'], ['duck', '🦆'], ['bird', '🐦']]) },
       { id: 'lt4', title: 'Write a word', icon: '📝', type: 'trace', kind: 'word', rounds: 3,
-        set: w([['sat', '🪑'], ['pin', '📌'], ['dog', '🐶'], ['cat', '🐱'], ['sun', '☀️'], ['hat', '🎩'], ['bed', '🛏️']]) }
+        set: w([['sit', '🧘'], ['pin', '📌'], ['dog', '🐶'], ['cat', '🐱'], ['sun', '☀️'], ['hat', '🎩'], ['bed', '🛏️']]) }
     ])
   });
 
@@ -107,9 +107,9 @@
       { id: 'w5', title: 'Things that go', icon: '🚗', type: 'choose', rounds: 7, gen: G.find(W.go, 4) },
       { id: 'w6', title: 'At home', icon: '🏠', type: 'choose', rounds: 7, gen: G.find(W.home, 4) },
       { id: 'ws1', title: 'Animal or food?', icon: '🧺', type: 'sort', rounds: 8,
-        items: W.animals.slice(0, 7).map(x => ({ e: x.e, w: x.w, bin: 'animal' })).concat(W.food.slice(0, 7).map(x => ({ e: x.e, w: x.w, bin: 'food' }))),
+        items: W.animals.filter(x => x.w !== 'fish').slice(0, 7).map(x => ({ e: x.e, w: x.w, bin: 'animal' })).concat(W.food.slice(0, 7).map(x => ({ e: x.e, w: x.w, bin: 'food' }))),
         bins: [{ key: 'animal', emoji: '🐾', label: 'Animals', c: '#F2A03D' }, { key: 'food', emoji: '🍽️', label: 'Food', c: '#6CC27A' }],
-        ask: i => `${i.w}. Is it an animal, or food?`, tell: (i, b) => `${i.w} is ${b.key === 'animal' ? 'an animal' : 'food'}` },
+        ask: i => `${i.w}. Is it an animal, or food?`, tell: (i, b) => `The ${i.w} is ${b.key === 'animal' ? 'an animal' : 'food'}` },
       { id: 'w7', title: 'Outside', icon: '🌳', type: 'choose', rounds: 7, gen: G.find(W.nature, 4) },
       { id: 'w9', title: 'Clothes', icon: '👕', type: 'choose', rounds: 7, gen: G.find(W.clothes, 4) },
       { id: 'wm2', title: 'Toy shadows', icon: '🧸', type: 'match', rounds: 3, n: 4, pairs: PR.shadow(W.toys.concat(W.go)),
@@ -234,7 +234,7 @@
           { art: '🌳 🍎 {me}', text: '{name} found a tree with one red apple.', bg: '#E3F7D2' },
           { art: '🐿️ 🐦 🐰', text: 'A squirrel, a bird and a rabbit were hungry too.', bg: '#FFF1CF' },
           { art: '{me} 🤔 🍎', text: 'One apple. Four friends. What can we do? said {name}.', bg: '#E6E0FF' },
-          { art: '{me} 🔪 🍎', text: 'I know! We can cut it and share.', bg: '#FFE6F0' },
+          { art: '{me} 🍽️ 🍎', text: 'I know! A grown-up can cut it, and we can share.', bg: '#FFE6F0' },
           { art: '🐿️ 🐦 🐰 {me}', text: 'Everyone got a piece. Yum, yum, yum!', bg: '#FFF6B8' },
           { art: '🌱 🌳 🌳', text: 'They planted the seeds. One day there will be many apple trees.', bg: '#D9F7F0' },
           { art: '{me} 💛 🐰', text: 'Sharing made everyone happy. {name} most of all.', bg: '#FFE6F0' }
@@ -253,7 +253,7 @@
           { art: '{me} 🌙', text: 'One night, {name} looked up at the moon.', bg: '#2B2B5E' },
           { art: '{me} 📦 ✂️', text: 'I will build a rocket, said {name}.', bg: '#FFF1CF' },
           { art: '🚀 🔥', text: 'Five, four, three, two, one. Blast off!', bg: '#FFD9C2' },
-          { art: '🌍 🚀 ⭐', text: 'The rocket flew past the clouds and past the stars.', bg: '#23234F' },
+          { art: '🌍 🚀 ⭐', text: 'The rocket flew up, past the clouds and into space.', bg: '#23234F' },
           { art: '{me} 🌙 🚩', text: '{name} landed on the moon. It was quiet and grey.', bg: '#3A3A6E' },
           { art: '🌍 💙 {me}', text: 'Far away was the Earth. It looked like a blue ball. Time to go home!', bg: '#23234F' }
         ],
@@ -279,7 +279,7 @@
         quiz: [
           { say: 'What did {name} find under the box?', options: [{ key: 'kitten', emoji: '🐱' }, { key: 'puppy', emoji: '🐶' }, { key: 'ball', emoji: '⚽' }], answer: 'kitten', praise: 'A kitten!' },
           { say: 'What was the weather like?', options: [{ key: 'rain', emoji: '🌧️', label: 'rainy' }, { key: 'sun', emoji: '☀️', label: 'sunny' }, { key: 'snow', emoji: '❄️', label: 'snowy' }], answer: 'rain', praise: 'It was rainy.' },
-          { say: 'How did {name} keep the kitten warm?', options: [{ key: 'scarf', emoji: '🧣', label: 'a scarf' }, { key: 'ice', emoji: '🧊', label: 'ice' }], answer: 'scarf', praise: 'With a warm scarf.' },
+          { say: 'How did {name} keep the kitten warm?', options: [{ key: 'scarf', emoji: '🧣', label: 'a scarf' }, { key: 'snow', emoji: '❄️', label: 'snow' }], answer: 'scarf', praise: 'With a warm scarf.' },
           { say: 'Which house was the kitten’s home?', options: [{ key: 3, glyph: '3', label: 'the third' }, { key: 1, glyph: '1', label: 'the first' }, { key: 2, glyph: '2', label: 'the second' }], answer: 3, praise: 'The third house!' },
           { say: 'How did the girl feel at the end?', options: [face('happy', '😊'), face('sad', '😢'), face('angry', '😠')], answer: 'happy', praise: 'Happy!' }
         ]

@@ -17,6 +17,8 @@
   const num = (list) => list.map(n => ({ glyph: String(n), label: AF.NUM[n] }));
   const it = (e, word, bin) => ({ e: e, w: word, bin: bin });
   const step = (e, label) => ({ e: e, label: label });
+  /* 'goes' or 'go': plural words (stars) take the plural verb */
+  const pl = (word, one, many) => /[^su]s$/.test(word) ? many : one;   // (not bus, glass)
 
   /* ---------------- Numbers ---------------- */
 
@@ -35,13 +37,13 @@
       { id: 'nm1', title: 'Number & stars', icon: '⭐', type: 'match', rounds: 3, n: 3, pairs: PR.count(1, 5),
         say: 'Match each number to the stars.', text: 'Match each <b>number</b> to the stars' },
       { id: 'np1', title: 'Pop the number', icon: '🎈', type: 'pop', rounds: 4, gen: G.numeral(1, 5, 3) },
-      { id: 'n3', title: 'Find the number', icon: '👂', type: 'choose', rounds: 6, gen: G.numeral(1, 10, 3) },
+      { id: 'n3', title: 'Find the number', icon: '👂', type: 'choose', rounds: 6, gen: G.numeral(1, 5, 3) },
       { id: 'nt2', title: 'Trace 4 5 6', icon: '✏️', type: 'trace', kind: 'number', set: [4, 5, 6], ordered: true }
     ], [
       /* ---- Intermediate: numbers to ten, order, first sums ---- */
       { id: 'n4', title: 'Count to 10', icon: '10', type: 'choose', rounds: 7, gen: G.count(4, 10, 4) },
       { id: 'n5', title: 'More or fewer', icon: '⚖️', type: 'choose', rounds: 7, gen: G.compare(6) },
-      { id: 'nt3', title: 'Trace 7 8 9', icon: '✏️', type: 'trace', kind: 'number', set: [7, 8, 9, 0], ordered: true },
+      { id: 'nt3', title: 'Trace 7 8 9 0', icon: '✏️', type: 'trace', kind: 'number', set: [7, 8, 9, 0], ordered: true },
       { id: 'n6', title: 'In order', icon: '🔢', type: 'order', pick: 3, sets: [
         { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([1, 2, 3, 4]), praise: 'One, two, three, four!' },
         { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([2, 3, 4, 5]), praise: 'Two, three, four, five!' },
@@ -75,7 +77,7 @@
   /* ---------------- Shapes & Patterns ---------------- */
 
   const HUNT = [
-    ['circle', [['ball', '⚽'], ['clock', '🕒'], ['cookie', '🍪'], ['coin', '🪙']]],
+    ['circle', [['ball', '⚽'], ['clock', '🕒'], ['biscuit', '🍪'], ['coin', '🪙']]],
     ['triangle', [['pizza slice', '🍕'], ['tent', '⛺'], ['mountain', '⛰️']]],
     ['rectangle', [['door', '🚪'], ['phone', '📱'], ['book', '📕'], ['bus', '🚌']]],
     ['square', [['present', '🎁'], ['picture', '🖼️'], ['dice', '🎲']]]
@@ -153,11 +155,11 @@
 
   const ALIVE = [it('🐶', 'dog', 'yes'), it('🌳', 'tree', 'yes'), it('🌸', 'flower', 'yes'), it('🐦', 'bird', 'yes'),
     it('🐟', 'fish', 'yes'), it('🐛', 'caterpillar', 'yes'), it('🪨', 'rock', 'no'), it('🚗', 'car', 'no'),
-    it('⚽', 'ball', 'no'), it('🪑', 'chair', 'no'), it('🥄', 'spoon', 'no'), it('👟', 'shoe', 'no')];
+    it('⚽', 'ball', 'no'), it('💺', 'chair', 'no'), it('🥄', 'spoon', 'no'), it('👟', 'shoe', 'no')];
   const ALIVE_BINS = [{ key: 'yes', emoji: '🌱', label: 'Living', c: '#7BD389' }, { key: 'no', emoji: '🧱', label: 'Not living', c: '#C9C3D9' }];
 
   const FLOAT = [it('🦆', 'duck', 'float'), it('⛵', 'boat', 'float'), it('🍃', 'leaf', 'float'), it('⚽', 'ball', 'float'),
-    it('🪵', 'log', 'float'), it('🪨', 'rock', 'sink'), it('🔑', 'key', 'sink'), it('🪙', 'coin', 'sink'),
+    it('🍎', 'apple', 'float'), it('🪨', 'rock', 'sink'), it('🔑', 'key', 'sink'), it('🪙', 'coin', 'sink'),
     it('⚓', 'anchor', 'sink'), it('🥄', 'spoon', 'sink')];
   const FLOAT_BINS = [{ key: 'float', emoji: '⬆️', label: 'Floats', c: '#4CC3FF' }, { key: 'sink', emoji: '⬇️', label: 'Sinks', c: '#8FA3C8' }];
 
@@ -200,7 +202,7 @@
     sp('What can fly to space?', 'rocket', [['rocket', '🚀'], ['bus', '🚌'], ['bike', '🚲']], 'A rocket flies to space'),
     sp('What shines in the sky at night?', 'moon', [['moon', '🌙'], ['sun', '☀️'], ['tree', '🌳']], 'The moon shines at night'),
     sp('Who travels to space?', 'astronaut', [['astronaut', '🧑‍🚀'], ['farmer', '🧑‍🌾'], ['cook', '🧑‍🍳']], 'An astronaut!'),
-    sp('Which planet has a ring?', 'saturn', [['saturn', '🪐'], ['earth', '🌍'], ['moon', '🌙']], 'Saturn has rings'),
+    sp('Which one is a comet? It has a long, shiny tail.', 'comet', [['comet', '☄️'], ['earth', '🌍'], ['moon', '🌙']], 'A comet has a shiny tail'),
     sp('What do we use to look at the stars?', 'telescope', [['telescope', '🔭'], ['spoon', '🥄'], ['shoe', '👟']], 'A telescope')
   ];
 
@@ -215,7 +217,7 @@
     season('The leaves turn orange and fall. Which season is it?', '🍁', 'autumn', 'Leaves fall in autumn'),
     season('Flowers begin to grow. Which season is it?', '🌷', 'spring', 'Flowers grow in spring'),
     season('It is hot and we go to the beach. Which season is it?', '🏖️', 'summer', 'Summer is hot'),
-    season('Baby birds hatch in their nests. Which season is it?', '🐣', 'spring', 'Babies are born in spring'),
+    season('Baby birds hatch in their nests. Which season is it?', '🐣', 'spring', 'Lots of baby animals are born in spring'),
     season('We wear a warm coat and gloves. Which season is it?', '🧤', 'winter', 'Winter is cold'),
     season('We pick apples and pumpkins. Which season is it?', '🎃', 'autumn', 'We pick them in autumn')
   ];
@@ -238,8 +240,8 @@
     levels: AF.tiers([
       /* ---- Basic: animals and my own body ---- */
       { id: 'd1', title: 'Animal homes', icon: '🏡', type: 'sort', rounds: 7, items: HOMES, bins: HOME_BINS,
-        ask: i => `Where does the ${i.w} live?`,
-        tell: (i, b) => `The ${i.w} lives ${b.key === 'land' ? 'on land' : b.key === 'water' ? 'in water' : 'in the sky'}` },
+        ask: i => `Where do you find the ${i.w}?`,
+        tell: (i, b) => `The ${i.w} ${b.key === 'land' ? 'lives on land' : b.key === 'water' ? 'lives in water' : 'flies in the sky'}` },
       { id: 'd2', title: 'My senses', icon: '👃', type: 'choose', rounds: 6, gen: G.ask(SENSES) },
       { id: 'd8', title: 'Who eats what?', icon: '🥕', type: 'match', rounds: 3, n: 3,
         pairs: PR.of([['rabbit', '🐰', '🥕', 'The rabbit eats a carrot'], ['monkey', '🐵', '🍌', 'The monkey eats a banana'],
@@ -252,7 +254,7 @@
         items: [it('☀️', 'sun', 'day'), it('🌈', 'rainbow', 'day'), it('🐓', 'rooster', 'day'), it('🦋', 'butterfly', 'day'), it('🏫', 'school', 'day'),
           it('🌙', 'moon', 'night'), it('⭐', 'stars', 'night'), it('🦉', 'owl', 'night'), it('🦇', 'bat', 'night'), it('🛏️', 'bed', 'night')],
         bins: [{ key: 'day', emoji: '🌞', label: 'Day', c: '#F2B618' }, { key: 'night', emoji: '🌜', label: 'Night', c: '#6C63C7' }],
-        ask: i => `${i.w}. Day, or night?`, tell: (i, b) => `${i.w} goes with ${b.key}` }
+        ask: i => `${i.w}. Day, or night?`, tell: (i, b) => `The ${i.w} ${pl(i.w, 'goes', 'go')} with ${b.key}` }
     ], [
       /* ---- Intermediate: how things grow and behave ---- */
       { id: 'd4', title: 'How it grows', icon: '🌻', type: 'order', sets: [
@@ -268,11 +270,11 @@
         ask: i => `Does the ${i.w} float or sink?`, tell: (i, b) => `The ${i.w} ${b.key === 'float' ? 'floats' : 'sinks'}` },
       { id: 'd10', title: 'Hot or cold?', icon: '🌡️', type: 'sort', rounds: 8,
         items: [it('🔥', 'fire', 'hot'), it('☀️', 'sun', 'hot'), it('🍲', 'soup', 'hot'), it('☕', 'hot drink', 'hot'), it('🌋', 'volcano', 'hot'),
-          it('🧊', 'ice', 'cold'), it('⛄', 'snowman', 'cold'), it('🍦', 'ice cream', 'cold'), it('❄️', 'snow', 'cold'), it('🐧', 'penguin’s home', 'cold')],
+          it('🏔️', 'snowy mountain', 'cold'), it('⛄', 'snowman', 'cold'), it('🍦', 'ice cream', 'cold'), it('❄️', 'snow', 'cold'), it('🐧', 'penguin’s home', 'cold')],
         bins: [{ key: 'hot', emoji: '🥵', label: 'Hot', c: '#EE5B5B' }, { key: 'cold', emoji: '🥶', label: 'Cold', c: '#4D9DE0' }],
-        ask: i => `${i.w}. Hot, or cold?`, tell: (i, b) => `${i.w} is ${b.key}` },
-      { id: 'd11', title: 'Baby animals', icon: '🐣', type: 'match', rounds: 3, n: 3,
-        pairs: PR.of([['chick', '🐔', '🐥', 'A hen has a chick'], ['tadpole', '🐸', '🥚', 'A frog comes from an egg'],
+        ask: i => `${i.w}. Hot, or cold?`, tell: (i, b) => `The ${i.w} is ${b.key}` },
+      { id: 'd11', title: 'Little and big', icon: '🐣', type: 'match', rounds: 3, n: 3,
+        pairs: PR.of([['hen', '🐔', '🐥', 'A hen was once a chick'], ['frog', '🐸', '🥚', 'A frog comes from an egg'],
           ['butterfly', '🦋', '🐛', 'A butterfly was a caterpillar'], ['flower', '🌻', '🌰', 'A flower grows from a seed'],
           ['tree', '🌳', '🌱', 'A tree was a little sprout']]),
         say: 'What did each one start as?', text: 'What did each one <b>start as</b>?' }
@@ -287,7 +289,7 @@
       { id: 'd13', title: 'Seasons', icon: '🍂', type: 'choose', rounds: 7, gen: G.ask(SEASONS) },
       { id: 'd14', title: 'Life cycles', icon: '🦋', type: 'order', sets: [
         { say: 'How does a butterfly grow? Put it in order.', text: 'How does a <b>butterfly</b> grow?',
-          steps: [step('🥚', 'egg'), step('🐛', 'caterpillar'), step('🟤', 'cocoon'), step('🦋', 'butterfly')], praise: 'Egg, caterpillar, cocoon, butterfly!' },
+          steps: [step('🥚', 'egg'), step('🐛', 'caterpillar'), step('💤', 'chrysalis'), step('🦋', 'butterfly')], praise: 'Egg, caterpillar, chrysalis, butterfly!' },
         { say: 'How does an apple tree grow? Put it in order.', text: 'How does an <b>apple tree</b> grow?',
           steps: [step('🌰', 'seed'), step('🌱', 'sprout'), step('🌳', 'tree'), step('🌸', 'blossom'), step('🍎', 'apple')], praise: 'Seed, sprout, tree, blossom, apple!' },
         { say: 'Where does rain come from? Put it in order.', text: 'Where does <b>rain</b> come from?',

@@ -1,0 +1,59 @@
+/* ============================================================
+   letters.css — Letter Sounds
+   ============================================================ */
+/* Cards are always SQUARE and centred. Stretching them to fill the
+   column turned two choices into two tall slabs on a phone, which
+   put the letter miles from the thumb. A fixed vmin square keeps
+   every card the same comfortable size whatever the count. */
+.letter-grid {
+  flex: 1; min-height: 0;
+  display: grid;
+  place-content: center;
+  grid-template-columns: repeat(2, auto);
+  gap: clamp(12px, 3vmin, 26px);
+  padding-bottom: 10px;
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .letter-grid[style*="--n:3"] { grid-template-columns: repeat(3, auto); }
+  .letter-grid[style*="--n:4"] { grid-template-columns: repeat(4, auto); }
+}
+
+.lcard {
+  position: relative; border-radius: var(--radius);
+  width: clamp(110px, 40vmin, 200px);
+  aspect-ratio: 1;
+  transition: opacity .35s, filter .35s;
+}
+.lcard-face {
+  --c: #FFC93C;
+  --edge: color-mix(in srgb, var(--c) 58%, #2B1B6B);
+  position: absolute; inset: 0; border-radius: inherit; background: #fff;
+  box-shadow: inset 0 -9px 0 color-mix(in srgb, var(--c) 24%, #fff), 0 9px 0 var(--edge), 0 18px 28px rgba(20,8,70,.28);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2%;
+  container-type: size; overflow: hidden;
+  transition: transform .12s, box-shadow .12s;
+}
+.lcard:active .lcard-face { transform: translateY(6px); box-shadow: 0 3px 0 var(--edge); }
+.lcard:focus-visible .lcard-face { outline: 5px solid #FFC93C; outline-offset: 4px; }
+
+.lcard-glyph {
+  font-size: min(54cqmin, 58cqh); font-weight: 700; line-height: 1;
+  color: var(--violet-deep); text-transform: lowercase;
+}
+.lcard-hint { font-family: var(--emoji); font-size: min(17cqmin, 18cqh); line-height: 1; opacity: .85; }
+
+.lcard.dimmed { opacity: .28; filter: saturate(.3); pointer-events: none; }
+.lcard.nope .lcard-face { animation: nope .42s ease-in-out; }
+.lcard.yes .lcard-face {
+  --c: #36D6B5;
+  box-shadow: 0 0 0 7px #fff, 0 0 0 14px #36D6B5, 0 18px 34px rgba(20,8,70,.32);
+  animation: win-pop .7s cubic-bezier(.3,1.6,.5,1) forwards;
+}
+.lcard.yes .lcard-glyph { color: #1FA88A; }
+
+@keyframes win-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.1) rotate(-2deg); }
+  100% { transform: scale(1.05); }
+}

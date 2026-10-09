@@ -1,0 +1,207 @@
+/* ============================================================
+   engines/base.js — registry + what every game engine shares
+   ------------------------------------------------------------
+   v1 had one module with its own game code. v2 splits that in two:
+
+     ENGINES  know HOW to play   (choose, order, build, memory,
+                                  maze, speak, story, song, breathe)
+     CONTENT  knows WHAT to teach (content/*.js — plain data)
+
+   A level is data: { id, title, icon, type: 'choose', ...config }.
+   The registry looks up the engine by `type`, so adding a level —
+   or a whole subject — never means writing game code again.
+
+   Every engine run gets a SESSION. Timers go through S.later(),
+   so when the child leaves a level every pending callback dies
+   with it. (In v1 a stray timer could fire into the next level.)
+   ============================================================ */
+(function (AF) {
+  'use strict';
+
+  AF.registry = AF.registry || [];
+  AF.Engines = AF.Engines || {};
+
+  let session = null;
+
+  /* The four areas of the curriculum, in home-screen order. */
+  AF.AREAS = [
+    { id: 'literacy', title: 'Words & Letters',   island: 'ABC Island',   colour: '#F28A2E', glyph: 'literacy', icon: '📚' },
+    { id: 'stem',     title: 'Numbers & Science', island: 'STEM Island',  colour: '#F2B618', glyph: 'stem',     icon: '🔬' },
+    { id: 'life',     title: 'Me & My World',     island: 'Heart Island', colour: '#E5535A', glyph: 'life',     icon: '💛' },
+    { id: 'play',     title: 'Play Time',         island: 'Play Island',  colour: '#3E9BF0', glyph: 'playtime', icon: '🎈' }
+  ];
+
+  /** Modules call this to join the home screen. */
+  AF.register = function (mod) {
+    if (!mod.play) {
+      mod.play = function (host, level, api) { AF.Engines.run(host, level, api); };
+      mod.stop = function () { AF.Engines.stop(); };
+    }
+    AF.registry.push(mod);
+    return mod;
+  };
+
+  /* Every subject has three stages. Content files write
+       levels: AF.tiers([basic...], [intermediate...], [advanced...])
+     and get back one flat list with a `tier` on each level, so
+     saved stars, the daily picks and the progress screen all keep
+     working on a plain list. */
+  AF.TIERS = ['Basic', 'Intermediate', 'Advanced'];
+  AF.tiers = function () {
+    const out = [];
+    Array.prototype.forEach.call(arguments, (list, t) => list.forEach(lv => { lv.tier = t; out.push(lv); }));
+    return out;
+  };
+
+  AF.module = function (id) {
+    return AF.registry.filter(m => m.id === id)[0];
+  };
+
+  /* ---------- little helpers engines and content share ---------- */
+
+  const U = AF.U = {
+    rand(n) { return Math.floor(Math.random() * n); },
+    shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = U.rand(i + 1);
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    },
+    /** n random items, never including anything in `not`. */
+    pick(arr, n, not) {
+      not = not || [];
+      return U.shuffle(arr.filter(x => not.indexOf(x) < 0)).slice(0, n);
+    },
+    one(arr, not) { return U.pick(arr, 1, not == null ? [] : [not])[0] || arr[0]; },
+    esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); },
+    /** "a" / "an" for a spoken prompt. */
+    a(word) { return (/^[aeiou]/i.test(word) ? 'an ' : 'a ') + word; }
+  };
+
+  /* ---------- running a level ---------- */
+
+  AF.Engines.run = function (host, level, api) {
+    AF.Engines.stop();
+    const engine = AF.Engines[level.type];
+    const timers = [];
+    const S = session = {
+      host: host, level: level, api: api, alive: true,
+      mistakes: 0, round: 0, times: [], t0: 0,
+      cleanup: [],
+
+      /** setTimeout that dies with the level. */
+      later(fn, ms) {
+        const id = setTimeout(() => { if (S.alive) fn(); }, ms);
+        timers.push(id);
+        return id;
+      },
+      /** Start timing how long the child thinks about a round. */
+      mark() { S.t0 = Date.now(); },
+      /** Stop timing (call on the correct answer). */
+      lap() { if (S.t0) { S.times.push(Math.min(Date.now() - S.t0, 30000)); S.t0 = 0; } },
+      miss() { S.mistakes++; },
+      /** addEventListener that is removed when the level ends. */
+      on(target, type, fn, opts) {
+        target.addEventListener(type, fn, opts);
+        S.cleanup.push(() => target.removeEventListener(type, fn, opts));
+      },
+      done() {
+        if (!S.alive) return;
+        const avg = S.times.length ? S.times.reduce((a, b) => a + b, 0) / S.times.length : 0;
+        api.finish(S.mistakes, avg);
+      },
+      end() {
+        S.alive = false;
+        timers.forEach(clearTimeout);
+        S.cleanup.forEach(fn => { try { fn(); } catch (e) {} });
+      }
+    };
+
+    if (!engine) {
+      host.innerHTML = '<p class="empty">This game is not ready yet.</p>';
+      return;
+    }
+    engine(S);
+  };
+
+  AF.Engines.stop = function () {
+    if (session) { session.end(); session = null; }
+    AF.Audio.stop();
+    if (AF.Speech) AF.Speech.cancel();
+  };
+
+  /**
+   * The top of every play screen: the child's friend, a speech
+   * bubble that repeats the prompt when tapped, and progress dots.
+   * Returns the empty stage element underneath for the engine.
+   */
+  AF.Engines.frame = function (S, o) {
+    const total = o.rounds || 0;
+    const dots = total > 1 ? Array.from({ length: total }, (_, i) =>
+      `<i class="${i < S.round ? 'done' : ''}${i === S.round ? ' now' : ''}"></i>`).join('') : '';
+
+    /* The friend and the bubble stay put from one question to the
+       next; only the words, the dots and the stage change. A screen
+       that rebuilt itself every round is what made v2 feel stiff. */
+    const top = S.host.querySelector('.play-top');
+    if (top) {
+      const text = top.querySelector('.speech-text');
+      if (text.innerHTML !== (o.text || '')) {
+        text.innerHTML = o.text || '';
+        const sp = top.querySelector('.speech');
+        sp.classList.remove('re'); void sp.offsetWidth; sp.classList.add('re');
+      }
+      const d = top.querySelector('.play-dots');
+      d.hidden = !dots;
+      d.innerHTML = dots;
+      S.host.querySelectorAll('.stage').forEach(el => el.remove());
+    } else {
+      S.host.innerHTML = `
+        <div class="play-top">
+          <div class="play-guide">
+            <div class="play-friend"><div class="play-char" data-char></div></div>
+            <div class="prompt-col">
+              <button class="speech prompt" data-replay aria-label="Say it again">
+                <span class="speech-text">${o.text || ''}</span><span class="prompt-ic" data-ic="sound"></span>
+              </button>
+            </div>
+          </div>
+        </div>`;
+      S.host.querySelector('.prompt-col').insertAdjacentHTML('beforeend',
+        `<div class="play-dots" aria-label="Progress" ${dots ? '' : 'hidden'}>${dots}</div>`);
+      S.charEl = S.host.querySelector('[data-char]');
+      AF.Art.paint(S.charEl);
+      S.host.querySelector('[data-replay]').onclick = () => {
+        AF.Audio.SFX.tap();
+        if (S.replay) S.replay();
+      };
+    }
+    const stage = document.createElement('div');
+    stage.className = 'stage ' + (o.cls || '');
+    S.host.appendChild(stage);
+    return stage;
+  };
+
+  /** Lets what is on the stage tumble away before `fn` builds the
+      next round, so one question flows into the next. */
+  AF.Engines.swap = function (S, fn) {
+    const stage = S.host.querySelector('.stage');
+    if (!stage || !AF.FX.motionOK()) { fn(); return; }
+    stage.classList.add('leaving');
+    S.later(fn, 230);
+  };
+
+  /** Changes the words in the speech bubble. */
+  AF.Engines.bubble = function (S, html) {
+    const el = S.host.querySelector('.speech-text');
+    if (el) el.innerHTML = html;
+  };
+
+  /** Talk + a little "talking" wobble from the character. */
+  AF.Engines.talk = function (S, text, opts) {
+    AF.Art.react(S.charEl, 'talk');
+    AF.Audio.say(text, opts);
+  };
+})(window.AF = window.AF || {});

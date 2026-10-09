@@ -1,0 +1,191 @@
+/* ============================================================
+   ui.css — tokens, base, shared components
+   ============================================================ */
+:root {
+  --ink: #2B1B5E;
+  --ink-soft: #6B5FA8;
+  --violet: #6C4CF1;
+  --violet-light: #9B7BFF;
+  --violet-deep: #4B2FC9;
+  --white-edge: #D8CCFF;
+  --radius: 30px;
+  --emoji: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  font-family: "Fredoka", "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.14) 2px, transparent 2.5px) 0 0 / 28px 28px,
+    radial-gradient(ellipse at 50% 0%, var(--violet-light), var(--violet) 55%, var(--violet-deep));
+  color: var(--ink);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit; color: inherit; border: 0; background: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- background blobs ---------- */
+.scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; background: var(--bc); opacity: .85; animation: float 9s ease-in-out infinite; }
+.b1 { --bc:#FFC93C; width: 22vmin; height: 22vmin; top: -6vmin; left: -5vmin; }
+.b2 { --bc:#36D6B5; width: 30vmin; height: 30vmin; bottom: -12vmin; right: -8vmin; animation-delay: -3s; }
+.b3 { --bc:#FF7AB6; width: 12vmin; height: 12vmin; top: 14vh; right: 8vw; animation-delay: -5s; }
+.b4 { --bc:#4CC3FF; width: 16vmin; height: 16vmin; bottom: 10vh; left: 5vw; animation-delay: -2s; }
+
+/* ---------- screens ---------- */
+.screen {
+  position: fixed; inset: 0; z-index: 1; display: none; flex-direction: column;
+  padding:
+    max(14px, env(safe-area-inset-top))
+    max(14px, env(safe-area-inset-right))
+    max(14px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left));
+}
+.screen.active { display: flex; animation: screen-in .35s ease-out; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+
+/* ---------- character artwork ---------- */
+.ch { display: block; width: 100%; height: auto; overflow: visible; }
+.ch-shadow { fill: rgba(20,8,70,.22); transition: transform .3s; transform-box: fill-box; transform-origin: center; }
+.ch-body { transform-box: fill-box; transform-origin: 50% 96%; animation: breathe 2.9s ease-in-out infinite; }
+.ch-eyes { transform-box: fill-box; transform-origin: center; animation: blink 4.6s infinite; }
+
+/* Reactions. The cast shadow shrinks on the jump — that is the
+   single cheapest trick for making flat SVG read as 3D. */
+.ch.is-happy .ch-body { animation: hop .72s cubic-bezier(.3,1.6,.5,1); }
+.ch.is-happy .ch-shadow { animation: shadow-dip .72s cubic-bezier(.3,1.6,.5,1); }
+.ch.is-hmm   .ch-body { animation: tilt .6s ease-in-out; }
+.ch.is-talk  .ch-body { animation: talk .5s ease-in-out 2; }
+.ch.is-cheer .ch-body { animation: hop .72s cubic-bezier(.3,1.6,.5,1) 2; }
+.ch.is-cheer .ch-shadow { animation: shadow-dip .72s cubic-bezier(.3,1.6,.5,1) 2; }
+
+/* ---------- chunky buttons ---------- */
+.round-btn {
+  width: clamp(48px, 11vmin, 68px); aspect-ratio: 1; border-radius: 50%;
+  background: #fff; box-shadow: 0 5px 0 var(--white-edge);
+  font-family: var(--emoji); font-size: clamp(20px, 5vmin, 30px);
+  display: grid; place-items: center; flex: none;
+  transition: transform .1s, box-shadow .1s;
+}
+.round-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--white-edge); }
+
+.bar { display: flex; align-items: center; gap: 10px; flex: none; }
+.bar-title { font-size: clamp(19px, 5vmin, 30px); font-weight: 700; color: #fff; line-height: 1.15; }
+.bar-note { font-size: clamp(11px, 2.6vmin, 14px); font-weight: 500; color: rgba(255,255,255,.72); display: block; }
+.bar-mid { flex: 1; min-width: 0; }
+
+.starcount {
+  display: inline-flex; align-items: center; gap: .3em;
+  background: rgba(255,255,255,.2); color: #fff; border-radius: 999px;
+  padding: .3em .8em; font-weight: 700; font-size: clamp(14px, 3.4vmin, 20px); flex: none;
+}
+.starcount .s { font-family: var(--emoji); }
+
+/* ---------- speech bubble ---------- */
+.speech {
+  position: relative; background: #fff; border-radius: 22px; padding: .5em .9em;
+  font-size: clamp(15px, 3.6vmin, 24px); font-weight: 600; line-height: 1.25;
+  box-shadow: 0 5px 0 var(--white-edge); text-align: left;
+  animation: pop-in .4s cubic-bezier(.3,1.5,.5,1) both;
+}
+.speech::before {
+  content: ""; position: absolute; left: -11px; top: 50%; margin-top: -9px;
+  border: 9px solid transparent; border-right: 13px solid #fff; border-left: 0;
+}
+.speech b { color: var(--violet-deep); white-space: nowrap; }
+.speech { text-wrap: pretty; }
+.speech-ico { font-family: var(--emoji); opacity: .6; font-size: .8em; }
+button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--white-edge); }
+
+/* ---------- sheets ---------- */
+.sheet {
+  position: fixed; inset: 0; z-index: 12; display: grid; place-items: center;
+  padding: 18px; background: rgba(43,27,94,.6); animation: screen-in .22s ease-out;
+}
+.sheet[hidden] { display: none; }
+.sheet-card {
+  position: relative; width: min(460px, 100%); max-height: 100%; overflow-y: auto;
+  background: #fff; border-radius: var(--radius); box-shadow: 0 10px 0 var(--white-edge);
+  padding: 22px 20px 24px; text-align: center;
+  animation: pop-in .38s cubic-bezier(.3,1.5,.5,1);
+}
+.sheet-card h2 { font-size: clamp(21px, 5.5vmin, 30px); margin-bottom: 4px; }
+.sheet-close { position: absolute; top: 10px; right: 10px; width: 44px; font-size: 19px; background: #F1ECFF; box-shadow: 0 4px 0 var(--white-edge); }
+
+.btn {
+  min-height: 54px; padding: 0 24px; border-radius: 999px;
+  background: #F1ECFF; box-shadow: 0 5px 0 var(--white-edge);
+  font-size: clamp(16px, 4vmin, 20px); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .1s, box-shadow .1s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--white-edge); }
+.btn.go { background: #36D6B5; box-shadow: 0 5px 0 #1FA88A; color: #fff; }
+.btn.go:active { box-shadow: 0 1px 0 #1FA88A; }
+.btn em { font-family: var(--emoji); font-style: normal; }
+
+/* ---------- effects layer ---------- */
+#fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+.spark {
+  position: absolute; width: var(--s); height: var(--s);
+  margin: calc(var(--s)/-2) 0 0 calc(var(--s)/-2);
+  border-radius: 50%; background: var(--col);
+  animation: spark .85s cubic-bezier(.2,.7,.3,1) forwards;
+}
+.spark.star { border-radius: 0; clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+.confetti {
+  position: absolute; top: -5vh; left: var(--x); width: var(--w);
+  height: calc(var(--w) * .55); border-radius: 3px; background: var(--col);
+  animation: fall var(--dur) linear var(--delay) forwards;
+}
+
+.party {
+  position: fixed; inset: 0; z-index: 25; display: none; place-items: center;
+  background: rgba(75,47,201,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  text-align: center;
+}
+.party.show { display: grid; }
+.party-char { width: min(42vmin, 230px); margin: 0 auto; }
+.party-text {
+  font-size: clamp(38px, 11vmin, 92px); font-weight: 700; color: #FFC93C;
+  text-shadow: 0 .05em 0 #fff, .05em 0 0 #fff, -.05em 0 0 #fff, 0 -.05em 0 #fff, 0 .13em 0 var(--violet-deep);
+  animation: pop-in .5s cubic-bezier(.3,1.6,.5,1) .2s both;
+}
+.party-sub { color: #fff; font-size: clamp(15px, 3.6vmin, 22px); font-weight: 600; margin-top: 6px; }
+
+/* ---------- keyframes ---------- */
+@keyframes screen-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes pop-in    { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes float     { 50% { transform: translate(2vmin, -3vmin) scale(1.05); } }
+@keyframes bob       { 50% { transform: translateY(-7%); } }
+@keyframes breathe   { 50% { transform: translateY(-2%) scale(1.02, .985); } }
+@keyframes blink     { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes hop {
+  0%   { transform: translateY(0) scale(1); }
+  30%  { transform: translateY(-16%) scale(1.07, .94); }
+  60%  { transform: translateY(0) scale(1.08, .9); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes shadow-dip { 30% { transform: scale(.62); opacity: .5; } }
+@keyframes tilt  { 25% { transform: rotate(-11deg); } 75% { transform: rotate(8deg); } }
+@keyframes talk  { 50% { transform: scale(1.05, .95); } }
+@keyframes nope  { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+@keyframes star-pop { 0% { transform: scale(0); } 60% { transform: scale(1.45); } 100% { transform: scale(1); } }
+@keyframes spark { 0% { transform: translate(0,0) scale(.4) rotate(0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot)); opacity: 0; } }
+@keyframes fall  { to { transform: translate(var(--drift), 112vh) rotate(var(--rot)); } }
+
+.shake { animation: nope .45s ease-in-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .blob, .ch-body, .ch-eyes, .bob-it { animation: none !important; }
+}

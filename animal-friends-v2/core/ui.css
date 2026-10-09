@@ -1,0 +1,593 @@
+/* ============================================================
+   ui.css — tokens, base, shared components
+   ============================================================ */
+@font-face {
+  font-family: "Fredoka";
+  src: url("../vendor/fredoka.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+:root {
+  /* v2 was violet. The outdoor look is teal and leaf-green; the
+     old variable names are kept so nothing else had to change. */
+  --ink: #1D3348;
+  --ink-soft: #56707F;
+  --violet: #12A594;          /* brand teal */
+  --violet-light: #63DCC8;
+  --violet-deep: #0C6E69;
+  --white-edge: #C8E9E0;
+  /* the sky and hills — re-coloured per island by body[data-scene] */
+  --sky1: #4FB2F6; --sky2: #CDEEFF;
+  --h1: #A9E68C; --h2: #88DA70; --h3: #70CC5D; --h4: #57B94F;
+  --sand: #EEDDAA; --veil: transparent;
+  --radius: 30px;
+  --emoji: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  font-family: "Fredoka", "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
+  font-weight: 500;
+}
+
+/* ---------- tokens (UI_REDESIGN_SPEC.md §11) ----------
+   Spacing, touch sizes, radii, depth and timing live here; screens
+   and components use these rather than their own numbers. */
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px;
+
+  --tap-min: 72px;            /* hit area of any child control */
+  --tap-primary: 88px;        /* hit area of the main action */
+  --btn: clamp(48px, 12vmin, 60px);   /* visible size of a round jelly button */
+
+  --radius-pill: 999px;
+  --radius-card: 28px;
+  --radius-jelly: 32%;
+
+  --shadow-soft: 0 10px 24px rgba(44, 40, 70, .14);
+  --shadow-raised: 0 8px 0 rgba(120, 80, 30, .22), 0 16px 26px rgba(44, 40, 70, .16);
+
+  --dur-fast: 120ms; --dur-medium: 260ms; --dur-slow: 900ms;
+
+  /* materials, from the mock-ups: cream cards, wooden signs */
+  --cream: #FFF6E4; --cream-2: #FCEBCB; --cream-edge: #E2C894;
+  --wood: #C9894B; --wood-2: #A8693A; --wood-dark: #6E3F1E; --wood-text: #FFF4DC;
+  --ink-brown: #5B3A1E;
+  --nav: #3D8BF2; --nav-dark: #2462C4;
+  --go: #3CC46A; --go-dark: #22964B;
+  --gold: #FFC93C; --gold-dark: #D99412;
+  --navy: #1E4A8F;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: linear-gradient(var(--sky1), var(--sky2) 46%);
+  transition: background .6s;
+  color: var(--ink);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit; color: inherit; border: 0; background: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+button:disabled { opacity: .4; cursor: default; }
+[hidden] { display: none !important; }
+
+/* ---------- the world outside ----------
+   Sky, four layers of hills, a sandy path, two big trees and
+   drifting bubbles. Everything is drawn in code (index.html), so
+   there are no image files and it scales to any screen. */
+body[data-scene="literacy"] { --sky1:#FFC27A; --sky2:#FFF0D2; --h1:#C3E08F; --h2:#A3CF71; --h3:#83BC59; --h4:#62A247; --veil: rgba(40,70,20,.16); }
+body[data-scene="stem"]     { --sky1:#86CFFF; --sky2:#E4F6FF; --h1:#A2E0BA; --h2:#78CFA3; --h3:#52BB8F; --h4:#37A27B; --veil: rgba(8,70,66,.16); }
+body[data-scene="life"]     { --sky1:#FFAEC2; --sky2:#FFE8EC; --h1:#B2E0AC; --h2:#8CCF90; --h3:#68BB7A; --h4:#4CA266; --veil: rgba(70,30,40,.14); }
+body[data-scene="play"]     { --sky1:#66B4FF; --sky2:#CDEBFF; --h1:#86D7C8; --h2:#5CC3B4; --h3:#3CAD9F; --h4:#279388; --veil: rgba(8,50,80,.16); }
+body[data-scene="calm"]     { --veil: rgba(8,70,66,.18); }
+
+/* A level map is an island out on the water: the hills step aside
+   and each area gets its own sea. */
+
+body[data-scene="map"][data-area="literacy"] { --w1: #FFCB98; --w2: #EE8A5A; }
+body[data-scene="map"][data-area="stem"]     { --w1: #6FDDD4; --w2: #1E9AAE; }
+body[data-scene="map"][data-area="life"]     { --w1: #FFBDD1; --w2: #E46A95; }
+body[data-scene="map"] .sc-hills, body[data-scene="map"] .sc-tree, body[data-scene="map"] .sc-leaves { opacity: 0; }
+
+/* The character maker: the same meadow, thrown out of focus. */
+body[data-scene="maker"] { --veil: rgba(255,246,214,.12); }
+body[data-scene="maker"] .sc-hills, body[data-scene="maker"] .sc-tree { filter: blur(2px); }
+body[data-scene="maker"] .bub { background: radial-gradient(circle, rgba(255,236,150,.75), rgba(255,236,150,0) 70%); box-shadow: none; }
+body[data-scene="maker"] .fly { display: none; }
+
+.scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background: #8FD0F2 center / cover no-repeat; transition: filter .5s; }
+/* The painted backgrounds (art/, made from interface/DESIGN_PROMPTS.md).
+   One per place; the drawn hills underneath stay only as a fallback. */
+.scenery { background-image: url(../art/bg-meadow.jpg); }
+body[data-scene="literacy"] .scenery { background-image: url(../art/bg-abc.jpg); }
+body[data-scene="stem"] .scenery     { background-image: url(../art/bg-stem.jpg); }
+body[data-scene="life"] .scenery     { background-image: url(../art/bg-heart.jpg); }
+body[data-scene="play"] .scenery     { background-image: url(../art/bg-play.jpg); }
+/* on a wide screen the island and map pictures sit in the middle, the
+   same picture softly blurred behind them */
+body[data-scene="isles"] .scenery { background-image: url(../art/bg-island.jpg); filter: blur(14px) saturate(1.1); }
+body[data-scene="map"] .scenery   { background-image: url(../art/bg-map.jpg); filter: blur(14px) saturate(1.1); }
+.sc-hills, .sc-tree, .sc-leaves { display: none; }
+.scenery::after { display: none; }
+.scenery::after { content: ""; position: absolute; inset: 0; background: var(--veil); transition: background .6s; }
+.sc-hills { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sc-hills, .sc-tree, .sc-leaves { transition: opacity .5s, filter .5s; }
+.sc-hills path, .sc-hills ellipse, .sc-hills circle { transition: fill .6s; }
+.sc-h1 { fill: var(--h1); } .sc-h2 { fill: var(--h2); } .sc-h3 { fill: var(--h3); } .sc-h4 { fill: var(--h4); }
+.sc-sand { fill: var(--sand); }
+.sc-far { fill: color-mix(in srgb, var(--h3) 80%, #0B4A3A); }
+.sc-cloud { fill: #fff; opacity: .6; animation: drift 60s linear infinite alternate; }
+.sc-cloud.c2 { animation-duration: 90s; animation-direction: alternate-reverse; opacity: .45; }
+.sc-tree { position: absolute; bottom: -3vh; height: min(74vh, 96vmin); width: auto; }
+.sc-tree.tl { left: -9vmin; } .sc-tree.tr { right: -11vmin; transform: scaleX(-1); height: min(64vh, 84vmin); }
+.sc-leaf { fill: #2F9B57; } .sc-leaf.l2 { fill: #3DB267; } .sc-leaf.l3 { fill: #57C77C; } .sc-trunk { fill: #8A5A3B; }
+@media (max-aspect-ratio: 1/1) { .sc-tree { height: 34vh; } .sc-tree.tl { left: -20vmin; } .sc-tree.tr { height: 28vh; right: -20vmin; } }
+
+.bub {
+  position: absolute; left: var(--x); bottom: -14vmin; width: var(--s); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 7%, rgba(255,255,255,.28) 20%, rgba(255,255,255,.06) 62%, rgba(255,255,255,.42) 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.6);
+  animation: bub var(--d) linear var(--t) infinite;
+}
+/* butterflies: two wings that flap while the whole thing wanders */
+.fly { position: absolute; left: var(--x); top: var(--y); width: 3.2vmin; height: 2.6vmin; animation: wander var(--d, 18s) ease-in-out var(--t, 0s) infinite alternate; }
+.fly::before, .fly::after {
+  content: ""; position: absolute; top: 0; width: 50%; height: 100%; background: var(--c, #FF9DCB);
+  border-radius: 80% 20% 60% 40%; left: 0; transform-origin: 100% 50%; animation: flap .32s ease-in-out infinite alternate;
+}
+.fly::after { left: 50%; border-radius: 20% 80% 40% 60%; transform-origin: 0 50%; animation-name: flap2; }
+body.still .fly, body.still .fly::before, body.still .fly::after { animation: none; }
+
+body.still .bub, body.still .sc-cloud { animation: none; }
+body.still .bub { bottom: var(--rest, 30vh); }
+
+/* ---------- screens ---------- */
+.screen {
+  position: fixed; inset: 0; z-index: 1; display: none; flex-direction: column;
+  padding:
+    max(14px, env(safe-area-inset-top))
+    max(14px, env(safe-area-inset-right))
+    max(14px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left));
+}
+.screen.active { display: flex; animation: screen-in .35s ease-out; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+
+/* ---------- character artwork ----------
+   The picture is a snapshot of a real 3D model (core/art.js).
+   The shadow underneath is separate, so it can shrink when the
+   character jumps — the cheapest way to sell a jump. */
+.ch { display: block; position: relative; width: 100%; aspect-ratio: 1; }
+.ch::before {
+  content: ""; position: absolute; left: 27%; right: 27%; bottom: 3%; height: 8%;
+  border-radius: 50%; background: rgba(10,52,58,.2);
+}
+.ch-img {
+  position: relative; display: block; width: 100%; height: 100%; object-fit: contain;
+  transform-origin: 50% 93%; animation: breathe 2.9s ease-in-out infinite;
+  pointer-events: none;
+}
+.ch-live { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.ch-flat { display: grid; place-items: center; }
+.ch-flat::before { display: none; }
+.ch-flat span {
+  width: 74%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 34% 26%, #fff, var(--c) 70%);
+  font-family: var(--emoji); font-size: 2.2em; container-type: size;
+}
+
+.ch.is-happy .ch-img { animation: hop .72s cubic-bezier(.3,1.6,.5,1); }
+.ch.is-happy::before { animation: shadow-dip .72s cubic-bezier(.3,1.6,.5,1); }
+.ch.is-hmm   .ch-img { animation: tilt .6s ease-in-out; }
+.ch.is-talk  .ch-img { animation: talk .5s ease-in-out 2; }
+.ch.is-cheer .ch-img { animation: hop .72s cubic-bezier(.3,1.6,.5,1) 2; }
+.ch.is-cheer::before { animation: shadow-dip .72s cubic-bezier(.3,1.6,.5,1) 2; }
+
+/* ---------- jelly icons ----------
+   A glossy squircle in one hue (--h): lighter at the top-left,
+   a darker rim, a highlight spot. The glyph inside (core/icons.js)
+   takes a deeper tone of the same hue; its accents take a pale one. */
+.jelly, .round-btn {
+  --h: #3DA5F4;
+  --hd: color-mix(in srgb, var(--h) 72%, #0B2A3A);
+  --ia: color-mix(in srgb, var(--h) 20%, #fff);
+  position: relative; display: grid; place-items: center; flex: none;
+  aspect-ratio: 1; border-radius: 31%;
+  background: radial-gradient(130% 105% at 28% 10%, color-mix(in srgb, var(--h) 52%, #fff), var(--h) 56%, color-mix(in srgb, var(--h) 86%, #0B2A3A));
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--h) 40%, #fff),
+    inset 0 -4px 0 color-mix(in srgb, var(--h) 80%, #0B2A3A),
+    0 0 0 2.5px var(--hd),
+    0 6px 12px color-mix(in srgb, var(--h) 55%, transparent);
+  color: color-mix(in srgb, var(--h) 42%, #0B2A3A);
+  font-family: var(--emoji); line-height: 1;
+  transition: transform .12s, filter .12s;
+}
+.jelly::before, .round-btn::before {
+  content: ""; position: absolute; left: 15%; top: 9%; width: 27%; height: 13%;
+  border-radius: 50%; background: rgba(255,255,255,.78); transform: rotate(-24deg); pointer-events: none;
+}
+.jelly > svg.ic, .round-btn > svg.ic { width: 62%; height: 62%; display: block; overflow: visible; }
+svg.ic .a { fill: var(--ia, #fff); }
+.jelly-alt { font-size: .5em; }
+
+/* Buttons carry a white glyph (subject icons keep the tone-on-tone look). */
+.round-btn { width: clamp(46px, 10.5vmin, 64px); font-size: clamp(20px, 5vmin, 30px); color: #fff; --ia: color-mix(in srgb, var(--h) 72%, #0B2A3A); }
+.round-btn > svg.ic { filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
+.round-btn:active { transform: scale(.92); filter: brightness(.95); }
+.round-btn:focus-visible, .btn:focus-visible { outline: 4px solid #FFC93C; outline-offset: 4px; }
+/* each job has its own colour, like a toy with labelled buttons */
+[data-ic="help"], [data-ic="hint"], [data-ic="star"] { --h: #FFC93C; }
+.round-btn[data-ic="help"], .round-btn[data-ic="hint"] { color: #7A4A00; }
+.round-btn[data-ic="help"] > svg.ic, .round-btn[data-ic="hint"] > svg.ic { filter: none; }
+[data-ic="sound"], [data-ic="check"] { --h: #3CCB7F; }
+[data-ic="close"]  { --h: #F0565B; }
+[data-ic="dice"], [data-ic="edit"] { --h: #A968E8; }
+[data-ic="mic"]    { --h: #FF6FAE; }
+
+
+/* icons used inline in text buttons */
+.btn [data-ic], .inl { display: inline-grid; width: 1.15em; height: 1.15em; flex: none; vertical-align: -.18em; }
+.btn [data-ic] > svg.ic, .inl > svg.ic { width: 100%; height: 100%; }
+
+/* ---------- top bars ---------- */
+.bar { display: flex; align-items: center; gap: 10px; flex: none; }
+/* Titles are white with a thick blue outline, straight on the sky. */
+.outlined, .bar-title {
+  --ol: #2F86E0; color: #fff;
+  text-shadow:
+    0 .09em 0 var(--ol), .09em 0 0 var(--ol), -.09em 0 0 var(--ol), 0 -.09em 0 var(--ol),
+    .065em .065em 0 var(--ol), -.065em .065em 0 var(--ol), .065em -.065em 0 var(--ol), -.065em -.065em 0 var(--ol),
+    0 .2em 0 rgba(20,70,150,.35);
+}
+.bar-mid { flex: 1; min-width: 0; text-align: center; padding: 0 4px; }
+.bar-title { font-size: clamp(20px, 5.4vmin, 36px); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .12em .1em .22em; }
+.bar-note { font-size: clamp(11px, 2.7vmin, 15px); font-weight: 700; color: #fff; display: block; margin-top: -.3em; text-shadow: 0 1px 0 rgba(20,60,120,.7), 0 0 8px rgba(20,60,120,.5); }
+body[data-area="literacy"] .bar-title { --ol: #D9701A; }
+body[data-area="stem"] .bar-title     { --ol: #1E8FA0; }
+body[data-area="life"] .bar-title     { --ol: #D8436A; }
+.bar-note:empty { display: none; }
+
+.starcount {
+  display: inline-flex; align-items: center; gap: .35em; flex: none;
+  background: linear-gradient(#62AEF5, #3B86E0); color: #fff; border-radius: 999px;
+  padding: .22em .85em .26em .3em; font-weight: 700; font-size: clamp(14px, 3.4vmin, 21px);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #2A63B8; text-shadow: 0 1px 0 #2A63B8;
+}
+.starcount.streak { background: linear-gradient(#FFA954, #F07E2A); box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #C25A12; text-shadow: 0 1px 0 #C25A12; padding-left: .5em; }
+.starcount .s { font-family: var(--emoji); }
+.coin {
+  width: 1.3em; aspect-ratio: 1; border-radius: 50%; display: inline-grid; place-items: center; text-shadow: none;
+  background: radial-gradient(circle at 34% 28%, #FFF0A8, #FFC93C 60%, #E9A712);
+  box-shadow: inset 0 0 0 1.5px #FFE680, 0 0 0 1.5px #B97A00; color: #B97A00;
+}
+.coin svg.ic { width: 68%; height: 68%; }
+
+/* ---------- speech bubble ---------- */
+.speech {
+  position: relative; background: #fff; border-radius: 22px; padding: .5em .9em;
+  font-size: clamp(15px, 3.6vmin, 24px); font-weight: 600; line-height: 1.25;
+  box-shadow: 0 5px 0 var(--white-edge); text-align: left; text-wrap: pretty;
+  animation: pop-in .4s cubic-bezier(.3,1.5,.5,1) both;
+}
+.speech::before {
+  content: ""; position: absolute; left: -11px; top: 50%; margin-top: -9px;
+  border: 9px solid transparent; border-right: 13px solid #fff; border-left: 0;
+}
+.speech b { color: var(--violet-deep); }
+.speech-ico { color: var(--violet); font-size: .95em; margin-left: .15em; }
+button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--white-edge); }
+
+/* ---------- sheets ---------- */
+.sheet {
+  position: fixed; inset: 0; z-index: 12; display: grid; place-items: center;
+  padding: 18px; background: rgba(12,62,66,.6); animation: screen-in .22s ease-out;
+}
+#gate { z-index: 14; }
+.sheet-card {
+  position: relative; width: min(460px, 100%); max-height: 100%; overflow-y: auto;
+  background: #fff; border-radius: var(--radius); box-shadow: 0 10px 0 var(--white-edge);
+  padding: 22px 20px 24px; text-align: center;
+  animation: pop-in .38s cubic-bezier(.3,1.5,.5,1);
+}
+.sheet-card h2 { font-size: clamp(21px, 5.5vmin, 30px); margin-bottom: 4px; }
+.sheet-sub { font-size: clamp(15px, 3.6vmin, 18px); color: var(--ink-soft); margin: 4px 0 14px; }
+.sheet-foot { font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; }
+.sheet-close { position: absolute; top: 10px; right: 10px; width: 40px; z-index: 2; }
+
+.btn {
+  min-height: 54px; padding: 0 24px; border-radius: 999px;
+  background: #E6F6F1; box-shadow: 0 5px 0 var(--white-edge);
+  font-size: clamp(16px, 4vmin, 20px); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .1s, box-shadow .1s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--white-edge); }
+.btn.go { background: #36D6B5; box-shadow: 0 5px 0 #1FA88A; color: #fff; }
+.btn.go:active { box-shadow: 0 1px 0 #1FA88A; }
+.btn em { font-family: var(--emoji); font-style: normal; }
+.btn.go [data-ic] { color: #fff; }
+.btn.danger { background: #FFE7E7; box-shadow: 0 5px 0 #F3C9C9; color: #B3362F; }
+.btn.danger:active { box-shadow: 0 1px 0 #F3C9C9; }
+
+/* ---------- effects layer ---------- */
+#fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+.spark {
+  position: absolute; width: var(--s); height: var(--s);
+  margin: calc(var(--s)/-2) 0 0 calc(var(--s)/-2);
+  border-radius: 50%; background: var(--col);
+  animation: spark .85s cubic-bezier(.2,.7,.3,1) forwards;
+}
+.spark.star { border-radius: 0; clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+.confetti {
+  position: absolute; top: -5vh; left: var(--x); width: var(--w);
+  height: calc(var(--w) * .55); border-radius: 3px; background: var(--col);
+  animation: fall var(--dur) linear var(--delay) forwards;
+}
+
+.party {
+  position: fixed; inset: 0; z-index: 25; display: none; place-items: center;
+  background: rgba(10,105,98,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  text-align: center;
+}
+.party.is-on { display: grid; }
+.party-char { width: min(46vmin, 250px); margin: 0 auto; }
+.party-text {
+  font-size: clamp(38px, 11vmin, 92px); font-weight: 700; color: #FFC93C;
+  text-shadow: 0 .05em 0 #fff, .05em 0 0 #fff, -.05em 0 0 #fff, 0 -.05em 0 #fff, 0 .13em 0 var(--violet-deep);
+  animation: pop-in .5s cubic-bezier(.3,1.6,.5,1) .2s both;
+}
+.party-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.4); font-size: clamp(15px, 3.6vmin, 22px); font-weight: 600; margin-top: 6px; }
+
+.empty { color: #fff; text-align: center; margin: auto; font-size: 20px; }
+
+/* ---------- keyframes ---------- */
+@keyframes screen-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes pop-in    { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes float     { 50% { transform: translate(2vmin, -3vmin) scale(1.05); } }
+@keyframes bob       { 50% { transform: translateY(-7%); } }
+@keyframes breathe   { 50% { transform: translateY(-1%) scale(1.015, .985); } }
+@keyframes hop {
+  0%   { transform: translateY(0) scale(1); }
+  30%  { transform: translateY(-14%) scale(1.05, .95); }
+  60%  { transform: translateY(0) scale(1.07, .91); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes shadow-dip { 30% { transform: scale(.6); opacity: .5; } }
+@keyframes tilt  { 25% { transform: rotate(-9deg); } 75% { transform: rotate(7deg); } }
+@keyframes talk  { 50% { transform: scale(1.04, .96); } }
+@keyframes nope  { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+@keyframes star-pop { 0% { transform: scale(0); } 60% { transform: scale(1.45); } 100% { transform: scale(1); } }
+@keyframes spark { 0% { transform: translate(0,0) scale(.4) rotate(0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot)); opacity: 0; } }
+@keyframes fall  { to { transform: translate(var(--drift), 112vh) rotate(var(--rot)); } }
+@keyframes pulse { 50% { transform: scale(1.12); } }
+@keyframes drift { to { transform: translateX(9%); } }
+@keyframes bub {
+  0%   { transform: translate(0, 0) scale(.6); opacity: 0; }
+  8%   { opacity: 1; }
+  50%  { transform: translate(4vmin, -62vh) scale(1); }
+  92%  { opacity: 1; }
+  100% { transform: translate(-3vmin, -128vh) scale(1.05); opacity: 0; }
+}
+@keyframes isle { 50% { transform: translateY(-3.5%); } }
+@keyframes flap  { to { transform: rotateY(64deg); } }
+@keyframes flap2 { to { transform: rotateY(-64deg); } }
+@keyframes wander {
+  0% { transform: translate(0, 0) rotate(-8deg); } 30% { transform: translate(9vmin, -6vmin) rotate(10deg); }
+  60% { transform: translate(3vmin, -13vmin) rotate(-6deg); } 100% { transform: translate(14vmin, -4vmin) rotate(12deg); }
+}
+
+.shake { animation: nope .45s ease-in-out; }
+
+body.still .mk-done { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .bub, .sc-cloud, .ch-img, .island { animation: none !important; }
+}
+
+
+/* ============================================================
+   Shared components (UI_REDESIGN_SPEC.md §3, §10)
+   One look per control, used on every screen.
+   ============================================================ */
+
+/* Every child control is at least --tap-min to touch, even when
+   it is drawn smaller. */
+.round-btn { width: var(--btn); }
+.round-btn::after, .pad::after, .pad-hint::after, .big-round::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--tap-min)); height: max(100%, var(--tap-min));
+  translate: -50% -50%; border-radius: 50%;
+}
+/* navigation buttons are round and blue */
+.round-btn[data-ic="back"], .round-btn[data-ic="home"], .round-btn[data-ic="settings"] { --h: var(--nav); border-radius: 50%; }
+
+/* ---------- pills: counters and labels ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: .3em; white-space: nowrap;
+  padding: .16em .7em .2em .35em; border-radius: var(--radius-pill);
+  font-weight: 700; font-size: clamp(14px, 3.6vmin, 20px); line-height: 1.2; color: #fff;
+  background: linear-gradient(#2F6CC9, var(--navy)); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), 0 3px 0 rgba(10,30,70,.35);
+}
+.pill > i { width: 1.25em; height: 1.25em; display: inline-grid; flex: none; }
+.pill > i svg { width: 100%; height: 100%; }
+.pill-star > i { color: var(--gold); filter: drop-shadow(0 1px 0 #A86C00); }
+.pill-streak { background: linear-gradient(#FFAA4A, #F07A22); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 3px 0 #B9520F; }
+.pill-streak > i { color: #FFE27A; --ia: #FF5A2A; }
+
+/* the friend's face and counters sit together on a white card */
+.hud-right { padding: 5px 8px 5px 5px; border-radius: 22px; background: rgba(255,255,255,.88); box-shadow: 0 4px 0 rgba(30,70,120,.18), var(--shadow-soft); }
+.hud-pills { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.hud-pills .pill { justify-content: flex-start; font-size: clamp(13px, 3.3vmin, 18px); }
+
+/* the friend's face in a round frame */
+.me-face {
+  width: clamp(44px, 11vmin, 58px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; position: relative; flex: none;
+  background: radial-gradient(circle at 40% 30%, #FFFDF6, #CFEFC5);
+  box-shadow: 0 0 0 3px #fff, 0 4px 10px rgba(10,52,58,.25);
+}
+.me-face .ch { position: absolute; width: 215%; left: -57%; top: -30%; }
+.me-face .ch::before { display: none; }
+.me-face .ch-img { animation: none; }
+
+/* ---------- wooden sign: the name of every screen ----------
+   A plank with two bolts and a leaf at each end, yellow letters with
+   a brown outline (games.png, game_level mock-up). */
+.sign-wrap { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--space-1); min-width: 0; }
+.sign {
+  position: relative; margin: 0 14px; max-width: calc(100% - 28px); white-space: nowrap;
+  padding: .14em .95em .22em; border-radius: .42em;
+  font-size: clamp(24px, 6.6vmin, 44px); font-weight: 700; line-height: 1.12; color: #FFD84A;
+  -webkit-text-stroke: .16em #6A3A16; paint-order: stroke; text-shadow: 0 .07em 0 #4A2408;
+  background:
+    radial-gradient(circle at .5em .55em, #8A5A2E 0 .09em, #D9B27C .1em .14em, transparent .15em),
+    radial-gradient(circle at calc(100% - .5em) .55em, #8A5A2E 0 .09em, #D9B27C .1em .14em, transparent .15em),
+    repeating-linear-gradient(176deg, rgba(255,255,255,.06) 0 3px, transparent 3px 12px),
+    linear-gradient(#C98A4E, #A7672F 55%, #8E5424);
+  box-shadow: inset 0 0 0 .1em #7A4520, inset 0 .16em 0 rgba(255,220,160,.35), 0 .12em 0 #5C3214, 0 .3em .4em rgba(60,30,10,.28);
+}
+/* a leaf at each end */
+.sign::before, .sign::after {
+  content: ""; position: absolute; top: 46%; width: .78em; height: .44em; border-radius: 100% 0 100% 0;
+  background: linear-gradient(135deg, #8EDB5A, #3FA34D); box-shadow: inset 0 -.05em 0 rgba(0,0,0,.12);
+}
+.sign::before { left: -.5em; rotate: 200deg; }
+.sign::after { right: -.5em; rotate: -20deg; }
+
+/* the title: "Animal" over "Friends" on the sign */
+.logo.sign { display: flex; flex-direction: column; align-items: center; padding: .1em .55em .14em; line-height: .9; font-size: clamp(34px, 9.6vmin, 64px); -webkit-text-stroke: 0; text-shadow: none; }
+.logo span { position: relative; display: block; color: #5A2E0E; -webkit-text-stroke: .17em #5A2E0E; paint-order: stroke; filter: drop-shadow(0 .05em 0 rgba(40,20,5,.5)); }
+.logo span::after {
+  content: attr(data-t); position: absolute; left: 0; top: 0; -webkit-text-stroke: 0;
+  background: linear-gradient(#FFEA6A, #FFC21E 55%, #FF9A1E); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.logo span + span::after { background-image: linear-gradient(#C8F27A, #7FD64A 55%, #4DB43A); }
+
+.crumb {
+  padding: .1em .9em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: clamp(12px, 3.1vmin, 16px);
+  color: var(--ink-brown); background: var(--cream); box-shadow: 0 2px 0 var(--cream-edge);
+}
+
+/* ---------- soft card: cream, thick bottom edge ---------- */
+.card {
+  background: linear-gradient(#FFFBF1, var(--cream)); border-radius: var(--radius-card);
+  box-shadow: inset 0 -6px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft);
+}
+
+/* ---------- three stars ---------- */
+.stars-row { display: inline-flex; gap: .06em; line-height: 1; }
+.stars-row i { width: 1em; height: 1em; display: inline-grid; color: rgba(90,60,30,.25); }
+.stars-row i svg { width: 100%; height: 100%; }
+.stars-row i.on { color: var(--gold); filter: drop-shadow(0 .06em 0 var(--gold-dark)); }
+
+/* ---------- the tree stump the friend stands on ---------- */
+.stump {
+  position: relative; display: block; width: 78%; aspect-ratio: 3.2; margin: -16% auto 0; z-index: -1;
+  border-radius: 0 0 46% 46% / 0 0 60% 60%;
+  background: linear-gradient(90deg, #7E4F2A, #A8713F 30%, #B98149 55%, #8A5730);
+  box-shadow: 0 10px 14px rgba(40,60,20,.28);
+}
+.stump::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -32%; height: 64%; border-radius: 50%;
+  background: radial-gradient(ellipse, #E8B97C 0 18%, #D6A266 19% 34%, #E8B97C 35% 52%, #D9A56A 53% 70%, #C98D52 71%);
+  box-shadow: inset 0 -3px 0 rgba(90,50,20,.3);
+}
+
+/* ---------- big round action (result, journey) ---------- */
+.big-round {
+  --h: var(--go);
+  position: relative; display: grid; place-items: center; width: clamp(64px, 17vmin, 92px); aspect-ratio: 1; border-radius: 50%; color: #fff;
+  background: radial-gradient(120% 100% at 30% 14%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 60%);
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), inset 0 -6px 0 color-mix(in srgb, var(--h) 70%, #0B2A3A), 0 6px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A), 0 12px 20px rgba(10,40,60,.25);
+}
+.big-round > svg.ic { width: 52%; height: 52%; filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
+.big-round:active { transform: scale(.9); }
+
+/* ---------- blue pill button (Next) ---------- */
+.pill-go {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4em; min-height: var(--tap-min); min-width: min(320px, 80vw);
+  padding: 0 1.4em; border-radius: var(--radius-pill); color: #fff; font-weight: 700; font-size: clamp(20px, 5vmin, 28px);
+  background: linear-gradient(#5AA8FF, var(--nav)); box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 0 6px 0 var(--nav-dark), 0 12px 18px rgba(20,60,140,.25);
+  text-shadow: 0 2px 0 var(--nav-dark);
+}
+.pill-go i { width: 1em; height: 1em; display: inline-grid; } .pill-go i svg { width: 100%; height: 100%; }
+.pill-go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--nav-dark); }
+
+/* ---------- toggle switch (grown-ups) ---------- */
+.toggle { position: relative; flex: none; width: 58px; height: 34px; border-radius: var(--radius-pill); background: #CBD3DC; box-shadow: inset 0 2px 4px rgba(0,0,0,.15); transition: background var(--dur-medium); margin-left: auto; }
+.toggle::before { content: ""; position: absolute; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: transform var(--dur-medium) var(--spring); }
+.toggle.on { background: var(--go); }
+.toggle.on::before { transform: translateX(24px); }
+.toggle .sw-state { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- stage tabs: three coloured pills with 1, 2, 3 stars ---------- */
+.tabs { display: inline-flex; gap: var(--space-2); }
+.tab {
+  --h: #3CC46A;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 56px; min-width: clamp(92px, 27vmin, 140px);
+  padding: 4px 12px 6px; border-radius: 20px; color: #fff; font-weight: 700; font-size: clamp(13px, 3.4vmin, 18px); line-height: 1.1; white-space: nowrap;
+  background: linear-gradient(color-mix(in srgb, var(--h) 70%, #fff), var(--h));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--h) 55%, #0B2A3A);
+}
+.tab[data-t="1"] { --h: #3D8BF2; } .tab[data-t="2"] { --h: #A45CE0; }
+.tab-stars { display: inline-flex; align-items: center; gap: 1px; height: 1em; }
+.tab-stars i { width: 1em; height: 1em; display: inline-grid; color: #FFE24A; filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
+.tab-stars i svg { width: 100%; height: 100%; }
+.tab-stars .tab-lock { color: #fff; --ia: color-mix(in srgb, var(--h) 70%, #000); margin-left: 3px; }
+.tab.on { box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 0 0 4px #fff, 0 6px 12px rgba(10,40,60,.3); scale: 1.06; }
+.tab.locked { filter: saturate(.8); }
+
+/* ---------- the world: flowers in the grass ---------- */
+.sc-flowers circle { opacity: .95; }
+/* nothing decorative moves behind a game's answers (spec §5, Level 4) */
+body[data-screen="game"] .bub, body[data-screen="game"] .fly { display: none; }
+.sc-leaves { position: absolute; bottom: -2vh; width: min(34vmin, 260px); height: auto; }
+.sc-leaves.l { left: -4vmin; } .sc-leaves.r { right: -4vmin; transform: scaleX(-1); }
+body[data-screen="game"] .sc-cloud { animation-play-state: paused; }
+
+/* ============================================================
+   Painted pictures (art/) in place of the drawn ones
+   ============================================================ */
+.painted { background: none !important; box-shadow: none !important; }
+.painted::before { display: none !important; }
+.painted > img.pic { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(20,40,60,.22)); }
+.round-btn.painted, .pad.painted, .pad-hint.painted, .big-round.painted { border-radius: 50%; }
+.jelly.painted { border-radius: 0; overflow: visible; }
+.jelly.painted > img.pic { width: 118%; height: 118%; margin: -9%; filter: drop-shadow(0 4px 3px rgba(20,40,60,.25)); }
+/* small painted stars and locks in counters and rows */
+.pill > i.painted > img.pic, .stars-row i.painted > img.pic, .tab-stars i.painted > img.pic { filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+.stars-row i:not(.on) > img.pic, .result-stars i:not(.on) > img.pic, .pop-need i:not(.on) > img.pic { filter: grayscale(1) brightness(1.6) opacity(.55); }
+.jr-stop:not(.is-done):not(.is-next) .jr-box > img.pic { filter: grayscale(.6) brightness(.55) opacity(.7); }
+
+/* ---------- painted friends ----------
+   The picture breathes and sways on its own (two separate
+   properties, so they never fight); reactions are added on top by
+   core/art.js with squash-and-stretch keyframes. */
+.ch-paint { display: block; position: relative; width: 100%; aspect-ratio: 1; }
+.ch-paint .ch-body { position: absolute; inset: 0; transform-origin: 50% 96%; animation: ch-breathe 2.8s ease-in-out infinite, ch-sway 6.4s ease-in-out infinite; }
+.ch-paint .ch-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; animation: none; transform: none; }
+.ch-paint .acc { position: absolute; height: auto; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
+.ch-paint .acc-item { animation: ch-hold 2.8s ease-in-out infinite; }
+@keyframes ch-breathe { 50% { scale: 1.03 .97; } }
+@keyframes ch-sway { 0%, 100% { rotate: -1.8deg; } 50% { rotate: 1.8deg; } }
+@keyframes ch-hold { 50% { translate: -50% -60%; } }
+body.still .ch-paint .ch-body, body.still .ch-paint .acc-item { animation: none; }
+@media (prefers-reduced-motion: reduce) { .ch-paint .ch-body, .ch-paint .acc-item { animation: none; } }
+
+/* the avatar shows the painted face */
+.me-face { background: radial-gradient(circle at 40% 30%, #FFFFFF, #DDF3D2); }
+.me-face .face-img { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain; }
+
+/* the painted tree stump */
+img.stump { display: block; position: relative; z-index: -1; width: 92%; height: auto; aspect-ratio: auto; margin: -14% auto 0; background: none; box-shadow: none; border-radius: 0; filter: drop-shadow(0 6px 6px rgba(40,60,20,.25)); }
+img.stump::before { display: none; }
+
+/* painted chests and houses wherever they stand */
+.chest-art, .house-art, .isl-art { display: block; width: 100%; height: auto; }

@@ -1,0 +1,101 @@
+/* ============================================================
+   motion.css — how everything moves
+   ------------------------------------------------------------
+   v2 looked soft but moved stiffly: screens blinked from one to
+   the next, buttons went down and came back up in a straight
+   line. This file is the cure, in one place:
+
+     * one spring (--spring) that everything shares, so a press,
+       a card landing and a new screen all have the same bounce
+     * screens grow out of the spot that was touched
+     * anything pressed squashes, then springs back
+     * things arrive one after another, not all at once
+     * things that are idle are never quite still
+
+   Loaded last, so it can add movement to what the other
+   stylesheets drew. "Bubbles, confetti & wiggles" off in the
+   grown-up area (body.still) calms the idle movement.
+   ============================================================ */
+
+:root { --spring: cubic-bezier(.3, 1.5, .5, 1); }
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(0, .009, .035 2.1%, .141 4.4%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%,
+      1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%,
+      .975 57.1%, .997 69.8%, 1.003 76.9%, 1.004 83.8%, 1);
+  }
+}
+
+/* ---------- screens grow from where the finger was ---------- */
+.screen.active { animation: scr-in .55s var(--spring) backwards; transform-origin: var(--ox, 50%) var(--oy, 50%); }
+.screen.leaving { display: flex; z-index: 0; pointer-events: none; animation: scr-out .24s ease-in forwards; }
+#maker.leaving { display: grid; }
+@keyframes scr-in  { 0% { opacity: 0; transform: scale(.82); } 35% { opacity: 1; } }
+@keyframes scr-out { to { opacity: 0; transform: scale(1.07); } }
+.sheet-card { animation: sheet-in .55s var(--spring); }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(18%) scale(.8); } }
+
+/* ---------- press: down fast, back with a bounce ---------- */
+.round-btn, .btn, .pick-card, .bean, .mk-chip, .mk-done, .island, .lv-disc, .opt-face,
+.mic, .drum, .pad, .code-go, .tab, .speech, .me-face, .sort-item, .mt-face, .big-round, .jr-box, .jr-sign, .lm, .jy-card, .pill-go {
+  transition: transform .5s var(--spring), box-shadow .18s, filter .18s, scale .5s var(--spring);
+}
+.round-btn:active, .btn:active, .pick-card:active, .bean:active, .mk-chip:active, .mk-done:active,
+.island:active, .lv-node:active .lv-disc, .opt:active .opt-face, .mic:active, .drum:active,
+.pad:active, .code-go:active, .tab:active, button.speech:active, .me-face:active, .big-round:active, .jr-stop:active .jr-box, .jr-sign:active, .lm:active, .jy-card:active {
+  transition-duration: .07s;
+}
+.island:active { transform: scale(.93, .9); }
+.me-face:active, .tab:active, .lm:active { transform: scale(.92); }
+.jr-stop:active .jr-box, .jr-sign:active { transform: scale(.92); }
+.jy-card:active { transform: scale(.97); }
+
+/* ---------- arriving ---------- */
+@keyframes drop-in { from { opacity: 0; transform: translateY(46%) scale(.6) rotate(-7deg); } }
+.opt { animation: drop-in .55s var(--spring) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.show, .slots, .build-top, .say-card, .lyrics, .story, .breath { animation: drop-in .5s var(--spring) backwards; }
+.stage.leaving { animation: stage-out .23s ease-in forwards; pointer-events: none; }
+@keyframes stage-out { to { opacity: 0; transform: translateY(5%) scale(.94); } }
+.speech.re { animation: re-pop .4s var(--spring); }
+@keyframes re-pop { from { transform: scale(.86) rotate(-2deg); } }
+.play-char { animation: drop-in .5s var(--spring) backwards; }
+.pick-card { animation-timing-function: var(--spring); }
+.lv-node { animation: pop-in .45s var(--spring) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+.lv-chest, .lv-me { animation: pop-in .5s var(--spring) backwards; animation-delay: .35s; }
+.lv-chest.open { animation: pop-in .5s var(--spring) backwards, bob 1.8s ease-in-out .9s infinite; }
+.isl-cell { animation: pop-in .6s var(--spring) backwards; }
+.isl-cell.p2 { animation-delay: .08s; } .isl-cell.p3 { animation-delay: .16s; } .isl-cell.p4 { animation-delay: .24s; }
+.hero { animation: drop-in .6s var(--spring) backwards; }
+
+/* ---------- never quite still ---------- */
+@keyframes wob { 0%, 100% { rotate: -3.5deg; } 50% { rotate: 3.5deg; } }
+@keyframes bobble { 50% { translate: 0 -5px; } }
+@keyframes sway { 0%, 78%, 100% { rotate: 0deg; } 84% { rotate: -5deg; } 92% { rotate: 5deg; } }
+.home-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 7s ease-in-out infinite; }
+.play-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 9s ease-in-out 2s infinite; }
+body.still .mz-item, body.still .lm-ic, body.still .lv-node.is-next .lv-disc, body.still .isl-marker, body.still .cd-star, body.still .pad-hint,
+body.still .pop-b .opt-face { animation: none; }
+body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite; }
+
+/* ---------- picking things up ---------- */
+.draggable { touch-action: none; cursor: grab; transition: transform .45s var(--spring); }
+.dragging { position: relative; z-index: 30; cursor: grabbing; filter: drop-shadow(0 16px 14px rgba(10,40,50,.28)); }
+.flying { position: relative; z-index: 30; pointer-events: none; }
+.opt.dragging, .opt.flying { animation: none; }
+
+/* ---------- the screen answers every touch ---------- */
+.ripple {
+  position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.95); box-shadow: 0 0 10px rgba(255,255,255,.7);
+  animation: ripple .5s ease-out forwards;
+}
+@keyframes ripple { to { transform: scale(4.5); opacity: 0; border-width: 1px; } }
+.puff {
+  position: absolute; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  border-radius: 50%; background: rgba(255,255,255,.8); animation: puff .5s ease-out forwards;
+}
+@keyframes puff { to { transform: translate(var(--dx), -12px) scale(1.7); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen.active, .lm-ic, .lv-node.is-next .lv-disc, .isl-marker, .opt, .home-char .ch-img, .play-char .ch-img, .mz-item, .pad-hint { animation: none !important; }
+}

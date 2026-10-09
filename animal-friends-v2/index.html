@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#12A594">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Animal Friends</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="stylesheet" href="core/ui.css">
+  <link rel="stylesheet" href="core/screens.css">
+  <link rel="stylesheet" href="engines/engines.css">
+  <link rel="stylesheet" href="core/motion.css">
+</head>
+<body>
+
+<div class="scenery" aria-hidden="true">
+  <svg class="sc-hills" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMax slice">
+    <g class="sc-cloud"><ellipse cx="240" cy="150" rx="130" ry="34"/><ellipse cx="320" cy="122" rx="84" ry="38"/><ellipse cx="170" cy="130" rx="60" ry="26"/></g>
+    <g class="sc-cloud c2"><ellipse cx="1060" cy="110" rx="140" ry="32"/><ellipse cx="1130" cy="86" rx="76" ry="34"/><ellipse cx="700" cy="210" rx="90" ry="22"/></g>
+    <path class="sc-h1" d="M0 340 C190 250 380 300 560 345 S900 250 1100 292 1320 252 1400 300 V800 H0Z"/>
+    <g class="sc-far"><path d="M250 318 l26 -74 26 74z M286 330 l20 -56 20 56z M930 292 l28 -80 28 80z M1010 300 l20 -54 20 54z"/><circle cx="1180" cy="268" r="30"/><circle cx="1214" cy="280" r="22"/><circle cx="470" cy="318" r="26"/></g>
+    <g class="sc-volcano"><path d="M940 344 L1032 214 Q1058 196 1084 214 L1176 344Z" fill="#A9784F"/><path d="M940 344 L1032 214 Q1046 204 1058 202 L1010 344Z" fill="#C08E62"/>
+      <path d="M1030 220 q28 -18 56 0 l6 26 q-10 -10 -18 2 q-8 -14 -16 0 q-8 -10 -18 0 q-8 -8 -14 0z" fill="#FF7A2E"/><path d="M1044 214 q14 -8 28 0 l2 10 q-8 -4 -15 2 q-7 -6 -15 -2z" fill="#FFC14D"/>
+      <g fill="#fff" opacity=".85"><circle cx="1062" cy="186" r="14"/><circle cx="1080" cy="168" r="11"/><circle cx="1054" cy="160" r="9"/><circle cx="1074" cy="146" r="7"/></g></g>
+    <g class="sc-fall"><path d="M300 452 V352 Q300 316 336 314 L420 312 Q452 314 454 350 V452Z" fill="#7E9C68"/><path d="M300 452 V352 Q300 316 336 314 L360 314 Q330 330 330 370 V452Z" fill="#94B57A"/>
+      <rect x="350" y="318" width="54" height="138" rx="12" fill="#BFEFFF"/><path d="M362 324 V448 M377 322 V452 M392 324 V446" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+      <ellipse cx="377" cy="456" rx="74" ry="16" fill="#79D2F2"/><ellipse cx="377" cy="452" rx="40" ry="7" fill="#fff" opacity=".7"/></g>
+    <path class="sc-h2" d="M0 440 C220 336 420 404 640 446 S1000 352 1400 424 V800 H0Z"/>
+    <ellipse class="sc-lake" cx="1080" cy="486" rx="250" ry="36" fill="#6CCDF0"/><ellipse cx="1080" cy="480" rx="200" ry="20" fill="#A6E6F8" opacity=".8"/>
+    <path class="sc-h3" d="M0 566 C260 452 520 544 760 566 S1160 474 1400 544 V800 H0Z"/>
+    <path class="sc-sand" d="M520 800 C560 700 720 660 668 590 C636 546 690 520 730 508 L772 516 C736 532 700 552 744 596 C826 676 740 720 800 800Z"/>
+    <g class="sc-flowers"><circle cx="461.8" cy="605.0" r="3.6" fill="#FF8FC7"/><circle cx="458.5" cy="608.7" r="3.6" fill="#FF8FC7"/><circle cx="453.1" cy="607.3" r="3.6" fill="#FF8FC7"/><circle cx="453.1" cy="602.7" r="3.6" fill="#FF8FC7"/><circle cx="458.5" cy="601.3" r="3.6" fill="#FF8FC7"/><circle cx="457" cy="605" r="2.6" fill="#FFC22E"/><circle cx="1147.7" cy="599.0" r="3.5" fill="#FF9E6B"/><circle cx="1144.4" cy="602.5" r="3.5" fill="#FF9E6B"/><circle cx="1139.2" cy="601.2" r="3.5" fill="#FF9E6B"/><circle cx="1139.2" cy="596.8" r="3.5" fill="#FF9E6B"/><circle cx="1144.4" cy="595.5" r="3.5" fill="#FF9E6B"/><circle cx="1143" cy="599" r="2.6" fill="#FFC22E"/><circle cx="310.3" cy="599.0" r="3.3" fill="#FFE066"/><circle cx="307.3" cy="602.3" r="3.3" fill="#FFE066"/><circle cx="302.5" cy="601.0" r="3.3" fill="#FFE066"/><circle cx="302.5" cy="597.0" r="3.3" fill="#FFE066"/><circle cx="307.3" cy="595.7" r="3.3" fill="#FFE066"/><circle cx="306" cy="599" r="2.4" fill="#FFC22E"/><circle cx="140.2" cy="632.0" r="3.9" fill="#FF8FC7"/><circle cx="136.6" cy="635.9" r="3.9" fill="#FF8FC7"/><circle cx="130.8" cy="634.4" r="3.9" fill="#FF8FC7"/><circle cx="130.8" cy="629.6" r="3.9" fill="#FF8FC7"/><circle cx="136.6" cy="628.1" r="3.9" fill="#FF8FC7"/><circle cx="135" cy="632" r="2.8" fill="#FFC22E"/><circle cx="1321.7" cy="653.0" r="3.5" fill="#FF8FC7"/><circle cx="1318.4" cy="656.6" r="3.5" fill="#FF8FC7"/><circle cx="1313.2" cy="655.2" r="3.5" fill="#FF8FC7"/><circle cx="1313.2" cy="650.8" r="3.5" fill="#FF8FC7"/><circle cx="1318.4" cy="649.4" r="3.5" fill="#FF8FC7"/><circle cx="1317" cy="653" r="2.6" fill="#FFC22E"/><circle cx="560.6" cy="688.0" r="2.7" fill="#FFE066"/><circle cx="558.1" cy="690.7" r="2.7" fill="#FFE066"/><circle cx="554.1" cy="689.7" r="2.7" fill="#FFE066"/><circle cx="554.1" cy="686.3" r="2.7" fill="#FFE066"/><circle cx="558.1" cy="685.3" r="2.7" fill="#FFE066"/><circle cx="557" cy="688" r="2.0" fill="#FFC22E"/><circle cx="413.7" cy="604.0" r="2.8" fill="#FFFFFF"/><circle cx="411.2" cy="606.8" r="2.8" fill="#FFFFFF"/><circle cx="407.0" cy="605.8" r="2.8" fill="#FFFFFF"/><circle cx="407.0" cy="602.2" r="2.8" fill="#FFFFFF"/><circle cx="411.2" cy="601.2" r="2.8" fill="#FFFFFF"/><circle cx="410" cy="604" r="2.1" fill="#FFC22E"/><circle cx="955.6" cy="600.0" r="3.5" fill="#FFE066"/><circle cx="952.4" cy="603.5" r="3.5" fill="#FFE066"/><circle cx="947.2" cy="602.2" r="3.5" fill="#FFE066"/><circle cx="947.2" cy="597.8" r="3.5" fill="#FFE066"/><circle cx="952.4" cy="596.5" r="3.5" fill="#FFE066"/><circle cx="951" cy="600" r="2.6" fill="#FFC22E"/><circle cx="527.6" cy="645.0" r="2.7" fill="#FF8FC7"/><circle cx="525.1" cy="647.8" r="2.7" fill="#FF8FC7"/><circle cx="521.1" cy="646.7" r="2.7" fill="#FF8FC7"/><circle cx="521.1" cy="643.3" r="2.7" fill="#FF8FC7"/><circle cx="525.1" cy="642.2" r="2.7" fill="#FF8FC7"/><circle cx="524" cy="645" r="2.0" fill="#FFC22E"/><circle cx="868.6" cy="640.0" r="3.4" fill="#FFFFFF"/><circle cx="865.4" cy="643.5" r="3.4" fill="#FFFFFF"/><circle cx="860.3" cy="642.1" r="3.4" fill="#FFFFFF"/><circle cx="860.3" cy="637.9" r="3.4" fill="#FFFFFF"/><circle cx="865.4" cy="636.5" r="3.4" fill="#FFFFFF"/><circle cx="864" cy="640" r="2.5" fill="#FFC22E"/><circle cx="1288.0" cy="626.0" r="3.0" fill="#FFE066"/><circle cx="1285.2" cy="629.0" r="3.0" fill="#FFE066"/><circle cx="1280.8" cy="627.9" r="3.0" fill="#FFE066"/><circle cx="1280.8" cy="624.1" r="3.0" fill="#FFE066"/><circle cx="1285.2" cy="623.0" r="3.0" fill="#FFE066"/><circle cx="1284" cy="626" r="2.2" fill="#FFC22E"/><circle cx="979.6" cy="614.0" r="3.5" fill="#FF9E6B"/><circle cx="976.4" cy="617.5" r="3.5" fill="#FF9E6B"/><circle cx="971.2" cy="616.2" r="3.5" fill="#FF9E6B"/><circle cx="971.2" cy="611.8" r="3.5" fill="#FF9E6B"/><circle cx="976.4" cy="610.5" r="3.5" fill="#FF9E6B"/><circle cx="975" cy="614" r="2.6" fill="#FFC22E"/><circle cx="488.7" cy="635.0" r="3.5" fill="#FF8FC7"/><circle cx="485.5" cy="638.6" r="3.5" fill="#FF8FC7"/><circle cx="480.2" cy="637.2" r="3.5" fill="#FF8FC7"/><circle cx="480.2" cy="632.8" r="3.5" fill="#FF8FC7"/><circle cx="485.5" cy="631.4" r="3.5" fill="#FF8FC7"/><circle cx="484" cy="635" r="2.6" fill="#FFC22E"/><circle cx="178.0" cy="632.0" r="3.8" fill="#FFE066"/><circle cx="174.5" cy="635.8" r="3.8" fill="#FFE066"/><circle cx="168.9" cy="634.4" r="3.8" fill="#FFE066"/><circle cx="168.9" cy="629.6" r="3.8" fill="#FFE066"/><circle cx="174.5" cy="628.2" r="3.8" fill="#FFE066"/><circle cx="173" cy="632" r="2.8" fill="#FFC22E"/><circle cx="1303.4" cy="632.0" r="4.1" fill="#FF8FC7"/><circle cx="1299.7" cy="636.1" r="4.1" fill="#FF8FC7"/><circle cx="1293.6" cy="634.6" r="4.1" fill="#FF8FC7"/><circle cx="1293.6" cy="629.4" r="4.1" fill="#FF8FC7"/><circle cx="1299.7" cy="627.9" r="4.1" fill="#FF8FC7"/><circle cx="1298" cy="632" r="3.0" fill="#FFC22E"/><circle cx="1070.3" cy="647.0" r="3.9" fill="#FFFFFF"/><circle cx="1066.6" cy="651.0" r="3.9" fill="#FFFFFF"/><circle cx="1060.8" cy="649.5" r="3.9" fill="#FFFFFF"/><circle cx="1060.8" cy="644.5" r="3.9" fill="#FFFFFF"/><circle cx="1066.6" cy="643.0" r="3.9" fill="#FFFFFF"/><circle cx="1065" cy="647" r="2.9" fill="#FFC22E"/><circle cx="483.5" cy="625.0" r="3.4" fill="#C9A6FF"/><circle cx="480.4" cy="628.4" r="3.4" fill="#C9A6FF"/><circle cx="475.4" cy="627.1" r="3.4" fill="#C9A6FF"/><circle cx="475.4" cy="622.9" r="3.4" fill="#C9A6FF"/><circle cx="480.4" cy="621.6" r="3.4" fill="#C9A6FF"/><circle cx="479" cy="625" r="2.5" fill="#FFC22E"/><circle cx="109.0" cy="599.0" r="3.0" fill="#FF8FC7"/><circle cx="106.2" cy="602.1" r="3.0" fill="#FF8FC7"/><circle cx="101.7" cy="600.9" r="3.0" fill="#FF8FC7"/><circle cx="101.7" cy="597.1" r="3.0" fill="#FF8FC7"/><circle cx="106.2" cy="595.9" r="3.0" fill="#FF8FC7"/><circle cx="105" cy="599" r="2.2" fill="#FFC22E"/><circle cx="98.8" cy="660.0" r="3.6" fill="#C9A6FF"/><circle cx="95.5" cy="663.6" r="3.6" fill="#C9A6FF"/><circle cx="90.1" cy="662.3" r="3.6" fill="#C9A6FF"/><circle cx="90.1" cy="657.7" r="3.6" fill="#C9A6FF"/><circle cx="95.5" cy="656.4" r="3.6" fill="#C9A6FF"/><circle cx="94" cy="660" r="2.6" fill="#FFC22E"/><circle cx="407.8" cy="629.0" r="3.6" fill="#FF8FC7"/><circle cx="404.5" cy="632.7" r="3.6" fill="#FF8FC7"/><circle cx="399.1" cy="631.3" r="3.6" fill="#FF8FC7"/><circle cx="399.1" cy="626.7" r="3.6" fill="#FF8FC7"/><circle cx="404.5" cy="625.3" r="3.6" fill="#FF8FC7"/><circle cx="403" cy="629" r="2.7" fill="#FFC22E"/><circle cx="1312.7" cy="626.0" r="3.5" fill="#C9A6FF"/><circle cx="1309.5" cy="629.6" r="3.5" fill="#C9A6FF"/><circle cx="1304.2" cy="628.2" r="3.5" fill="#C9A6FF"/><circle cx="1304.2" cy="623.8" r="3.5" fill="#C9A6FF"/><circle cx="1309.5" cy="622.4" r="3.5" fill="#C9A6FF"/><circle cx="1308" cy="626" r="2.6" fill="#FFC22E"/><circle cx="94.8" cy="667.0" r="2.8" fill="#FFE066"/><circle cx="92.2" cy="669.9" r="2.8" fill="#FFE066"/><circle cx="88.0" cy="668.8" r="2.8" fill="#FFE066"/><circle cx="88.0" cy="665.2" r="2.8" fill="#FFE066"/><circle cx="92.2" cy="664.1" r="2.8" fill="#FFE066"/><circle cx="91" cy="667" r="2.1" fill="#FFC22E"/></g>
+    <path class="sc-h4" d="M0 716 C300 640 560 708 800 730 S1200 664 1400 712 V800 H0Z"/>
+    <g class="sc-flowers"><circle cx="566.5" cy="786.0" r="5.6" fill="#FFE066"/><circle cx="561.3" cy="791.7" r="5.6" fill="#FFE066"/><circle cx="552.9" cy="789.5" r="5.6" fill="#FFE066"/><circle cx="552.9" cy="782.5" r="5.6" fill="#FFE066"/><circle cx="561.3" cy="780.3" r="5.6" fill="#FFE066"/><circle cx="559" cy="786" r="4.1" fill="#FFC22E"/><circle cx="1237.6" cy="781.0" r="6.4" fill="#FFFFFF"/><circle cx="1231.7" cy="787.5" r="6.4" fill="#FFFFFF"/><circle cx="1222.0" cy="785.0" r="6.4" fill="#FFFFFF"/><circle cx="1222.0" cy="777.0" r="6.4" fill="#FFFFFF"/><circle cx="1231.7" cy="774.5" r="6.4" fill="#FFFFFF"/><circle cx="1229" cy="781" r="4.7" fill="#FFC22E"/><circle cx="993.0" cy="789.0" r="6.0" fill="#C9A6FF"/><circle cx="987.5" cy="795.1" r="6.0" fill="#C9A6FF"/><circle cx="978.5" cy="792.8" r="6.0" fill="#C9A6FF"/><circle cx="978.5" cy="785.2" r="6.0" fill="#C9A6FF"/><circle cx="987.5" cy="782.9" r="6.0" fill="#C9A6FF"/><circle cx="985" cy="789" r="4.4" fill="#FFC22E"/><circle cx="1338.5" cy="748.0" r="4.9" fill="#FFE066"/><circle cx="1334.0" cy="753.0" r="4.9" fill="#FFE066"/><circle cx="1326.7" cy="751.1" r="4.9" fill="#FFE066"/><circle cx="1326.7" cy="744.9" r="4.9" fill="#FFE066"/><circle cx="1334.0" cy="743.0" r="4.9" fill="#FFE066"/><circle cx="1332" cy="748" r="3.6" fill="#FFC22E"/><circle cx="927.5" cy="741.0" r="6.4" fill="#FFE066"/><circle cx="921.6" cy="747.5" r="6.4" fill="#FFE066"/><circle cx="912.1" cy="745.0" r="6.4" fill="#FFE066"/><circle cx="912.1" cy="737.0" r="6.4" fill="#FFE066"/><circle cx="921.6" cy="734.5" r="6.4" fill="#FFE066"/><circle cx="919" cy="741" r="4.7" fill="#FFC22E"/><circle cx="380.3" cy="740.0" r="5.4" fill="#FFFFFF"/><circle cx="375.2" cy="745.5" r="5.4" fill="#FFFFFF"/><circle cx="367.1" cy="743.4" r="5.4" fill="#FFFFFF"/><circle cx="367.1" cy="736.6" r="5.4" fill="#FFFFFF"/><circle cx="375.2" cy="734.5" r="5.4" fill="#FFFFFF"/><circle cx="373" cy="740" r="4.0" fill="#FFC22E"/><circle cx="858.4" cy="756.0" r="4.8" fill="#FF9E6B"/><circle cx="854.0" cy="760.9" r="4.8" fill="#FF9E6B"/><circle cx="846.8" cy="759.0" r="4.8" fill="#FF9E6B"/><circle cx="846.8" cy="753.0" r="4.8" fill="#FF9E6B"/><circle cx="854.0" cy="751.1" r="4.8" fill="#FF9E6B"/><circle cx="852" cy="756" r="3.5" fill="#FFC22E"/><circle cx="1329.2" cy="773.0" r="6.2" fill="#C9A6FF"/><circle cx="1323.5" cy="779.3" r="6.2" fill="#C9A6FF"/><circle cx="1314.4" cy="776.9" r="6.2" fill="#C9A6FF"/><circle cx="1314.4" cy="769.1" r="6.2" fill="#C9A6FF"/><circle cx="1323.5" cy="766.7" r="6.2" fill="#C9A6FF"/><circle cx="1321" cy="773" r="4.5" fill="#FFC22E"/><circle cx="1259.6" cy="779.0" r="6.5" fill="#FF9E6B"/><circle cx="1253.7" cy="785.6" r="6.5" fill="#FF9E6B"/><circle cx="1244.0" cy="783.1" r="6.5" fill="#FF9E6B"/><circle cx="1244.0" cy="774.9" r="6.5" fill="#FF9E6B"/><circle cx="1253.7" cy="772.4" r="6.5" fill="#FF9E6B"/><circle cx="1251" cy="779" r="4.7" fill="#FFC22E"/><circle cx="557.3" cy="760.0" r="4.7" fill="#C9A6FF"/><circle cx="553.0" cy="764.8" r="4.7" fill="#C9A6FF"/><circle cx="545.9" cy="763.0" r="4.7" fill="#C9A6FF"/><circle cx="545.9" cy="757.0" r="4.7" fill="#C9A6FF"/><circle cx="553.0" cy="755.2" r="4.7" fill="#C9A6FF"/><circle cx="551" cy="760" r="3.5" fill="#FFC22E"/><circle cx="102.6" cy="743.0" r="5.0" fill="#FFE066"/><circle cx="98.0" cy="748.0" r="5.0" fill="#FFE066"/><circle cx="90.6" cy="746.1" r="5.0" fill="#FFE066"/><circle cx="90.6" cy="739.9" r="5.0" fill="#FFE066"/><circle cx="98.0" cy="738.0" r="5.0" fill="#FFE066"/><circle cx="96" cy="743" r="3.6" fill="#FFC22E"/><circle cx="168.3" cy="770.0" r="4.7" fill="#FF9E6B"/><circle cx="163.9" cy="774.8" r="4.7" fill="#FF9E6B"/><circle cx="156.9" cy="773.0" r="4.7" fill="#FF9E6B"/><circle cx="156.9" cy="767.0" r="4.7" fill="#FF9E6B"/><circle cx="163.9" cy="765.2" r="4.7" fill="#FF9E6B"/><circle cx="162" cy="770" r="3.5" fill="#FFC22E"/><circle cx="226.1" cy="745.0" r="5.3" fill="#FF8FC7"/><circle cx="221.2" cy="750.4" r="5.3" fill="#FF8FC7"/><circle cx="213.3" cy="748.3" r="5.3" fill="#FF8FC7"/><circle cx="213.3" cy="741.7" r="5.3" fill="#FF8FC7"/><circle cx="221.2" cy="739.6" r="5.3" fill="#FF8FC7"/><circle cx="219" cy="745" r="3.9" fill="#FFC22E"/><circle cx="114.1" cy="750.0" r="5.3" fill="#FFFFFF"/><circle cx="109.2" cy="755.4" r="5.3" fill="#FFFFFF"/><circle cx="101.2" cy="753.4" r="5.3" fill="#FFFFFF"/><circle cx="101.2" cy="746.6" r="5.3" fill="#FFFFFF"/><circle cx="109.2" cy="744.6" r="5.3" fill="#FFFFFF"/><circle cx="107" cy="750" r="3.9" fill="#FFC22E"/><circle cx="1336.4" cy="770.0" r="5.6" fill="#FF8FC7"/><circle cx="1331.3" cy="775.6" r="5.6" fill="#FF8FC7"/><circle cx="1323.0" cy="773.5" r="5.6" fill="#FF8FC7"/><circle cx="1323.0" cy="766.5" r="5.6" fill="#FF8FC7"/><circle cx="1331.3" cy="764.4" r="5.6" fill="#FF8FC7"/><circle cx="1329" cy="770" r="4.1" fill="#FFC22E"/><circle cx="1189.4" cy="790.0" r="5.5" fill="#C9A6FF"/><circle cx="1184.3" cy="795.6" r="5.5" fill="#C9A6FF"/><circle cx="1176.0" cy="793.5" r="5.5" fill="#C9A6FF"/><circle cx="1176.0" cy="786.5" r="5.5" fill="#C9A6FF"/><circle cx="1184.3" cy="784.4" r="5.5" fill="#C9A6FF"/><circle cx="1182" cy="790" r="4.1" fill="#FFC22E"/><circle cx="448.2" cy="747.0" r="6.2" fill="#FFFFFF"/><circle cx="442.5" cy="753.3" r="6.2" fill="#FFFFFF"/><circle cx="433.3" cy="750.9" r="6.2" fill="#FFFFFF"/><circle cx="433.3" cy="743.1" r="6.2" fill="#FFFFFF"/><circle cx="442.5" cy="740.7" r="6.2" fill="#FFFFFF"/><circle cx="440" cy="747" r="4.5" fill="#FFC22E"/><circle cx="971.6" cy="766.0" r="5.0" fill="#FF9E6B"/><circle cx="967.0" cy="771.0" r="5.0" fill="#FF9E6B"/><circle cx="959.6" cy="769.1" r="5.0" fill="#FF9E6B"/><circle cx="959.6" cy="762.9" r="5.0" fill="#FF9E6B"/><circle cx="967.0" cy="761.0" r="5.0" fill="#FF9E6B"/><circle cx="965" cy="766" r="3.6" fill="#FFC22E"/><circle cx="517.7" cy="775.0" r="6.6" fill="#FF9E6B"/><circle cx="511.7" cy="781.7" r="6.6" fill="#FF9E6B"/><circle cx="501.9" cy="779.1" r="6.6" fill="#FF9E6B"/><circle cx="501.9" cy="770.9" r="6.6" fill="#FF9E6B"/><circle cx="511.7" cy="768.3" r="6.6" fill="#FF9E6B"/><circle cx="509" cy="775" r="4.8" fill="#FFC22E"/><circle cx="427.3" cy="772.0" r="4.7" fill="#FFFFFF"/><circle cx="422.9" cy="776.8" r="4.7" fill="#FFFFFF"/><circle cx="415.9" cy="774.9" r="4.7" fill="#FFFFFF"/><circle cx="415.9" cy="769.1" r="4.7" fill="#FFFFFF"/><circle cx="422.9" cy="767.2" r="4.7" fill="#FFFFFF"/><circle cx="421" cy="772" r="3.5" fill="#FFC22E"/><circle cx="1269.7" cy="758.0" r="5.0" fill="#FF9E6B"/><circle cx="1265.1" cy="763.1" r="5.0" fill="#FF9E6B"/><circle cx="1257.6" cy="761.1" r="5.0" fill="#FF9E6B"/><circle cx="1257.6" cy="754.9" r="5.0" fill="#FF9E6B"/><circle cx="1265.1" cy="752.9" r="5.0" fill="#FF9E6B"/><circle cx="1263" cy="758" r="3.7" fill="#FFC22E"/><circle cx="1091.7" cy="756.0" r="5.0" fill="#FFE066"/><circle cx="1087.1" cy="761.1" r="5.0" fill="#FFE066"/><circle cx="1079.6" cy="759.1" r="5.0" fill="#FFE066"/><circle cx="1079.6" cy="752.9" r="5.0" fill="#FFE066"/><circle cx="1087.1" cy="750.9" r="5.0" fill="#FFE066"/><circle cx="1085" cy="756" r="3.7" fill="#FFC22E"/><circle cx="1130.2" cy="781.0" r="6.2" fill="#FFE066"/><circle cx="1124.5" cy="787.3" r="6.2" fill="#FFE066"/><circle cx="1115.4" cy="784.9" r="6.2" fill="#FFE066"/><circle cx="1115.4" cy="777.1" r="6.2" fill="#FFE066"/><circle cx="1124.5" cy="774.7" r="6.2" fill="#FFE066"/><circle cx="1122" cy="781" r="4.5" fill="#FFC22E"/><circle cx="294.2" cy="765.0" r="6.1" fill="#FF8FC7"/><circle cx="288.5" cy="771.2" r="6.1" fill="#FF8FC7"/><circle cx="279.4" cy="768.9" r="6.1" fill="#FF8FC7"/><circle cx="279.4" cy="761.1" r="6.1" fill="#FF8FC7"/><circle cx="288.5" cy="758.8" r="6.1" fill="#FF8FC7"/><circle cx="286" cy="765" r="4.5" fill="#FFC22E"/><circle cx="1106.6" cy="764.0" r="4.9" fill="#FF9E6B"/><circle cx="1102.0" cy="769.0" r="4.9" fill="#FF9E6B"/><circle cx="1094.7" cy="767.1" r="4.9" fill="#FF9E6B"/><circle cx="1094.7" cy="760.9" r="4.9" fill="#FF9E6B"/><circle cx="1102.0" cy="759.0" r="4.9" fill="#FF9E6B"/><circle cx="1100" cy="764" r="3.6" fill="#FFC22E"/><circle cx="1338.8" cy="762.0" r="6.6" fill="#FFFFFF"/><circle cx="1332.7" cy="768.7" r="6.6" fill="#FFFFFF"/><circle cx="1322.9" cy="766.1" r="6.6" fill="#FFFFFF"/><circle cx="1322.9" cy="757.9" r="6.6" fill="#FFFFFF"/><circle cx="1332.7" cy="755.3" r="6.6" fill="#FFFFFF"/><circle cx="1330" cy="762" r="4.8" fill="#FFC22E"/></g>
+  </svg>
+  <svg class="sc-tree tl" viewBox="0 0 300 430">
+    <path class="sc-trunk" d="M128 430 C138 340 126 290 116 236 L176 236 C168 296 176 344 192 430Z"/>
+    <circle class="sc-leaf" cx="96" cy="178" r="94"/><circle class="sc-leaf" cx="208" cy="158" r="90"/>
+    <circle class="sc-leaf l2" cx="150" cy="104" r="98"/><circle class="sc-leaf l3" cx="118" cy="72" r="44"/><circle class="sc-leaf l3" cx="214" cy="120" r="26"/>
+  </svg>
+  <svg class="sc-tree tr" viewBox="0 0 300 430">
+    <path class="sc-trunk" d="M128 430 C138 340 126 290 116 236 L176 236 C168 296 176 344 192 430Z"/>
+    <circle class="sc-leaf" cx="96" cy="178" r="94"/><circle class="sc-leaf" cx="208" cy="158" r="90"/>
+    <circle class="sc-leaf l2" cx="150" cy="104" r="98"/><circle class="sc-leaf l3" cx="118" cy="72" r="44"/><circle class="sc-leaf l3" cx="214" cy="120" r="26"/>
+  </svg>
+  <svg class="sc-leaves l" viewBox="0 0 220 220" aria-hidden="true"><g transform="translate(10 190) rotate(-70) scale(1.1 1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#2E8B45"/><path d="M6 0 H112" stroke="#1E6B33" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(20 200) rotate(-40) scale(1.2 1.1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#3FA34D"/><path d="M6 0 H112" stroke="#2A7A3A" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(30 205) rotate(-12) scale(1.15 1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#58BE5A"/><path d="M6 0 H112" stroke="#3A9440" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(0 160) rotate(-95) scale(0.9 0.9)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#4BB052"/><path d="M6 0 H112" stroke="#2E8B45" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(60 210) rotate(-58) scale(0.9 0.9)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#6CCB64"/><path d="M6 0 H112" stroke="#3FA34D" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(0 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(72 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(144 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(216 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(288 118 150)"/><circle cx="118" cy="150" r="6" fill="#FFC22E"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(0 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(72 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(144 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(216 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(288 70 118)"/><circle cx="70" cy="118" r="6" fill="#FFC22E"/></svg><svg class="sc-leaves r" viewBox="0 0 220 220" aria-hidden="true"><g transform="translate(10 190) rotate(-70) scale(1.1 1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#2E8B45"/><path d="M6 0 H112" stroke="#1E6B33" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(20 200) rotate(-40) scale(1.2 1.1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#3FA34D"/><path d="M6 0 H112" stroke="#2A7A3A" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(30 205) rotate(-12) scale(1.15 1)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#58BE5A"/><path d="M6 0 H112" stroke="#3A9440" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(0 160) rotate(-95) scale(0.9 0.9)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#4BB052"/><path d="M6 0 H112" stroke="#2E8B45" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><g transform="translate(60 210) rotate(-58) scale(0.9 0.9)"><path d="M0 0 C30 -26 78 -30 120 0 C78 30 30 26 0 0Z" fill="#6CCB64"/><path d="M6 0 H112" stroke="#3FA34D" stroke-width="3" stroke-linecap="round" opacity=".55"/></g><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(0 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(72 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(144 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(216 118 150)"/><ellipse cx="118" cy="141" rx="7" ry="10" fill="#fff" transform="rotate(288 118 150)"/><circle cx="118" cy="150" r="6" fill="#FFC22E"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(0 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(72 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(144 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(216 70 118)"/><ellipse cx="70" cy="109" rx="7" ry="10" fill="#FF9EC4" transform="rotate(288 70 118)"/><circle cx="70" cy="118" r="6" fill="#FFC22E"/></svg>
+  <span class="fly" style="--x:16%;--y:30%;--c:#FF9DCB;--d:17s"></span><span class="fly" style="--x:72%;--y:22%;--c:#8FE3FF;--d:22s;--t:-6s"></span>
+  <span class="fly" style="--x:84%;--y:58%;--c:#FFE27A;--d:19s;--t:-11s"></span><span class="fly" style="--x:8%;--y:66%;--c:#C9A6FF;--d:24s;--t:-3s"></span>
+  <span class="bub" style="--x:8%;--s:5vmin;--d:19s;--t:-3s;--rest:22vh"></span><span class="bub" style="--x:22%;--s:2.6vmin;--d:15s;--t:-9s;--rest:58vh"></span>
+  <span class="bub" style="--x:37%;--s:3.6vmin;--d:22s;--t:-14s;--rest:40vh"></span><span class="bub" style="--x:52%;--s:2.2vmin;--d:14s;--t:-6s;--rest:70vh"></span>
+  <span class="bub" style="--x:64%;--s:4.4vmin;--d:24s;--t:-18s;--rest:30vh"></span><span class="bub" style="--x:78%;--s:2.8vmin;--d:17s;--t:-1s;--rest:62vh"></span>
+  <span class="bub" style="--x:90%;--s:5.4vmin;--d:26s;--t:-11s;--rest:46vh"></span><span class="bub" style="--x:45%;--s:3vmin;--d:20s;--t:-16s;--rest:16vh"></span>
+</div>
+
+<!-- ============ 1. CHARACTER PICKER ============ -->
+<main id="pick" class="screen">
+  <h1 class="pick-title">Pick your friend</h1>
+  <p class="pick-sub">They will play with you the whole way.</p>
+  <div class="scroll pick-scroll">
+    <div class="pick-row" id="pick-row"></div>
+  </div>
+</main>
+
+<!-- ============ 1b. CHARACTER MAKER ============ -->
+<main id="maker" class="screen">
+  <button class="round-btn mk-back" id="maker-back" data-ic="back" aria-label="Back"></button>
+  <div class="hud hud-maker"></div>
+  <div class="mk-stage">
+    <div class="mk-name">
+      <input id="maker-name" maxlength="12" placeholder="Name your friend!" aria-label="Your friend's name" autocomplete="off" spellcheck="false">
+      <button class="round-btn" id="maker-dice" data-ic="dice" aria-label="Pick a name for me"></button>
+    </div>
+    <div class="mk-view">
+      <img class="mk-podium stump" src="art/world/stump.webp" alt="" draggable="false">
+      <div class="maker-live" id="maker-live"></div>
+    </div>
+  </div>
+  <div class="mk-beans" id="maker-tabs" role="tablist"></div>
+  <div class="mk-tray"><div class="mk-opts" id="maker-opts"></div></div>
+  <button class="mk-done" id="maker-done"><i data-ic="check"></i><span>Done</span></button>
+</main>
+
+<!-- ============ 2. HOME: the island world ============ -->
+<main id="home" class="screen">
+  <div class="hud"></div>
+  <div class="world" id="world">
+    <div class="hero" id="hero">
+      <button class="home-char" id="home-char" aria-label="Say hello"></button>
+      <div class="speech" id="home-hello"></div>
+    </div>
+  </div>
+  <footer class="journey">
+    <button class="sign jr-sign" id="jr-open">Daily Journey<em id="today-count"></em></button>
+    <div class="jr-track"><span class="jr-line"><i id="jr-fill"></i></span><div class="jr-stops" id="today-row"></div></div>
+  </footer>
+</main>
+
+<!-- ============ 2b. DAILY JOURNEY ============ -->
+<main id="journey" class="screen">
+  <div class="hud"></div>
+  <div class="jy-list" id="journey-list"></div>
+  <div class="jy-foot">
+    <div class="jy-char" id="journey-char"></div>
+    <div class="jy-chest" id="journey-chest"></div>
+  </div>
+  <button class="round-btn hud-home" data-home data-ic="home" aria-label="Home"></button>
+</main>
+
+<!-- ============ 2c. ONE ISLAND: its subjects along a path ============ -->
+<main id="area" class="screen">
+  <div class="hud"></div>
+  <div class="board" id="area-path"></div>
+  <button class="round-btn hud-home" data-home data-ic="home" aria-label="Home"></button>
+</main>
+
+<!-- ============ 3. LEVEL MAP ============ -->
+<main id="map" class="screen">
+  <div class="hud"></div>
+  <div class="tabs" id="map-tiers" role="tablist" aria-label="Stage"></div>
+  <div class="board" id="map-path"></div>
+  <button class="round-btn hud-home" data-home data-ic="home" aria-label="Home"></button>
+</main>
+
+<!-- ============ 4. PLAY ============ -->
+<main id="play" class="screen">
+  <header class="play-hud">
+    <button class="round-btn" id="play-back" data-ic="back" aria-label="Back to the map"></button>
+    <h2 class="sign" id="play-title"></h2>
+    <button class="round-btn" data-home data-ic="home" aria-label="Home"></button>
+  </header>
+  <div class="play-stage" id="play-host"></div>
+</main>
+
+<!-- ============ RESULT SHEET ============ -->
+<div class="sheet full" id="result" hidden>
+  <div class="result-card">
+    <div class="result-stars" aria-hidden="true"><i data-ic="star"></i><i data-ic="star"></i><i data-ic="star"></i></div>
+    <h2 class="result-title logo-text">Well done!</h2>
+    <div class="result-hero"><div class="result-char"></div><img class="stump" src="art/world/stump.webp" alt="" draggable="false"></div>
+    <p class="result-tip" hidden></p>
+    <div class="result-btns">
+      <button class="big-round" data-act="map" data-ic="map" style="--h:#3E9BF0" aria-label="Back to the map"></button>
+      <button class="big-round" data-act="retry" data-ic="retry" style="--h:#F5A623" aria-label="Play again"></button>
+      <button class="big-round" data-act="next" data-ic="next" style="--h:#3CC46A" aria-label="Next level"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOW TO PLAY ============ -->
+<div class="sheet full" id="tutor" hidden>
+  <div class="sheet-card tutor-card">
+    <h2 class="tutor-head" id="tutor-title"></h2>
+    <div class="tutor-demo" id="tutor-demo"></div>
+    <div class="tutor-hero"><div class="tutor-char" id="tutor-char"></div><img class="stump" src="art/world/stump.webp" alt="" draggable="false"></div>
+    <p class="tutor-text" id="tutor-text"></p>
+    <div class="tutor-dots" id="tutor-dots"></div>
+    <button class="pill-go" id="tutor-next">Next</button>
+    <button class="tutor-skip" id="tutor-skip">Skip</button>
+  </div>
+</div>
+
+<!-- ============ GROWN-UP GATE ============ -->
+<div class="sheet" id="gate" hidden>
+  <div class="sheet-card">
+    <button class="round-btn sheet-close" id="gate-close" data-ic="close" aria-label="Close"></button>
+    <h2>Grown-ups only</h2>
+    <p class="sheet-sub" id="gate-q"></p>
+    <div class="gate-opts" id="gate-opts"></div>
+  </div>
+</div>
+
+<!-- ============ SPEAKING: ASK A GROWN-UP ============ -->
+<div class="sheet" id="ask" hidden>
+  <div class="sheet-card">
+    <h2>Speaking practice</h2>
+    <p class="sheet-sub">Grown-ups: how should your child practise saying words?</p>
+    <div class="ask-opts">
+      <button class="pick-opt" data-speech="echo">
+        <b>Echo</b>
+        <span>Records for a moment and plays your child’s voice back. Nothing leaves this device.</span>
+      </button>
+      <button class="pick-opt" data-speech="check">
+        <b>Voice check</b>
+        <span>The browser listens and checks the word. In Chrome the audio is sent to Google to be recognised, and it needs the internet.</span>
+      </button>
+      <button class="pick-opt" data-speech="tap">
+        <b>No microphone</b>
+        <span>Listen, say it out loud, tap the thumbs-up.</span>
+      </button>
+    </div>
+    <p class="sheet-foot">You can change this any time in the grown-up area (the blue cog).</p>
+  </div>
+</div>
+
+<!-- ============ BREAK TIME ============ -->
+<div class="sheet" id="limit" hidden>
+  <div class="sheet-card">
+    <div class="result-char" id="limit-char"></div>
+    <h2>Time for a break!</h2>
+    <p class="sheet-sub">Great playing today. See you tomorrow! 👋</p>
+    <div class="result-btns plain">
+      <button class="btn go" id="limit-ok">OK</button>
+      <button class="btn" id="limit-more"><i data-ic="lock"></i> 10 more minutes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GROWN-UP AREA ============ -->
+<div class="sheet full" id="grown" hidden>
+  <div class="sheet-card grown-card">
+    <div class="g-top"><button class="round-btn" id="grown-close" data-ic="back" aria-label="Close"></button></div>
+    <h2 class="sign">Grown-ups</h2>
+
+    <div class="g-list">
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="chart" style="--h:#3E9BF0"></span>Progress report</summary>
+        <div class="g-body">
+          <div class="stat-row" id="grown-stats"></div>
+          <div class="grown-progress" id="grown-progress"></div>
+          <h3 class="grown-h">Worth another go</h3>
+          <div class="grown-list" id="grown-practice"></div>
+        </div>
+      </details>
+
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="clock" style="--h:#F5A623"></span>Play limit</summary>
+        <div class="g-body">
+          <div class="seg" data-seg="limit">
+            <button data-v="0">Off</button><button data-v="15">15 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="shield" style="--h:#3CC46A"></span>Speech privacy</summary>
+        <div class="g-body">
+          <div class="seg" data-seg="speech">
+            <button data-v="echo">Echo</button><button data-v="check">Voice check</button><button data-v="tap">No mic</button>
+          </div>
+          <span class="seg-note" id="speech-note"></span>
+        </div>
+      </details>
+
+      <div class="g-row g-flat">
+        <span class="g-ic" data-ic="lock" style="--h:#F5B81C"></span>Open every level
+        <button class="toggle" data-toggle="open" aria-label="Open every level"><span class="sw-state"></span></button>
+      </div>
+
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="hint" style="--h:#FFC93C"></span>Try at home</summary>
+        <div class="g-body"><p class="grown-tip" id="grown-tip"></p></div>
+      </details>
+
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="settings" style="--h:#7C8BA1"></span>Settings</summary>
+        <div class="g-body g-switches">
+          <div class="g-sw"><span class="g-ic" data-ic="sound" style="--h:#3E9BF0"></span>Sound<button class="toggle" data-toggle="sound" aria-label="Sound"><span class="sw-state"></span></button></div>
+          <div class="g-sw"><span class="g-ic" data-ic="songs" style="--h:#A45CE0"></span>Nature sounds<button class="toggle" data-toggle="nature" aria-label="Nature sounds"><span class="sw-state"></span></button></div>
+          <div class="g-sw"><span class="g-ic" data-ic="star" style="--h:#FFC93C"></span>Bubbles &amp; wiggles<button class="toggle" data-toggle="motion" aria-label="Bubbles and wiggles"><span class="sw-state"></span></button></div>
+          <div class="grown-meta">
+            Friend: <b id="stat-char">—</b><br>
+            Voice in use: <b id="voice-name">—</b><br>
+            3D characters: <b id="stat-3d">—</b><br>
+            Works offline: <b id="stat-offline">—</b>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="grown-btns">
+      <button class="btn" id="btn-tutor"><i data-ic="help"></i> How to play</button>
+      <button class="btn" id="btn-swap"><i data-ic="edit"></i> Change friend</button>
+      <button class="btn danger" id="btn-reset">Start over</button>
+    </div>
+    <p class="sheet-foot">Everything is saved on this device only. No accounts, no ads, no tracking.</p>
+    <div class="g-char" id="grown-char"></div>
+  </div>
+</div>
+
+<!-- ============ CELEBRATION ============ -->
+<div class="party" id="party" aria-live="polite">
+  <div>
+    <img class="party-pic" src="art/ui/trophy.webp" alt="" draggable="false"><div class="party-hero"><div class="party-char"></div><img class="stump" src="art/world/stump.webp" alt="" draggable="false"></div>
+    <div class="party-text logo-text">Hooray!</div>
+    <div class="party-sub" hidden></div>
+  </div>
+</div>
+
+<div class="props" id="props" aria-hidden="true"></div>
+<div id="fx" aria-hidden="true"></div>
+
+<!-- 3D -->
+<script src="vendor/three.min.js"></script>
+<!-- core -->
+<script src="core/icons.js"></script>
+<script src="core/world.js"></script>
+<script src="core/art.js"></script>
+<script src="core/profile.js"></script>
+<script src="core/ui.js"></script>
+<script src="core/audio.js"></script>
+<script src="core/speech.js"></script>
+<script src="core/fx.js"></script>
+<script src="core/levels.js"></script>
+<!-- engines: HOW to play -->
+<script src="engines/base.js"></script>
+<script src="engines/drag.js"></script>
+<script src="engines/quiz.js"></script>
+<script src="engines/maze.js"></script>
+<script src="engines/touch.js"></script>
+<script src="engines/code.js"></script>
+<script src="engines/voice.js"></script>
+<script src="engines/media.js"></script>
+<!-- content: WHAT to teach -->
+<script src="content/bank.js"></script>
+<script src="content/literacy.js"></script>
+<script src="content/stem.js"></script>
+<script src="content/life.js"></script>
+<script src="content/play.js"></script>
+<!-- boot -->
+<script src="core/app.js"></script>
+</body>
+</html>

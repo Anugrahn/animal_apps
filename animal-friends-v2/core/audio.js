@@ -149,6 +149,52 @@
     }, 5000 + Math.random() * 9000);
   }
 
+  /* ---------- the recorded voice ----------
+     voice/index.js (made by tools/voice) lists a warm, natural voice
+     recording for nearly every line the app says: AF.VOICE.clips maps a
+     line to its file, and AF.VOICE.named does the same for lines with
+     the friend's name in them, once per ready-made name. A line with no
+     recording (a name the child typed, say) uses the device's voice. */
+  let clip = null;                            // the one player, reused
+  const norm = (t) => String(t).replace(/\s+/g, ' ').trim();
+
+  function clipFor(text) {
+    const V = AF.VOICE;
+    if (!V) return null;
+    const t = norm(text);
+    if (V.clips[t]) return V.clips[t];
+    const name = AF.Profile.character && AF.Profile.character.name;
+    if (name && t.indexOf(name) >= 0) {
+      const byName = V.named[t.split(name).join('{name}')];
+      if (byName && byName[name]) return byName[name];
+    }
+    return null;
+  }
+
+  /* The friend's voice (deep, middle, squeaky) is the same recording
+     played a little lower and slower, or higher and quicker. */
+  const clipRate = (pitch) => Math.max(0.85, Math.min(1.18, 1 + ((pitch || 1) - 1) * 0.4));
+
+  function stopClip() {
+    if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }
+  }
+
+  /** Plays a recorded line. Returns false if it cannot, so the caller
+      can speak it instead. */
+  function playClip(file, pitch, end, fallback) {
+    if (!unlocked) return false;               // phones block it before the first tap
+    if (!clip) clip = new window.Audio();
+    stopClip();
+    clip.src = 'voice/' + file + '.mp3';
+    clip.preservesPitch = clip.mozPreservesPitch = clip.webkitPreservesPitch = false;
+    clip.playbackRate = clipRate(pitch);
+    clip.onended = end;
+    clip.onerror = () => { stopClip(); fallback(); };
+    const p = clip.play();
+    if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
+    return true;
+  }
+
   /* Note names for the song player. */
   const NOTES = { C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.0, A: 440.0, B: 493.88, c: 523.25, d: 587.33, e: 659.25 };
 
@@ -160,6 +206,11 @@
       if (unlocked) return;
       unlocked = true;
       audioCtx();
+      // iPhones only let a player that has played once inside a tap play
+      // again later (from a timer): a moment of silence does that.
+      if (AF.VOICE) {
+        try { clip = new window.Audio('voice/silence.mp3'); const p = clip.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* no-op */ }
+      }
       if ('speechSynthesis' in window) {
         try {
           const u = new SpeechSynthesisUtterance(' ');
@@ -198,26 +249,40 @@
         clearTimeout(timer);
         if (opts.onEnd && mine === saying) opts.onEnd();
       };
-      if (!AF.Profile.setting('sound') || !('speechSynthesis' in window)) {
-        timer = setTimeout(end, 300);
+      if (!AF.Profile.setting('sound')) { timer = setTimeout(end, 300); return; }
+      const skin = AF.Profile.skin();
+      const pitch = opts.pitch != null ? opts.pitch : (skin.pitch || 1);
+
+      // The device's own voice: for a line with no recording.
+      const speak = () => {
+        if (mine !== saying) return;           // newer speech has taken over
+        if (!('speechSynthesis' in window)) { timer = setTimeout(end, 300); return; }
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          if (voice) u.voice = voice;
+          u.lang = (voice && voice.lang) || 'en-US';
+          u.pitch = pitch;
+          u.rate = opts.rate != null ? opts.rate : (skin.rate || 0.85);
+          u.volume = 1;
+          u.onend = end;
+          u.onerror = end;
+          window.speechSynthesis.speak(u);
+          if (opts.onEnd) { clearTimeout(timer); timer = setTimeout(end, 1200 + text.length * 110); }
+        } catch (e) {
+          timer = setTimeout(end, 300);
+        }
+      };
+
+      stopClip();
+      if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      const file = clipFor(text);
+      if (file && playClip(file, pitch, end, speak)) {
+        // (a safety net in case the player never reports the end)
+        if (opts.onEnd) timer = setTimeout(end, 2500 + text.length * 120);
         return;
       }
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        const skin = AF.Profile.skin();
-        if (voice) u.voice = voice;
-        u.lang = (voice && voice.lang) || 'en-US';
-        u.pitch = opts.pitch != null ? opts.pitch : (skin.pitch || 1);
-        u.rate = opts.rate != null ? opts.rate : (skin.rate || 0.85);
-        u.volume = 1;
-        u.onend = end;
-        u.onerror = end;
-        window.speechSynthesis.speak(u);
-        if (opts.onEnd) timer = setTimeout(end, 1200 + text.length * 110);
-      } catch (e) {
-        timer = setTimeout(end, 300);
-      }
+      speak();
     },
 
     /** Speaks a single letter sound, e.g. /s/ — stretched so the
@@ -236,6 +301,7 @@
 
     stop() {
       saying++;
+      stopClip();
       if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
     }
   };

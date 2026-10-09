@@ -1,0 +1,21 @@
+{
+  "name": "animal-friends-voice-tools",
+  "version": "1.0.0",
+  "description": "Makes the recorded voice for Animal Friends (see README.md)",
+  "scripts": {
+    "harvest": "node harvest.mjs",
+    "gen": "node gen.mjs --style lively",
+    "preview": "node gen.mjs --style lively --convert-only"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@breezystack/lamejs": "1.2.7",
+    "kokoro-js": "1.2.1"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  },
+  "private": true
+}

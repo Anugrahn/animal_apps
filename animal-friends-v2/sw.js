@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.3.0';
+const VERSION = 'af-v3.4.0';
 
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -104,6 +104,11 @@ const FILES = [
   'content/bank.js', 'content/literacy.js', 'content/stem.js', 'content/life.js', 'content/play.js'
 ];
 
+/* The recorded voice (made by tools/voice): voice/files.js lists the
+   clips to store for offline use. */
+try { importScripts('voice/files.js'); } catch (e) { self.VOICE_FILES = []; }
+FILES.push(...(self.VOICE_FILES || []));
+
 /* One file at a time. Asking for all of them at once can overwhelm a
    small local server (the launcher's) and make the install fail.
    Each file gets three tries, so one dropped request does not cost the
@@ -160,8 +165,14 @@ self.addEventListener('fetch', (e) => {
     })());
     return;
   }
+  // A voice line not stored at install (a name line for a suggested
+  // name) is stored the first time it plays, for next time offline.
+  const keep = url.pathname.includes('/voice/');
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit => hit ||
-      fetch(e.request).catch(() => fetch(e.request)).catch(() => Response.error()))
+      fetch(e.request).catch(() => fetch(e.request)).then(res => {
+        if (keep && res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
+        return res;
+      }).catch(() => Response.error()))
   );
 });

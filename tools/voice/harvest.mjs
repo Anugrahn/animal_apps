@@ -62,6 +62,8 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       });
       if (lv.pairs && lv.say) { S(lv.say); lv.pairs.forEach(pr => { S(pr.sayA || pr.w); S(pr.say || pr.w); }); }
       (lv.sets || []).forEach(s => { S(s.say); if (s.praise) S(s.praise); (s.steps || []).forEach(st => S(st.say || st.label)); });
+      // Build a word: the blend of its sounds, then the word itself
+      if (lv.type === 'build') (lv.words || []).forEach(x => { S(AF.blend(x.w), 'sound'); S(x.w); });
     }
     // the friend's own words, for every kind of animal
     Object.keys(AF.Art.SPECIES || {}).forEach(k => { S(AF.Art.SPECIES[k].cheer); S(AF.Art.SPECIES[k].cheer + ' Three stars!'); });

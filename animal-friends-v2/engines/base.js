@@ -97,6 +97,16 @@
         timers.push(id);
         return id;
       },
+      /** Like later(), but also lets the friend finish talking first (up to
+          8 s more), so a slow, clear line is never cut off by what comes next. */
+      after(fn, ms) {
+        let waited = 0;
+        const go = () => {
+          if (AF.Audio.busy() && waited < 8000) { waited += 150; S.later(go, 150); }
+          else fn();
+        };
+        return S.later(go, ms);
+      },
       /** Start timing how long the child thinks about a round. */
       mark() { S.t0 = Date.now(); },
       /** Stop timing (call on the correct answer). */

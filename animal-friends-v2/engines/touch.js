@@ -106,7 +106,7 @@
         n.textContent = counts[item.bin];
         AF.Audio.say(lv.tell ? lv.tell(item, def) : def.label, { rate: 0.8 });
       });
-      S.later(() => {
+      S.after(() => {
         S.round++;
         if (S.round >= total) S.done(); else next();
       }, 1900);
@@ -224,7 +224,7 @@
           locked = true;
           S.lap();
           AF.Art.react(S.charEl, 'happy');
-          S.later(() => {
+          S.after(() => {
             S.round++;
             if (S.round >= rounds) S.done(); else E.swap(S, next);
           }, 1900);
@@ -409,7 +409,7 @@
         stage.querySelectorAll('.tr-cue i').forEach(x => { x.classList.add('got'); x.classList.remove('now'); });
         S.lap();
         AF.Audio.say(j.praise, { rate: 0.75 });
-        S.later(() => {
+        S.after(() => {
           S.round++;
           if (S.round >= rounds) S.done(); else E.swap(S, next);
         }, 2000);
@@ -542,7 +542,7 @@
       AF.Audio.SFX.right();
       AF.Art.react(S.charEl, 'happy');
       live().forEach((x, i) => S.later(() => burst(x), 80 + i * 70));
-      S.later(() => {
+      S.after(() => {
         S.round++;
         if (S.round >= total) S.done(); else next();
       }, 1500);

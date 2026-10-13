@@ -40,6 +40,12 @@
     l: { say: 'llll', word: 'lion',     e: '🦁' }
   };
 
+  /** The sound a letter makes, as AF.PHONICS spells it. */
+  AF.phonic = (ch) => (AF.PHONICS[ch] && AF.PHONICS[ch].say) || ch;
+  /** A word's sounds in a row, "buh … uh … guh". A doubled sound
+      (the c k in "duck") is said once. tools/voice runs them together. */
+  AF.blend = (word) => word.split('').map(AF.phonic).filter((s, i, all) => s !== all[i - 1]).join(' … ');
+
   const w = (list) => list.map(x => ({ w: x[0], e: x[1] }));
 
   AF.WORDS = {
@@ -514,11 +520,10 @@
 
     /** Hear the sounds "c … a … t", tap the picture. words = [{w,e}] */
     blend(words, n) {
-      const ph = (ch) => (AF.PHONICS[ch] && AF.PHONICS[ch].say) || ch;
       return (ctx) => {
         const t = U.one(words.filter(x => x.w !== ctx.last));
         return {
-          say: 'Put the sounds together.', sound: t.w.split('').map(ph).join(' … '),
+          say: 'Put the sounds together.', sound: AF.blend(t.w),
           text: `Put the sounds together: <b>${t.w.split('').join(' · ')}</b>`,
           options: U.shuffle([t].concat(U.pick(words, n - 1, [t]))).map(o => ({ key: o.w, emoji: o.e })),
           answer: t.w, praise: t.w

@@ -200,7 +200,7 @@
           AF.Audio.SFX.right();
           AF.Art.react(meArt, 'happy');
           AF.Audio.say(lv.ordered ? `${it.label}!` : need > 1 ? `${COUNT[got] || got}!` : `${it.label}!`);
-          if (got === need) S.later(() => { if (!won) AF.Audio.say(lv.done || 'Now go home!'); }, 1100);
+          if (got === need) S.after(() => { if (!won) AF.Audio.say(lv.done || 'Now go home!'); }, 1100);
         } else {
           if (!it.hit) { it.hit = true; S.miss(); }
           AF.Audio.SFX.wrong();

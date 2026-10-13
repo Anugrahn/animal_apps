@@ -931,12 +931,13 @@
 
   /* A way to jump straight to a screen, for testing and demos:
        ?go=home | maker | parents | tutorial | journey | area:stem | map:letters | map:letters:2 | play:maze:m3
-     Add &friend=4 to use the fifth ready-made friend. */
+     Add &friend=4 to start as the fifth ready-made friend (only before a friend is made).
+     A link can't get past the grown-up check: ?go=parents and &speech=check still ask the sum. */
   function deepLink() {
     const q = new URLSearchParams(location.search);
     const go = q.get('go');
     if (!go) return;
-    if (!P.character || q.get('friend')) P.chooseCharacter(Art.PRESETS[+q.get('friend') || 0]);
+    if (!P.character) P.chooseCharacter(Art.PRESETS[+q.get('friend') || 0]);
     P.markTutorial();
     const part = go.split(':');
     const mod = AF.module(part[1]);
@@ -944,7 +945,7 @@
     show('home');
     if (part[0] === 'pick') { renderPick(); show('pick'); }
     else if (part[0] === 'maker') openMaker(P.character);
-    else if (part[0] === 'parents') renderGrown();
+    else if (part[0] === 'parents') gate(renderGrown);
     else if (part[0] === 'tutorial') openTutorial();
     else if (part[0] === 'area') openArea(part[1]);
     else if (part[0] === 'journey') openJourney();
@@ -954,9 +955,12 @@
     }
     else if (part[0] === 'play' && mod) {
       const i = Math.max(0, mod.levels.findIndex(l => l.id === part[2]));
+      const play = () => startLevel(mod, mod.levels[i], i);
       const speech = ['check', 'echo', 'tap'].indexOf(q.get('speech')) >= 0 ? q.get('speech') : 'tap';
-      if (P.setting('speech') === 'ask') P.setSetting('speech', speech);
-      startLevel(mod, mod.levels[i], i);
+      if (P.setting('speech') !== 'ask') play();
+      // Sending audio off the device needs a grown-up, as it does in the Say It! question.
+      else if (speech === 'check') gate(() => { P.setSetting('speech', speech); play(); });
+      else { P.setSetting('speech', speech); play(); }
     }
   }
 

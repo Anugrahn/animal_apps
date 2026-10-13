@@ -482,8 +482,10 @@ Deep links jump to any screen:
 ```
 index.html?go=home          ?go=maker         ?go=parents      ?go=tutorial
 index.html?go=area:stem     ?go=map:letters   ?go=map:letters:2 (Advanced)   ?go=play:maze:m3
-           &friend=4  (use the fifth ready-made friend)
+           &friend=4  (use the fifth ready-made friend; only before a friend is made)
 ```
+
+`?go=parents` and `&speech=check` still show the grown-up sum, so a link can't skip it.
 
 What was checked for this build, in headless Chrome on macOS:
 

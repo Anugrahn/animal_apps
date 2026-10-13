@@ -11,10 +11,17 @@ online service.
 - **The quicker, flatter option:** [Kokoro](https://www.npmjs.com/package/kokoro-js)
   (Apache-2.0).
 - **Paced for three-year-olds:** `post.py` stretches every take towards
-  about 140 words a minute (never more than 60% longer), adds a little space
-  between words, removes rumble and evens the loudness. To change the pace,
-  edit it, bump `POST` in `gen.mjs`, and run `node gen.mjs --convert-only`.
-  That takes under a minute and records nothing again.
+  about 125 words a minute (never more than 60% longer). It adds pauses
+  between sentences and before the last word, makes letter sounds pure
+  (/t/ is a puff of air, not "tuh"), builds blends from those sounds, and
+  evens the loudness. The numbers come from
+  [`docs/research/kids-audio.md`](../../docs/research/kids-audio.md). To
+  change them, edit `post.py`, bump `POST` in `gen.mjs`, and run
+  `node gen.mjs --convert-only`. That takes about 3 minutes and records
+  nothing again.
+- **Still too fast:** `too-fast.txt` lists the lines still above 150 words a
+  minute after `post.py`. The "lively" takes are quick, so these need
+  recording again more calmly (see section 9 of the research).
 - **Lines with no recording:** these use the device's own voice. For example,
   a story line naming a friend the child named themselves.
 

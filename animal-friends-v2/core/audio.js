@@ -6,8 +6,9 @@
    * ONE voice, chosen automatically. We score the device's
      English voices and keep the best one. The child's character
      only changes pitch and pace.
-   * Local voices win over network ones, so the app keeps talking
-     with no connection. Compact/low-quality voices are penalised.
+   * A voice on the device always wins over a network one, so the app
+     keeps talking with no connection and sends nothing anywhere.
+     Compact/low-quality voices are penalised.
    * iOS/Android will not play audio until the user has touched
      the screen, so unlock() is called on the very first tap.
    * Sound effects and song melodies are synthesised with WebAudio
@@ -20,6 +21,8 @@
   let unlocked = false;
   let ctx = null;
   let saying = 0;           // counts utterances, so a cut-off one knows it was
+  let talking = 0;          // the utterance still being said (0 = quiet)
+  let quietAt = 0;          // when the last "right!" chime has finished (performance.now())
 
   /* Voices known to be clear and well-articulated for children.
      Higher score wins. Anything not listed still competes on the
@@ -42,7 +45,6 @@
     let s = 40;
     PREFERRED.forEach(p => { if (p.match.test(v.name)) s = Math.max(s, p.score); });
 
-    if (v.localService) s += 25;                        // works offline
     if (/en[-_]us/i.test(lang)) s += 10;
     else if (/en[-_]gb/i.test(lang)) s += 8;
     if (/compact|eloquence|novelty|whisper|bells|cellos/i.test(v.name)) s -= 50;
@@ -56,12 +58,16 @@
     const all = window.speechSynthesis.getVoices() || [];
     if (!all.length) return null;
 
-    let best = null, bestScore = -1;
-    all.forEach(v => {
-      const s = scoreVoice(v);
-      if (s > bestScore) { bestScore = s; best = v; }
-    });
-    voice = bestScore > 0 ? best : null;
+    // A voice on the device always beats one on the network, however well
+    // the network one scores: a network voice sends what it reads (the
+    // name the child typed, too) to Google or Microsoft. It is used only
+    // when the device has no English voice of its own.
+    const best = (list) => {
+      let top = null, topScore = 0;
+      list.forEach(v => { const s = scoreVoice(v); if (s > topScore) { topScore = s; top = v; } });
+      return top;
+    };
+    voice = best(all.filter(v => v.localService)) || best(all);
     return voice;
   }
 
@@ -98,9 +104,16 @@
     osc.stop(t0 + dur + 0.02);
   }
 
+  /* How long the "right!" chime rings. Speech that starts while it rings
+     waits for it: a small child can't pick words out from under a chime. */
+  const RIGHT_MS = 460;
+
   const SFX = {
     tap:   () => tone(520, 0.09, 'sine', 0.13),
-    right: () => { tone(660, 0.14, 'sine', 0.2); tone(880, 0.18, 'sine', 0.18, 0.1); tone(1180, 0.26, 'sine', 0.14, 0.2); },
+    right: () => {
+      tone(660, 0.14, 'sine', 0.2); tone(880, 0.18, 'sine', 0.18, 0.1); tone(1180, 0.26, 'sine', 0.14, 0.2);
+      if (unlocked && AF.Profile.setting('sound')) quietAt = performance.now() + RIGHT_MS;
+    },
     /* Deliberately soft and low — never a harsh buzzer. A child
        should hear "not that one", not "you failed". */
     wrong: () => { tone(300, 0.16, 'triangle', 0.12); tone(250, 0.2, 'triangle', 0.1, 0.1); },
@@ -175,7 +188,7 @@
      played a little lower and slower, or higher and quicker. Only a
      little: the recordings are paced for three-year-olds, and a squeaky
      friend must not undo that by talking fast. */
-  const clipRate = (pitch) => Math.max(0.93, Math.min(1.06, 1 + ((pitch || 1) - 1) * 0.2));
+  const clipRate = (pitch) => Math.max(0.93, Math.min(1.03, 1 + ((pitch || 1) - 1) * 0.2));
 
   function stopClip() {
     if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }
@@ -243,12 +256,13 @@
         was meant to follow it would talk over the newer speech. */
     say(text, opts) {
       opts = opts || {};
-      const mine = ++saying;
+      const mine = talking = ++saying;
       let ended = false, timer = 0;
       const end = () => {
         if (ended) return;
         ended = true;
         clearTimeout(timer);
+        if (talking === mine) talking = 0;
         if (opts.onEnd && mine === saying) opts.onEnd();
       };
       if (!AF.Profile.setting('sound')) { timer = setTimeout(end, 300); return; }
@@ -270,22 +284,32 @@
           u.onend = end;
           u.onerror = end;
           window.speechSynthesis.speak(u);
-          if (opts.onEnd) { clearTimeout(timer); timer = setTimeout(end, 1200 + text.length * 110); }
+          clearTimeout(timer); timer = setTimeout(end, 1200 + text.length * 110);
         } catch (e) {
           timer = setTimeout(end, 300);
         }
       };
 
+      const start = () => {
+        if (mine !== saying) return;           // newer speech has taken over
+        const file = clipFor(text);
+        if (file && playClip(file, pitch, end, speak)) {
+          // (a safety net in case the player never reports the end)
+          timer = setTimeout(end, 2500 + text.length * 120);
+          return;
+        }
+        speak();
+      };
+
       stopClip();
       if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
-      const file = clipFor(text);
-      if (file && playClip(file, pitch, end, speak)) {
-        // (a safety net in case the player never reports the end)
-        if (opts.onEnd) timer = setTimeout(end, 2500 + text.length * 120);
-        return;
-      }
-      speak();
+      const wait = quietAt - performance.now();
+      if (wait > 20) timer = setTimeout(start, wait);
+      else start();
     },
+
+    /** True while the friend is still saying something. */
+    busy() { return talking !== 0; },
 
     /** Speaks a single letter sound, e.g. /s/ — stretched so the
         child hears the phoneme, not the letter name. */
@@ -303,6 +327,7 @@
 
     stop() {
       saying++;
+      talking = 0;
       stopClip();
       if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
     }

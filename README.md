@@ -59,7 +59,7 @@ Full setup steps for grown-ups, including USB port-forwarding to a phone, are in
 ```
 index.html?go=home   ?go=maker   ?go=parents   ?go=tutorial
 index.html?go=area:stem   ?go=map:letters   ?go=map:letters:2   ?go=play:maze:m3
-           &friend=4      (start as the fifth ready-made friend)
+           &friend=4      (start as the fifth ready-made friend, before one is made)
 ```
 
 ---
@@ -109,7 +109,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.4.1`.
+  `af-v3.5.0`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and

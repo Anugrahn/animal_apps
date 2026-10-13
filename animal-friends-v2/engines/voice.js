@@ -143,7 +143,7 @@
       AF.FX.sparkleAt(card, 16);
       status(cheer, 'good');
       S.later(() => AF.Audio.say(cheer), 350);
-      S.later(() => {
+      S.after(() => {
         S.round++;
         if (S.round >= words.length) S.done(); else next();
       }, 1900);

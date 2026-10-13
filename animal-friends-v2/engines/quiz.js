@@ -122,7 +122,7 @@
       S.lap();
       yes(S, btn);
       if (cur.praise) AF.Audio.say(cur.praise, { rate: 0.75 });
-      S.later(() => {
+      S.after(() => {
         S.round++;
         if (S.round >= total) S.done(); else E.swap(S, next);
       }, cur.praise ? 1700 : 1100);
@@ -212,7 +212,7 @@
           const row = S.host.querySelector('.slots');
           if (row) row.classList.add('done');
         }, 900);
-        S.later(() => {
+        S.after(() => {
           S.round++;
           if (S.round >= sets.length) S.done(); else E.swap(S, next);
         }, set.praise ? 3300 : 2000);
@@ -232,7 +232,6 @@
     const words = U.shuffle(lv.words).slice(0, lv.rounds);
     let word, pos, wrong, locked;
 
-    const phon = (ch) => (AF.PHONICS[ch] && AF.PHONICS[ch].say) || ch;
 
     function next() {
       word = words[S.round];
@@ -255,7 +254,7 @@
         <div class="tiles">${tiles.map(c => `<button class="tile-l" data-c="${c}">${c}</button>`).join('')}</div>`;
 
       S.replay = () => E.talk(S, `Build the word, ${word.w}.`, {
-        onEnd: () => { if (S.alive && !locked) AF.Audio.sound(phon(word.w[pos])); }
+        onEnd: () => { if (S.alive && !locked) AF.Audio.sound(AF.phonic(word.w[pos])); }
       });
 
       const btns = Array.from(stage.querySelectorAll('.tile-l'));
@@ -282,7 +281,7 @@
         if (wrong >= 2) {
           const hint = btns.filter(b => b.dataset.c === word.w[pos] && !b.classList.contains('used'))[0];
           if (hint) hint.classList.add('hint');
-          S.later(() => AF.Audio.sound(phon(word.w[pos])), 450);
+          S.later(() => AF.Audio.sound(AF.phonic(word.w[pos])), 450);
         }
         return false;
       }
@@ -303,7 +302,7 @@
       const nextSlot = stage.querySelector(`[data-b="${pos}"]`);
       if (nextSlot) nextSlot.classList.add('want');
 
-      if (pos < word.w.length) { AF.Audio.sound(phon(btn.dataset.c)); return true; }
+      if (pos < word.w.length) { AF.Audio.sound(AF.phonic(btn.dataset.c)); return true; }
 
       locked = true;
       S.lap();
@@ -311,12 +310,18 @@
       AF.FX.sparkleAt(stage.querySelector('.build-slots'), 16);
       stage.querySelector('.build-slots').classList.add('done');
       AF.Audio.SFX.right();
-      // Blend it: sounds first, then the whole word.
-      AF.Audio.say(word.w.split('').map(phon).join(' … ') + ' … ' + word.w + '!', { rate: 0.7 });
-      S.later(() => {
+      // Blend it: the sounds run together, a breath, then the whole word.
+      let moved = false;
+      const move = () => {
+        if (moved) return;
+        moved = true;
         S.round++;
         if (S.round >= words.length) S.done(); else E.swap(S, next);
-      }, 3400);
+      };
+      AF.Audio.sound(AF.blend(word.w), {
+        onEnd: () => S.later(() => AF.Audio.say(word.w, { onEnd: () => S.later(move, 900) }), 600)
+      });
+      S.later(move, 12000);         // in case something cut the blend off
       return true;
     }
 

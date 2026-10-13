@@ -42,7 +42,7 @@ const spoken = (t) => t.replace(/<[^>]+>/g, '').replace(/[‘’]/g, "'").replac
 const id = (text, speed) => crypto.createHash('sha1').update(`${VOICE}|${speed}|${text}`).digest('hex').slice(0, 12);
 // The app's file for a take after post.py has made it slower and clearer.
 // (A new name whenever that changes, so phones never keep an old copy.)
-const POST = 'kids-140-v2';
+const POST = 'kids-125-v3';
 const outId = (f) => crypto.createHash('sha1').update(`${f}|${POST}`).digest('hex').slice(0, 12);
 const FINAL = new URL('./.wav-final/', import.meta.url);
 
@@ -53,7 +53,13 @@ const presetNames = new Set([...presets.matchAll(/name:\s*'([^']+)'/g)].map(m =>
 const prioFile = new URL('./priority.json', import.meta.url);
 const prio = fs.existsSync(prioFile) ? JSON.parse(fs.readFileSync(prioFile, 'utf8')) : {};
 const LATE = 150000, OTHER_NAMES = 900000;
-const jobs = [];                           // { text, speed, f, rank }: lower rank is made first
+const jobs = [];                           // { text, speed, f, rank, parts? }: lower rank is made first
+// A blend ("buh … uh … guh") is not read out: post.py builds it from the
+// takes of its letter sounds, so it needs nothing recorded of its own.
+const partsOf = (line, kind) => {
+  const parts = line.split(' … ');
+  return kind === 'sound' && parts.length > 1 && parts.every(p => phrases[p] === 'sound') ? parts.map(p => id(p, SOUND_SPEED)) : null;
+};
 const allClips = {}, allNamed = {};
 for (const [line, kind] of Object.entries(phrases)) {
   if (bad.test(line)) continue;
@@ -66,7 +72,7 @@ for (const [line, kind] of Object.entries(phrases)) {
       allNamed[line][n] = o; jobs.push({ text, speed, f, o, rank: presetNames.has(n) ? rank + 1 : OTHER_NAMES + rank });
     }
   } else {
-    const f = id(line, speed), o = outId(f); allClips[line] = o; jobs.push({ text: line, speed, f, o, rank });
+    const f = id(line, speed), o = outId(f); allClips[line] = o; jobs.push({ text: line, speed, f, o, rank, parts: partsOf(line, kind) });
   }
 }
 jobs.sort((a, b) => a.rank - b.rank);
@@ -81,12 +87,13 @@ console.log(`${jobs.length} clips (${Object.keys(allClips).length} lines + ${Obj
    recording, so the app gets the new voice bit by bit (reload to hear it). */
 function publish(quiet) {
   // new takes: slower and clearer (post.py), then a 64 kbps MP3 so consonants stay crisp
-  const ready = todo.filter(j => !have(j.o) && fs.existsSync(new URL(j.f + '.wav', WAVS)));
+  const took = (f) => fs.existsSync(new URL(f + '.wav', WAVS));
+  const ready = todo.filter(j => !have(j.o) && (j.parts ? j.parts.every(took) : took(j.f)));
   if (ready.length) {
     fs.mkdirSync(FINAL, { recursive: true });
     const list = new URL('./.post.json', import.meta.url);
     fs.writeFileSync(list, JSON.stringify(ready.map(j => ({ in: new URL(j.f + '.wav', WAVS).pathname, out: new URL(j.o + '.wav', FINAL).pathname,
-      words: j.text.split(/\s+/).filter(Boolean).length, sound: j.speed === SOUND_SPEED }))));
+      text: spoken(j.text), kind: j.speed === SOUND_SPEED ? 'sound' : 'say', parts: j.parts && j.parts.map(f => new URL(f + '.wav', WAVS).pathname) }))));
     const r = spawnSync(new URL('./.venv/bin/python', import.meta.url).pathname, [new URL('./post.py', import.meta.url).pathname, list.pathname], { stdio: ['ignore', 'inherit', 'inherit'] });
     if (r.status !== 0) { console.error('post.py failed'); process.exit(1); }
     for (const j of ready) { const w = readWav(new URL(j.o + '.wav', FINAL).pathname); fs.writeFileSync(new URL(j.o + '.mp3', OUT), toMp3(w.samples, w.rate, 64)); }
@@ -113,15 +120,20 @@ function publish(quiet) {
   const offline = Object.values(clips).concat(...Object.values(named).map(m => Object.entries(m).filter(([n]) => presetNames.has(n)).map(([, f]) => f)));
   fs.writeFileSync(new URL('files.js', OUT), head +
     `self.VOICE_FILES = ${JSON.stringify(['voice/index.js', 'voice/silence.mp3'].concat([...new Set(offline)].map(f => 'voice/' + f + '.mp3')))};\n`);
+  // Lines still quicker than 150 words a minute after post.py: worth recording again, more calmly.
+  const ratesFile = new URL('rates.json', FINAL);
+  const rates = fs.existsSync(ratesFile) ? JSON.parse(fs.readFileSync(ratesFile, 'utf8')) : {};
+  const fast = [...new Map(jobs.filter(j => have(j.o) && rates[j.o] > 150).map(j => [j.text, rates[j.o]])).entries()].sort((a, b) => b[1] - a[1]);
+  fs.writeFileSync(new URL('./too-fast.txt', import.meta.url), fast.map(([t, w]) => `${w}\t${t}\n`).join(''));
   let bytes = 0; for (const f of fs.readdirSync(OUT)) bytes += fs.statSync(new URL(f, OUT)).size;
-  if (!quiet) console.log(`voice/ is ${(bytes / 1e6).toFixed(1)} MB; ${Object.keys(clips).length} of ${Object.keys(allClips).length} lines and ${Object.keys(named).length} name lines recorded; ${offline.length} clips stored for offline use`);
+  if (!quiet) console.log(`voice/ is ${(bytes / 1e6).toFixed(1)} MB; ${Object.keys(clips).length} of ${Object.keys(allClips).length} lines and ${Object.keys(named).length} name lines recorded; ${offline.length} clips stored for offline use; ${fast.length} lines still too fast (too-fast.txt)`);
 }
 
 if (todo.length && ENGINE === 'chatterbox' && !ONLY_CONVERT) {
   const [ex, cfg] = STYLES[STYLE];
   const list = new URL('./.todo.json', import.meta.url);
   // letter sounds are said calmly, so the sound itself is clear
-  fs.writeFileSync(list, JSON.stringify(todo.map(j => ({ text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg }))));
+  fs.writeFileSync(list, JSON.stringify(todo.filter(j => !j.parts).map(j => ({ text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg }))));
   const py = spawn(new URL('./.venv/bin/python', import.meta.url).pathname, [new URL('./gen_cb.py', import.meta.url).pathname, list.pathname, WAVS.pathname],
     { stdio: ['ignore', 'pipe', 'inherit'], env: Object.assign({}, process.env, { PYTORCH_ENABLE_MPS_FALLBACK: '1' }) });
   py.stdout.on('data', (d) => {

@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.4.1';
+const VERSION = 'af-v3.5.0';
 
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -105,9 +105,11 @@ const FILES = [
 ];
 
 /* The recorded voice (made by tools/voice): voice/files.js lists the
-   clips to store for offline use. */
+   clips to store for offline use. Its list (voice/index.js) is needed
+   like any code file; the clips themselves are not (see install). */
 try { importScripts('voice/files.js'); } catch (e) { self.VOICE_FILES = []; }
-FILES.push(...(self.VOICE_FILES || []));
+const CLIPS = (self.VOICE_FILES || []).filter(f => f.endsWith('.mp3'));
+FILES.push(...(self.VOICE_FILES || []).filter(f => !f.endsWith('.mp3')));
 
 /* One file at a time. Asking for all of them at once can overwhelm a
    small local server (the launcher's) and make the install fail.
@@ -125,6 +127,10 @@ self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const cache = await caches.open(VERSION);
     for (const file of FILES) await store(cache, file);
+    // A voice clip that won't come down is skipped, so it never costs the
+    // whole offline copy: the device's voice says that line, and the clip
+    // is stored the first time it plays (see fetch).
+    for (const file of CLIPS) await store(cache, file).catch(() => {});
     await self.skipWaiting();
   })());
 });

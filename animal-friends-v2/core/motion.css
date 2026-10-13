@@ -37,17 +37,16 @@
 
 /* ---------- press: down fast, back with a bounce ---------- */
 .round-btn, .btn, .pick-card, .bean, .mk-chip, .mk-done, .island, .lv-disc, .opt-face,
-.mic, .drum, .pad, .code-go, .tab, .speech, .me-face, .sort-item, .mt-face, .big-round, .jr-box, .jr-sign, .lm, .jy-card, .pill-go {
+.mic, .drum, .pad, .code-go, .tab, .speech, .me-face, .sort-item, .mt-face, .big-round, .lm, .jy-card, .pill-go {
   transition: transform .5s var(--spring), box-shadow .18s, filter .18s, scale .5s var(--spring);
 }
 .round-btn:active, .btn:active, .pick-card:active, .bean:active, .mk-chip:active, .mk-done:active,
 .island:active, .lv-node:active .lv-disc, .opt:active .opt-face, .mic:active, .drum:active,
-.pad:active, .code-go:active, .tab:active, button.speech:active, .me-face:active, .big-round:active, .jr-stop:active .jr-box, .jr-sign:active, .lm:active, .jy-card:active {
+.pad:active, .code-go:active, .tab:active, button.speech:active, .me-face:active, .big-round:active, .lm:active, .jy-card:active {
   transition-duration: .07s;
 }
 .island:active { transform: scale(.93, .9); }
 .me-face:active, .tab:active, .lm:active { transform: scale(.92); }
-.jr-stop:active .jr-box, .jr-sign:active { transform: scale(.92); }
 .jy-card:active { transform: scale(.97); }
 
 /* ---------- arriving ---------- */
@@ -74,7 +73,7 @@
 .home-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 7s ease-in-out infinite; }
 .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 9s ease-in-out 2s infinite; }
 body.still .mz-item, body.still .lm-ic, body.still .lv-node.is-next .lv-disc, body.still .isl-marker, body.still .cd-star, body.still .pad-hint,
-body.still .pop-b .opt-face, body.still .pick-plus span, body.still .jr-stop.is-next .jr-box, body.still .lv-kind,
+body.still .pop-b .opt-face, body.still .pick-plus span, body.still .lv-kind,
 body.still .lv-chest.open { animation: none; }
 body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite; }
 
@@ -103,6 +102,6 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
 @media (prefers-reduced-motion: reduce) {
   *:not(.pop-b), ::before, ::after {
     animation-duration: 1ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important; transition-delay: 0s !important;
+    transition: none !important;               /* (not a 1 ms one: every change would then lag a frame) */
   }
 }

@@ -48,6 +48,7 @@
     });
     const sc = $(id);
     if (sc) sc.querySelectorAll('.scroll').forEach(s => { s.scrollTop = 0; });
+    fitSigns();
     if (id !== 'maker' && liveView) { liveView.stop(); liveView = null; }
 
     // The world outside changes with where you are: the open meadow
@@ -334,6 +335,16 @@
   /** The shared frame (AF.UI.hud) on a menu screen. */
   function renderHud(screen, o) {
     AF.UI.hud($(screen).querySelector('.hud'), o);
+    fitSigns();
+  }
+
+  /** Long titles shrink to fit their sign (once the screen is showing,
+      and again when the game's picture in the sign has loaded). */
+  function fitSigns() {
+    requestAnimationFrame(() => document.querySelectorAll('.screen.active .sign').forEach(s => {
+      AF.UI.fit(s, 14);
+      s.querySelectorAll('img').forEach(i => { if (!i.complete) i.addEventListener('load', () => AF.UI.fit(s, 14), { once: true }); });
+    }));
   }
 
   function hudAction(act) {
@@ -367,25 +378,21 @@
     const hello = hour < 12 ? 'Good morning!' : hour < 18 ? 'Hello!' : 'Good evening!';
     $('home-hello').innerHTML = `${hello} I’m <b>${AF.U.esc(skin.name)}</b>.<br>Where shall we go?`;
 
-    /* ---- Daily Journey: a wooden bar that opens today's three games ---- */
+    /* ---- Daily Journey: one pill that plays the next of today's three
+       games; its stars show how many are done (all done: the list, to replay) ---- */
     const t = P.today();
     const picks = todayPicks();
-    const done = picks.filter(p => t.done.indexOf(p.key) >= 0).length;
-    $('today-count').textContent = picks.length ? `${done} / ${picks.length}` : '';
-    $('jr-fill').style.width = (picks.length > 1 ? Math.min(1, done / (picks.length - 1)) * 100 : 0) + '%';
-    const row = $('today-row');
-    row.innerHTML = '';
-    const firstOpen = picks.findIndex(p => t.done.indexOf(p.key) < 0);
-    picks.forEach((p, i) => {
-      const isDone = t.done.indexOf(p.key) >= 0;
-      const b = document.createElement('button');
-      b.className = 'jr-stop' + (isDone ? ' is-done' : '') + (i === firstOpen ? ' is-next' : '');
-      b.style.setProperty('--i', i);
-      b.setAttribute('aria-label', `${p.level.title}, ${p.mod.title}${isDone ? ', done' : ''}`);
-      b.innerHTML = `<span class="jr-box" data-ic="star"></span>`;
-      b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(p.mod, p.level, p.index, 'journey'); });
-      row.appendChild(b);
-    });
+    const isDone = (p) => t.done.indexOf(p.key) >= 0;
+    const done = picks.filter(isDone).length;
+    const next = picks.filter(p => !isDone(p))[0];
+    const pill = $('jr-open');
+    pill.hidden = !picks.length;
+    $('today-row').innerHTML = picks.map(p => `<span class="${isDone(p) ? 'on' : ''}" data-ic="star"></span>`).join('');
+    pill.setAttribute('aria-label', `Daily Journey: ${done} of ${picks.length} done` + (next ? `. Play ${next.level.title}` : ''));
+    pill.onclick = () => {
+      Audio.unlock(); Audio.SFX.pop();
+      if (next) startLevel(next.mod, next.level, next.index, 'journey'); else openJourney();
+    };
 
     /* ---- one floating island per area of the curriculum ---- */
     const world = $('world');
@@ -426,10 +433,10 @@
       const b = document.createElement('button');
       b.className = 'card jy-card' + (isDone ? ' is-done' : '') + (i === firstOpen ? ' is-next' : '');
       b.style.setProperty('--i', i);
-      b.setAttribute('aria-label', `${p.level.title}, ${p.mod.title}${isDone ? ', done' : ''}`);
+      b.setAttribute('aria-label', `${p.mod.title}${p.level.title !== p.mod.title ? ', ' + p.level.title : ''}${isDone ? ', done' : ''}`);
       b.innerHTML = `
         ${AF.Icon.jelly(p.mod.id, p.mod.colour, '', p.mod.icon)}
-        <span class="jy-text"><b>${AF.U.esc(p.level.title)}</b><small>${AF.U.esc(p.mod.title)}</small></span>
+        <span class="jy-text"><b>${AF.U.esc(p.mod.title)}</b>${p.level.title !== p.mod.title ? `<small>${AF.U.esc(p.level.title)}</small>` : ''}</span>
         <span class="jy-end" data-ic="${isDone ? 'check' : 'right'}"></span>`;
       b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(p.mod, p.level, p.index, 'journey'); });
       list.appendChild(b);
@@ -668,24 +675,19 @@
      how to play
      ============================================================ */
 
-  /* One idea per slide, one sentence each (UI_REDESIGN_SPEC.md, Level 0). */
+  /* One idea per slide, one sentence each (UI_REDESIGN_SPEC.md, Level 0),
+     and only four: a child who can't read yet follows the pictures and the
+     friend's voice, so each slide is a big picture and one spoken line.
+     (Grown-ups find everything else behind the cog.) */
   const SLIDES = [
-    { pose: 'cheer', logo: true, demo: [], text: 'Meet your animal friend and learn through fun games!',
-      say: 'Welcome to Animal Friends! Let’s learn through fun games.' },
+    { pose: 'cheer', logo: true, demo: [], text: 'Meet your animal friend and play!',
+      say: 'Hello! Welcome to Animal Friends. Let’s play and learn together!' },
     { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'Letters'], ['stem', '#F2B618', 'Numbers'], ['life', '#E5535A', 'Feelings'], ['playtime', '#3E9BF0', 'Play']],
-      text: 'Tap an island to see its games.', say: 'Tap an island to see its games.' },
-    { pose: 'idle', title: 'Follow the path', demo: [['star', '#58B368', 'Basic'], ['star', '#3E9BF0', 'Intermediate'], ['star', '#A45CE0', 'Advanced']],
-      text: 'Walk the path to the treasure chest to open the next stage.', say: 'Walk the path to the treasure chest. Then a new stage opens!' },
-    { pose: 'idle', title: 'Listen to me', demo: [['sound', '#3E9BF0', 'Hear it']],
-      text: 'Tap the blue speaker to hear me again.', say: 'Tap the blue speaker to hear me again.' },
-    { pose: 'idle', title: 'Tap it or carry it', demo: [['check', '#3CCB7F', 'Tap'], ['hint', '#FFC93C', 'Help']],
-      text: 'Tap the answer, or pick it up and carry it — I will help you.', say: 'Tap the answer, or pick it up and carry it. I will help you.' },
-    { pose: 'idle', title: 'Play your way', demo: [['maze', '#58B368', 'Maze'], ['memory', '#A98BE0', 'Memory'], ['mic', '#FF6FAE', 'Say it'], ['coding', '#F5B81C', 'Coding']],
-      text: 'Walk mazes, match cards, trace letters and say words out loud.', say: 'Walk mazes, match cards, trace letters and say words.' },
+      text: 'Tap an island to play.', say: 'Tap an island to play.' },
+    { pose: 'idle', title: 'Listen, then tap', demo: [['sound', '#3E9BF0', 'Listen'], ['check', '#3CCB7F', 'Tap'], ['hint', '#FFC93C', 'Help']],
+      text: 'Listen to me, then tap the answer.', say: 'Listen to me, then tap the answer. I will help you!' },
     { pose: 'cheer', title: 'Win stars', demo: [['star', '#FFC93C', ''], ['star', '#FFC93C', ''], ['star', '#FFC93C', '']],
-      text: 'Every game gives you stars, and there is no timer.', say: 'Every game gives you stars. Can you get three?' },
-    { pose: 'idle', title: 'Grown-ups', demo: [['settings', '#3DA5F4', 'Settings']],
-      text: 'Grown-ups tap the cog for progress, time limits and privacy.', say: 'Grown ups can tap the cog. Let’s play!' }
+      text: 'Every game gives you stars!', say: 'Every game gives you stars. Can you get three?' }
   ];
 
   function openTutorial() {
@@ -912,7 +914,6 @@
     document.querySelectorAll('[data-home]').forEach(b =>
       b.addEventListener('click', () => { Audio.SFX.tap(); goHome(); }));
     $('play-back').addEventListener('click', () => { Audio.SFX.tap(); backToMap(); });
-    $('jr-open').addEventListener('click', () => { Audio.unlock(); Audio.SFX.pop(); openJourney(); });
     document.addEventListener('click', (e) => {
       const b = e.target.closest('.hud [data-act]');
       if (b) hudAction(b.dataset.act);
@@ -980,7 +981,9 @@
     reduceMotion.addEventListener('change', applyWorld);
     // The level map is laid out for the screen's shape, so redraw it if that changes.
     let turning = 0;
+    if (document.fonts) document.fonts.ready.then(fitSigns);
     window.addEventListener('resize', () => {
+      fitSigns();
       clearTimeout(turning);
       turning = setTimeout(() => {
         if ($('map').classList.contains('active') && current.module) openMap(current.module, current.tier);

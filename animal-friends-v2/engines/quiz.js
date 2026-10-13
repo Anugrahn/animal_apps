@@ -377,14 +377,15 @@
       : f.e ? `<span class="mem-e">${f.e}</span>`
       : `<span class="mem-w" style="--len:${String(f.t).length}">${U.esc(f.t)}</span>`;
 
-    const stage = E.frame(S, { text: 'Find the <b>pairs</b>!', cls: 'stage-memory' });
+    // pairs found show as the progress dots every game has
+    const stage = E.frame(S, { text: 'Find the <b>pairs</b>!', cls: 'stage-memory', rounds: n });
     const total = cards.length;
     // upright phone: as few columns as keep the cards big (2 for six cards, 3 for up to twelve)
     const cols = total <= 6 ? 2 : total <= 12 ? 3 : 4;
     // on a wide screen: the fewest rows that leave no gap and no more than eight across
     const lrows = [2, 3, 4].filter(r => total % r === 0 && total / r <= 8)[0] || 3;
     stage.innerHTML = `
-      <div class="mem-count" aria-live="polite"><span class="coin" data-ic="star"></span>Pairs: <b data-found>0</b>/${n}</div>
+      <span class="vh" aria-live="polite" data-found></span>
       <div class="tray-wrap">
         <div class="tray mem-tray" style="--pc:${cols};--pr:${Math.ceil(total / cols)};--lc:${Math.ceil(total / lrows)};--lr:${lrows}">
           ${cards.map((c, i) => `
@@ -434,9 +435,9 @@
           [a, b].forEach(x => { x.btn.classList.add('matched'); name(x.btn); AF.FX.sparkleAt(x.btn, 8); });
           AF.Audio.SFX.right();
           AF.Art.react(S.charEl, 'happy');
-          const num = stage.querySelector('[data-found]');
-          num.textContent = found;
-          num.parentNode.classList.remove('bump'); void num.offsetWidth; num.parentNode.classList.add('bump');
+          stage.querySelector('[data-found]').textContent = `${found} of ${n} pairs found`;
+          const d = S.host.querySelector('.play-dots');
+          if (d) d.innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i < found ? 'done' : ''}${i === found ? ' now' : ''}"></i>`).join('');
         }, 380);
         if (found === n) {
           S.lap();

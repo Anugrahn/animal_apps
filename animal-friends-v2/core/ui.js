@@ -27,6 +27,24 @@
       return '<h1 class="logo sign" aria-label="Animal Friends"><span data-t="Animal">Animal</span><span data-t="Friends">Friends</span></h1>';
     },
 
+    /** Shrinks a sign's lettering (down to `min` px) until all of it fits,
+        rather than cutting the end off ("Three st…"). */
+    fit(el, min) {
+      if (!el || !el.offsetWidth) return;
+      el.style.fontSize = '';
+      // where the words end (not the leaves drawn past each end) against
+      // where the room inside the sign ends; the screen may still be
+      // growing in, so the padding is scaled the same way
+      const words = document.createRange();
+      const over = () => {
+        const box = el.getBoundingClientRect(), scale = box.width / el.offsetWidth || 1;
+        words.selectNodeContents(el);
+        return words.getBoundingClientRect().right > box.right - parseFloat(getComputedStyle(el).paddingRight) * scale + 1;
+      };
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      while (over() && size > (min || 16)) el.style.fontSize = --size + 'px';
+    },
+
     sign(text, crumb) {
       return `<div class="sign-wrap"><h2 class="sign">${esc(text)}</h2>${crumb ? `<span class="crumb">${esc(crumb)}</span>` : ''}</div>`;
     },

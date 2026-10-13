@@ -152,6 +152,20 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 /* ---------- 2. home: four islands round the friend ---------- */
 #home { padding-bottom: 0; gap: 0; }
 #home .logo { font-size: clamp(34px, 9.4vmin, 66px); }
+/* A phone on its side: the cog and the "?" side by side, and the Journey
+   pill under the friend in the middle, so the islands get the full height. */
+@media (min-aspect-ratio: 1/1) and (max-height: 520px) {
+  #home .logo { font-size: clamp(24px, 7vmin, 34px); }
+  #home .hud-left { flex-direction: row; }
+  #home .world { padding-bottom: max(var(--space-2), env(safe-area-inset-bottom)); }
+  #home .hero { padding-bottom: calc(var(--tap-min) + var(--space-3)); }
+  #home .home-char { width: min(100cqw, 52cqh, 400px); }
+  #home .journey { position: absolute; left: 50%; bottom: max(var(--space-2), env(safe-area-inset-bottom)); translate: -50% 0; padding: 0; }
+  #home .jr-pill { font-size: 18px; padding-left: 20px; }
+}
+@media (min-aspect-ratio: 1/1) and (max-height: 520px) and (max-width: 760px) {
+  #home .jr-text { display: none; }          /* (the stars and the play button say it; the button's name still does) */
+}
 .world {
   position: relative; flex: 1; min-height: 0; display: grid; gap: 0 var(--space-3);
   padding-top: var(--space-1);
@@ -173,6 +187,7 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
   position: absolute; left: 50%; bottom: 17%; translate: -50% 0; white-space: nowrap;
   padding: .12em .9em .18em; border-radius: var(--radius-pill); font-size: 1.05em; font-weight: 700; color: #fff;
   background: linear-gradient(color-mix(in srgb, var(--c) 70%, #fff), var(--c)); border: .12em solid #fff;
+  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, #2A1404); paint-order: stroke fill;
   text-shadow: 0 .08em 0 color-mix(in srgb, var(--c) 60%, #2A1404);
   box-shadow: 0 .18em 0 color-mix(in srgb, var(--c) 60%, #2A1404), 0 .3em .5em rgba(20,40,60,.2);
 }
@@ -192,28 +207,18 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 .home-char::after { content: ""; position: absolute; z-index: -1; left: 2%; right: 2%; bottom: -12%; height: 34%; background: url(../art/world/stump.webp) center bottom / contain no-repeat; }
 .hero .speech { max-width: 46cqw; font-size: clamp(14px, 3.6vmin, 22px); }
 
-/* Daily Journey: a wooden sign over three star boxes joined by a gold line */
-.journey { position: relative; z-index: 2; flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
-.jr-sign { font-size: clamp(20px, 5.4vmin, 32px); }
-.jr-sign em { font-style: normal; margin-left: .4em; font-size: .7em; color: #FFF4DC; }
-.jr-track { position: relative; }
-.jr-line { position: absolute; left: 16%; right: 16%; top: 50%; height: 12px; translate: 0 -50%; border-radius: 99px; background: #2F55B8; box-shadow: inset 0 2px 3px rgba(0,0,0,.25); }
-.jr-line i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(#FFE680, #FFC21E); box-shadow: 0 0 10px #FFE27A; transition: width .5s; }
-.jr-stops { position: relative; display: flex; gap: clamp(36px, 12vmin, 90px); }
-.jr-stop { animation: pop-in .4s var(--spring) both; animation-delay: calc(var(--i) * 80ms); }
-.jr-box {
-  display: grid; place-items: center; width: clamp(60px, 16vmin, 84px); aspect-ratio: 1; border-radius: 24%;
-  color: #24357F; background: linear-gradient(#4361C8, #2B3F96);
-  box-shadow: inset 0 0 0 4px #6C88E8, 0 0 0 3px #FFE7A0, 0 6px 0 #1B2A6E, 0 10px 16px rgba(10,20,80,.3);
-}
-.jr-box svg { width: 62%; height: 62%; }
-.jr-stop.is-done .jr-box, .jr-stop.is-next .jr-box { color: var(--gold); }
-.jr-stop.is-done .jr-box svg { filter: drop-shadow(0 2px 0 var(--gold-dark)); }
-.jr-stop.is-next .jr-box { background: linear-gradient(#FFF1C2, #FFD56A); box-shadow: inset 0 0 0 4px #fff, 0 0 0 3px var(--gold), 0 6px 0 var(--gold-dark), 0 0 22px rgba(255,214,90,.9); animation: bob 1.5s ease-in-out infinite; }
-.jr-stop.is-next .jr-box svg { color: #FFC21E; filter: drop-shadow(0 2px 0 var(--gold-dark)); }
+/* Daily Journey: one pill that plays the next game; three stars show today's progress */
+.journey { position: relative; z-index: 2; flex: none; display: flex; justify-content: center; padding: var(--space-2) var(--space-3) max(var(--space-4), env(safe-area-inset-bottom)); }
+.jr-pill { min-height: var(--tap-min); padding: 0 10px 0 28px; gap: 14px; font-size: clamp(19px, 4.8vmin, 26px); box-shadow: 0 6px 0 #1FA88A, 0 12px 20px rgba(10,60,50,.3); }
+.jr-stars { display: inline-flex; gap: 2px; }
+.btn .jr-stars [data-ic] { width: 1.05em; height: 1.05em; color: rgba(255,255,255,.45); }
+.btn .jr-stars .on { color: var(--gold); filter: drop-shadow(0 1px 0 var(--gold-dark)); }
+.btn .jr-play { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: #1FA88A; box-shadow: inset 0 -3px 0 rgba(0,0,0,.08); }
+.btn.go .jr-play { color: #1FA88A; }
+.jr-play > svg.ic { width: 46%; height: 46%; }
 
 @media (min-aspect-ratio: 1/1) {
-  .world { grid-template-columns: 1fr minmax(200px, 30%) 1fr; grid-template-rows: 1fr 1fr; grid-template-areas: "a hero b" "c hero d"; }
+  .world { grid-template-columns: 1fr minmax(180px, 26%) 1fr; grid-template-rows: 1fr 1fr; grid-template-areas: "a hero b" "c hero d"; }
   .hero { flex-direction: column; justify-content: flex-end; }
   .home-char { width: min(100cqw, 66cqh, 400px); }
   .hero .speech { max-width: 100cqw; order: -1; }
@@ -263,6 +268,7 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
   margin-top: 4%; position: relative; z-index: 2; white-space: nowrap;
   padding: .08em .8em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: clamp(14px, calc(var(--bw) * .036), 22px); color: #fff;
   background: linear-gradient(color-mix(in srgb, var(--c) 70%, #fff), var(--c)); border: 2px solid #fff;
+  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, #2A1404); paint-order: stroke fill;
   text-shadow: 0 1px 0 color-mix(in srgb, var(--c) 55%, #2A1404); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, #2A1404);
 }
 .lm-stars { font-size: clamp(16px, calc(var(--bw) * .04), 26px); margin-top: 3px; padding: 1px 6px 2px; border-radius: 99px; background: rgba(255,255,255,.85); }
@@ -295,7 +301,9 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 /* finished: an orange-red stone with a gold star */
 .lv-node.is-done .lv-disc { background: radial-gradient(ellipse at 40% 30%, #FFA27A, #F0643C 70%); box-shadow: inset 0 calc(var(--u) * .03) 0 rgba(255,255,255,.45), 0 calc(var(--u) * .07) 0 #B9401E, 0 calc(var(--u) * .12) calc(var(--u) * .08) rgba(60,40,10,.35); }
 /* next: a big glowing gold stone */
-.lv-node.is-next { width: calc(var(--u) * .8); z-index: 3; }
+.lv-node.is-next { width: calc(var(--u) * .86); z-index: 3; }
+/* locked stones step back, so the one to play stands out */
+.lv-node.is-locked { width: calc(var(--u) * .54); opacity: .72; }
 .lv-node.is-next .lv-disc {
   background: radial-gradient(ellipse at 40% 30%, #FFF4B8, #FFD13A 60%, #F2AE12); text-shadow: 0 2px 0 #C47F00;
   box-shadow: inset 0 calc(var(--u) * .03) 0 rgba(255,255,255,.7), 0 calc(var(--u) * .07) 0 #C98A06, 0 0 0 calc(var(--u) * .06) rgba(255,240,160,.6), 0 0 calc(var(--u) * .5) #FFE98A;
@@ -310,7 +318,7 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 }
 .lv-node.is-next .lv-name { display: block; }
 .lv-me { position: absolute; z-index: 4; width: calc(var(--u) * 1.05); translate: calc(-50% + var(--side, -1) * 72%) -76%; pointer-events: none; transition: left .9s var(--spring), top .9s var(--spring); }
-.lv-chest { position: absolute; z-index: 2; width: calc(var(--u) * 1); translate: -50% -58%; }
+.lv-chest { position: absolute; z-index: 2; width: calc(var(--u) * .9); translate: -50% -34%; }
 .lv-chest svg { display: block; width: 100%; height: auto; overflow: visible; }
 .lv-chest.open { filter: drop-shadow(0 0 calc(var(--u) * .14) #FFE98A); }
 
@@ -378,7 +386,7 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 .tutor-head .logo { font-size: clamp(44px, 12vmin, 80px); }
 .tutor-demo { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); min-height: 0; }
 .demo { display: grid; justify-items: center; gap: 4px; animation: pop-in .45s var(--spring) backwards; animation-delay: calc(var(--i) * 90ms); }
-.demo .jelly { width: clamp(54px, 14vmin, 76px); font-size: 28px; }
+.demo .jelly { width: clamp(72px, 19vmin, 108px); font-size: 36px; }
 .demo .pill { font-size: clamp(12px, 3.2vmin, 16px); }
 .tutor-hero { width: clamp(150px, 40vmin, 260px); }
 .tutor-char { width: 100%; }

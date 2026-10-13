@@ -121,7 +121,12 @@
         const a = PATH[k - 1], b = PATH[k], f = seg[k - 1] ? (L - cum[k - 1]) / seg[k - 1] : 0;
         return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f };
       };
-      const pos = Array.from({ length: n + 1 }, (_, i) => along(n ? i / n : 0));
+      // The first stone starts a little way up the path, so its name fits
+      // above the bottom edge; the chest waits near the top (lower on a
+      // short screen, see the end of this function).
+      const START = 0.06, END = 0.97;
+      const spread = (end) => Array.from({ length: n + 1 }, (_, i) => along(START + (end - START) * (n ? i / n : 0)));
+      const pos = spread(END);
       const pct = (p) => `left:${p.x.toFixed(2)}%;top:${p.y.toFixed(2)}%`;
 
       host.className = 'board board-map';
@@ -183,17 +188,46 @@
       // The child's friend waits by the next level (or by the treasure).
       const me = document.createElement('div');
       me.className = 'lv-me';
-      const to = allDone ? pos[n] : pos[next];
+      const to = allDone ? n : next;
       // Coming back from a level, the friend starts at the stone just
       // played and walks along to the next one.
       const back = levels.findIndex(l => l.id === from);
-      const start = back >= 0 && pos[back] !== to && AF.FX.motionOK() ? pos[back] : to;
+      const start = back >= 0 && back !== to && AF.FX.motionOK() ? back : to;
       // the friend stands on whichever side of the stone has more room
       const side = (p) => p.x < 50 ? ';--side:1' : ';--side:-1';
-      me.style.cssText = pct(start) + side(start);
+      const stand = (i) => { me.style.cssText = pct(pos[i]) + side(pos[i]); };
+      stand(start);
       host.appendChild(me);
-      if (start !== to) setTimeout(() => { me.style.cssText = pct(to) + side(to); }, 650);
+      if (start !== to) setTimeout(() => stand(to), 650);
       AF.Art.paint(me, Object.assign({}, AF.Art.normalise(AF.Profile.character), { hat: 'explorer' }), allDone ? 'cheer' : 'idle');
+
+      // On a short screen the top of the picture is under the title and the
+      // stage tabs: then the stones spread over less of the path, so the
+      // chest stays in view below the tabs. (Measured once the map shows.)
+      // (The screen may still be growing in, so distances are measured from
+      // the map and divided by how far it has grown.)
+      const clear = () => {
+        const screen = host.closest('.screen'), tabs = screen && screen.querySelector('.tabs:not([hidden])');
+        const H = host.offsetHeight, box = host.getBoundingClientRect();
+        if (!tabs || !H || !box.height || !host.isConnected) return;
+        const t = tabs.getBoundingClientRect(), c = chest.getBoundingClientRect();
+        if (t.right < c.left || t.left > c.right) return;       // (a phone on its side: the tabs are beside the map)
+        const grown = box.height / H;
+        const lid = chest.offsetHeight * 0.34;                  // (.lv-chest is drawn 34% above its point)
+        const want = ((t.bottom - box.top) / grown + 6 + lid) / H * 100;
+        if (pos[n].y >= want) return;
+        let end = END;
+        while (end > 0.5 && along(end).y < want) end -= 0.005;
+        pos.splice(0, pos.length, ...spread(end));
+        host.querySelectorAll('.lv-node').forEach((node, i) => { node.style.left = pos[i].x.toFixed(2) + '%'; node.style.top = pos[i].y.toFixed(2) + '%'; });
+        chest.style.left = pos[n].x.toFixed(2) + '%'; chest.style.top = pos[n].y.toFixed(2) + '%';
+        stand(start);
+      };
+      // and again whenever the tabs change size (lettering and pictures load late)
+      const tabsEl = host.closest('.screen') && host.closest('.screen').querySelector('.tabs');
+      if (host._watch) host._watch.disconnect();
+      if (tabsEl && window.ResizeObserver) (host._watch = new ResizeObserver(() => requestAnimationFrame(clear))).observe(tabsEl);
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(clear));
     },
 
     /* ---------- the end-of-level sheet ---------- */

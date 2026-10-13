@@ -564,7 +564,6 @@ body[data-screen="game"] .sc-cloud { animation-play-state: paused; }
 /* small painted stars and locks in counters and rows */
 .pill > i.painted > img.pic, .stars-row i.painted > img.pic, .tab-stars i.painted > img.pic { filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
 .stars-row i:not(.on) > img.pic, .result-stars i:not(.on) > img.pic, .pop-need i:not(.on) > img.pic { filter: grayscale(1) brightness(1.6) opacity(.55); }
-.jr-stop:not(.is-done):not(.is-next) .jr-box > img.pic { filter: grayscale(.6) brightness(.55) opacity(.7); }
 
 /* ---------- painted friends ----------
    The picture breathes and sways on its own (two separate

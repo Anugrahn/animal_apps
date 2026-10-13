@@ -2284,5 +2284,8 @@
  "nine cars. Take away seven. How many are left?": "say",
  "seven balls. Take away five. How many are left?": "say",
  "ten cars. Take away eight. How many are left?": "say",
- "breakfast": "say"
+ "breakfast": "say",
+ "Hello! Welcome to Animal Friends. Let’s play and learn together!": "say",
+ "Tap an island to play.": "say",
+ "Listen to me, then tap the answer. I will help you!": "say"
 }

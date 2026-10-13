@@ -183,12 +183,6 @@
 
 /* ---------- memory ---------- */
 .stage-memory { gap: 6px; }
-.mem-count {
-  flex: none; align-self: flex-end; display: inline-flex; align-items: center; gap: .4em; margin-top: -4px;
-  background: linear-gradient(#FFF8E6, #F6E3BC); color: #7A4A22; border-radius: 99px; padding: .2em .9em .24em .3em;
-  font-weight: 700; font-size: clamp(14px, 3.6vmin, 22px); box-shadow: 0 3px 0 #D9B982;
-}
-.mem-count.bump { animation: pulse .4s var(--spring); }
 .mem-tray {
   --cols: var(--pc); --rows: var(--pr); --gap: clamp(6px, 2cqmin, 14px);
   --cw: min(calc((100cqw - var(--pad) * 2 - var(--gap) * (var(--cols) - 1)) / var(--cols)),
@@ -778,4 +772,9 @@ img.emo { display: inline-block; width: 1.2em; height: 1.2em; object-fit: contai
 .props img:nth-child(2) { right: 2%; bottom: 4%; animation-delay: -2.4s; }
 .props img:nth-child(3) { right: 3%; top: 28%; width: clamp(44px, 11vmin, 90px); animation-delay: -.6s; }
 body[data-screen="game"] .props img:nth-child(3) { display: none; }
+/* In a game the props are scenery, not things to tap: quieter, still, and
+   gone on an upright phone, where the bottom corners hold the game's own
+   buttons (pads, the story pager). */
+body[data-screen="game"] .props img { width: clamp(44px, 10vmin, 84px); opacity: .6; filter: saturate(.7) drop-shadow(0 4px 4px rgba(40,30,10,.18)); animation: none; }
+@media (max-aspect-ratio: 1/1) and (max-width: 600px) { body[data-screen="game"] .props { display: none; } }
 body.still .props img { animation: none; }

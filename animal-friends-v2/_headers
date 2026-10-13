@@ -1,0 +1,9 @@
+# Cloudflare Pages: how the app is served (copied into dist/ by tools/deploy/cf-build.sh)
+# The offline worker must always be checked for an update, so new versions reach phones.
+/sw.js
+  Cache-Control: no-cache
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), geolocation=(), payment=(), microphone=(self)

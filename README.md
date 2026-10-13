@@ -45,7 +45,7 @@ From `animal-friends-v2/`:
 | Windows | Double-click `start.bat`. Needs Python 3. |
 | Any browser | Open `index.html` directly. Everything plays, but the app can't be installed and the microphone asks for permission more often. |
 | Phone on the same Wi-Fi | `python3 serve.py 8765 --lan`, then open `http://<computer-ip>:8765` on the phone. Installing, offline use and the microphone need `https://`, so they won't work this way. |
-| Real install on Android | Upload `animal-friends-v2/` to any static `https://` host (GitHub Pages, Netlify, Cloudflare Pages), open it in Chrome and choose **Add to Home screen**. |
+| Online, for everyone | Cloudflare Pages builds and publishes every `git push` (free). Set-up, updates and how parents install it: [DEPLOY.md](DEPLOY.md). |
 
 Use `serve.py` rather than `python3 -m http.server`. The plain server accepts
 only five queued connections, so with many pictures loading at once some
@@ -109,7 +109,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.5.5`.
+  `af-v3.5.6`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and

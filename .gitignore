@@ -17,3 +17,6 @@ graphify-out/
 
 # family-finance is a separate project with its own git repository; keep it out of this one
 family-finance/
+
+# Cloudflare Pages build output (tools/deploy/cf-build.sh)
+dist/

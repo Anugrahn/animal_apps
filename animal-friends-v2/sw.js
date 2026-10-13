@@ -8,10 +8,10 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.5.5';
+const VERSION = 'af-v3.5.6';
 
 const FILES = [
-  './', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
+  './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
   'vendor/three.min.js', 'vendor/fredoka.woff2',
   'art/bg-meadow.jpg', 'art/bg-abc.jpg', 'art/bg-stem.jpg', 'art/bg-heart.jpg', 'art/bg-play.jpg', 'art/bg-island.jpg', 'art/bg-map.jpg',
   'art/pic/act-brokenheart.webp', 'art/pic/act-clap.webp', 'art/pic/act-crash.webp', 'art/pic/act-flowers.webp', 'art/pic/act-grab.webp', 'art/pic/act-handup.webp', 'art/pic/act-hide.webp', 'art/pic/act-hit.webp', 'art/pic/act-jump.webp', 'art/pic/act-leftout.webp', 'art/pic/act-look.webp', 'art/pic/act-no.webp', 'art/pic/act-please.webp', 'art/pic/act-run.webp', 'art/pic/act-scrub.webp', 'art/pic/act-share.webp', 'art/pic/act-stop.webp', 'art/pic/act-stophand.webp', 'art/pic/act-talk.webp', 'art/pic/act-thanks.webp', 'art/pic/act-thumbsdown.webp', 'art/pic/act-touch.webp', 'art/pic/act-walkaway.webp', 'art/pic/act-wave.webp', 'art/pic/arm.webp', 'art/pic/arrow-down.webp', 'art/pic/arrow-up.webp', 'art/pic/ball-blue.webp', 'art/pic/ball-green.webp', 'art/pic/ball-orange.webp', 'art/pic/ball-purple.webp', 'art/pic/ball-red.webp', 'art/pic/ball-yellow.webp', 'art/pic/bath.webp', 'art/pic/coat.webp', 'art/pic/dress.webp', 'art/pic/ear.webp', 'art/pic/eye.webp', 'art/pic/face-angry.webp', 'art/pic/face-awake.webp', 'art/pic/face-bored.webp', 'art/pic/face-brushing.webp', 'art/pic/face-calm.webp', 'art/pic/face-cold.webp', 'art/pic/face-excited.webp', 'art/pic/face-eyeroll.webp', 'art/pic/face-gentle.webp', 'art/pic/face-happy.webp', 'art/pic/face-hot.webp', 'art/pic/face-huffing.webp', 'art/pic/face-hug.webp', 'art/pic/face-hurt.webp', 'art/pic/face-laugh.webp', 'art/pic/face-leftout.webp', 'art/pic/face-proud.webp', 'art/pic/face-quiet.webp', 'art/pic/face-sad.webp', 'art/pic/face-scared.webp', 'art/pic/face-shh.webp', 'art/pic/face-shy.webp', 'art/pic/face-sick.webp', 'art/pic/face-sleepy.webp', 'art/pic/face-slight.webp', 'art/pic/face-smile-big.webp', 'art/pic/face-sneeze.webp', 'art/pic/face-surprised.webp', 'art/pic/face-teasing.webp', 'art/pic/face-thinking.webp', 'art/pic/face-tongue.webp', 'art/pic/face-wink.webp', 'art/pic/face-worried.webp', 'art/pic/face-yawn.webp', 'art/pic/face-yummy.webp', 'art/pic/face-zip.webp', 'art/pic/foot.webp', 'art/pic/gloves.webp', 'art/pic/hand.webp', 'art/pic/heart-blue.webp', 'art/pic/helmet.webp', 'art/pic/job-artist.webp', 'art/pic/job-astronaut.webp', 'art/pic/job-child.webp', 'art/pic/job-cook.webp', 'art/pic/job-doctor.webp', 'art/pic/job-farmer.webp', 'art/pic/job-firefighter.webp', 'art/pic/job-girl.webp', 'art/pic/job-man.webp', 'art/pic/job-pilot.webp', 'art/pic/job-shophelper.webp', 'art/pic/job-teacher.webp', 'art/pic/leg.webp', 'art/pic/mouth.webp', 'art/pic/question.webp', 'art/pic/recycle.webp', 'art/pic/shower.webp', 'art/pic/sneaker.webp', 'art/pic/soap.webp', 'art/pic/socks.webp', 'art/pic/tap.webp', 'art/pic/tile-green.webp', 'art/pic/tile-orange.webp', 'art/pic/tile-purple.webp', 'art/pic/tongue.webp', 'art/pic/tooth.webp', 'art/pic/toothbrush.webp', 'art/pic/towel.webp', 'art/pic/trousers.webp', 'art/pic/tshirt.webp',
@@ -112,6 +112,16 @@ try { importScripts('voice/files.js'); } catch (e) { self.VOICE_FILES = []; }
 const CLIPS = (self.VOICE_FILES || []).filter(f => f.endsWith('.mp3'));
 FILES.push(...(self.VOICE_FILES || []).filter(f => !f.endsWith('.mp3')));
 
+/* A voice clip's name changes whenever its sound does, so a clip the last
+   version stored is still right: it is copied over, not downloaded again
+   (an update then costs the changed files, not the whole voice). */
+async function reuse(cache, file) {
+  const old = await caches.match(file);
+  if (!old) return false;
+  await cache.put(file, old);
+  return true;
+}
+
 /* One file at a time. Asking for all of them at once can overwhelm a
    small local server (the launcher's) and make the install fail.
    Each file gets three tries, so one dropped request does not cost the
@@ -131,7 +141,7 @@ self.addEventListener('install', (e) => {
     // A voice clip that won't come down is skipped, so it never costs the
     // whole offline copy: the device's voice says that line, and the clip
     // is stored the first time it plays (see fetch).
-    for (const file of CLIPS) await store(cache, file).catch(() => {});
+    for (const file of CLIPS) if (!(await reuse(cache, file).catch(() => false))) await store(cache, file).catch(() => {});
     await self.skipWaiting();
   })());
 });
@@ -154,14 +164,15 @@ self.addEventListener('fetch', (e) => {
   // Pictures never change under the same name: straight from the cache.
   // The page, code and styles do change: network first, so an update is
   // never mixed with old files, and the cache when there is no network.
-  // Only the app's own page is stored as the page. Opening any other file
-  // of the folder must not replace it.
+  // Only the app's own pages are stored as pages (the app, and its privacy
+  // page). Opening any other file of the folder must not replace them.
   const page = e.request.mode === 'navigate';
-  if (page && !/\/(index\.html)?$/.test(url.pathname)) return;
+  const privacy = page && /\/privacy\.html$/.test(url.pathname);
+  if (page && !privacy && !/\/(index\.html)?$/.test(url.pathname)) return;
   const code = page || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
   if (code) {
-    // There is only one page, so every ?go=… link is stored as that page.
-    const key = page ? 'index.html' : e.request;
+    // Every ?go=… link is the same page, so it is stored once as that page.
+    const key = privacy ? 'privacy.html' : page ? 'index.html' : e.request;
     const stored = () => caches.match(key, { ignoreSearch: true });
     e.respondWith((async () => {
       const net = fetch(e.request).then(res => {

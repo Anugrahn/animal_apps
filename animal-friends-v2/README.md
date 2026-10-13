@@ -6,7 +6,7 @@ child designs, 14 subjects, 192 playable levels in three stages (Basic,
 Intermediate, Advanced), a grown-up area, and offline install on Android and
 desktop.
 
-The look follows the reference images in `../interface/` (`home_screen.png`,
+The look follows the reference images in `interface/` (`home_screen.png`,
 `game_level.png`, `charcter_setting.png`, `interface.png`, `icon.png`,
 `icon2.png`, `maze_n_card.png`): an outdoor island world, level maps drawn as
 islands, glossy "jelly" icons, and games played with soft clay pieces on a
@@ -174,7 +174,7 @@ deliberately not imitated. Everything here is original.
 
 ## The mock-up redesign (v2.5)
 
-Every menu level was rebuilt to match `../interface/new_interface/`
+Every menu level was rebuilt to match `interface/new_interface/`
 (`Animal Friends App Storyboard Mockup.png`, `main_menu.png`, `Menu.png`,
 `games.png`), following `CLAUDE.md` and `UI_REDESIGN_SPEC.md`.
 
@@ -208,7 +208,7 @@ app has neither yet), and Back at the bottom-left of the map (`CLAUDE.md` puts
 Back top-left everywhere). The mock-ups' painted 3D scenery is drawn in code, so
 it is flatter.
 
-### v2.6: closer to the full-screen mock-ups in `../interface/assets/`
+### v2.6: closer to the full-screen mock-ups in `interface/assets/`
 
 Wooden signs with bolts and leaves for every title, the logo on a sign, the
 friend's face and counters on a white card, coloured Basic / Intermediate /
@@ -223,8 +223,8 @@ shown at a three-quarter turn.
 ### v2.7: painted backgrounds
 
 `art/bg-*.jpg` are the seven backgrounds made from
-`../interface/DESIGN_PROMPTS.md` Part 3 (originals in
-`../interface/assets/background/`): meadow (home, maker, grown-ups), one per
+`interface/DESIGN_PROMPTS.md` Part 3 (originals in
+`interface/assets/background/`): meadow (home, maker, grown-ups), one per
 area behind its games (abc, stem, heart, play), the islets (an island's
 subjects) and the dirt path (level maps). Subjects are placed on the painted
 islets and level stones along the painted path, in percent of the picture
@@ -235,8 +235,8 @@ remain in `index.html` only as a fallback.
 
 ### v2.8: painted characters, icons and world
 
-The transparent sheets in `../interface/assets/Icon and characters/` and
-`../interface/assets/island_environment/` were cut into single pictures
+The transparent sheets in `interface/assets/Icon and characters/` and
+`interface/assets/island_environment/` were cut into single pictures
 (`art/char`, `art/ui`, `art/subj`, `art/world`, `art/wear`, WebP with
 transparency, about 2.5 MB). Now painted:
 
@@ -260,7 +260,7 @@ refused and showed as broken.
 
 ### v3.0: second asset batch
 
-From `../interface/assets/icon_characters/` and `../interface/assets/sheets/`
+From `interface/assets/icon_characters/` and `interface/assets/sheets/`
 (sliced into `art/char`, `art/ui`, `art/prop`, `art/game`, `art/pic`):
 
 - **Every animal now has eight painted poses** (idle, wave, cheer, think, walk,
@@ -282,7 +282,7 @@ they are for a birthday, not this app.
 
 ### v3.1: game-needs batch and flow
 
-- From `../interface/assets/game-needs/`: 35 dino feelings faces, body parts,
+- From `interface/assets/game-needs/`: 35 dino feelings faces, body parts,
   clothes, 12 animal friends dressed for jobs, kind and unkind choices, washing
   and routine objects, colour balls and tiles, arrows and symbols (`art/pic/`).
   A picture made of several emoji now gets each one painted separately.
@@ -293,7 +293,7 @@ they are for a birthday, not this app.
   to a map; "Play again" and "Next" keep that. The result shows a trophy (3
   stars), medal (2) or thumbs up (1).
 - Still emoji: animals, food, nature, places, things and vehicles (153 pictures,
-  listed in `../interface/GAME_NEEDS.md`).
+  listed in `interface/GAME_NEEDS.md`).
 
 ### v3.4: a natural recorded voice
 

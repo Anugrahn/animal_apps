@@ -31,8 +31,10 @@
 .pick-art { display: block; width: 100%; margin-top: -8%; }
 .pick-name { font-size: clamp(16px, 3.6vmin, 23px); font-weight: 700; line-height: 1.1; }
 .pick-species { font-size: clamp(10.5px, 2.4vmin, 14px); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
+.pick-slot { position: relative; display: grid; }
 .pick-edit {
-  position: absolute; top: 7px; right: 7px; width: 27px; opacity: .92;
+  position: absolute; top: 4px; right: 4px; z-index: 1; width: clamp(36px, 8vmin, 46px);
+  animation: pop-in .5s var(--spring) both; animation-delay: calc(var(--i) * 55ms + .2s);
 }
 .pick-plus { aspect-ratio: 1; display: grid; place-items: center; margin-top: 0; }
 .pick-plus span {

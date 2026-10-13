@@ -96,21 +96,28 @@
 
     Art.PRESETS.forEach((preset, i) => {
       const spec = Art.normalise(preset);
+      // The card picks the friend; the pencil beside it (its own button,
+      // on top of the card's corner) changes the friend first.
+      const slot = document.createElement('div');
+      slot.className = 'pick-slot';
+      slot.style.setProperty('--i', i + 1);
       const btn = document.createElement('button');
       btn.className = 'pick-card';
-      btn.style.setProperty('--i', i + 1);
       btn.innerHTML = `
         <span class="pick-art" data-art></span>
         <span class="pick-name">${spec.name}</span>
-        <span class="pick-species">${spec.tag}</span>
-        <span class="pick-edit jelly" data-edit data-ic="edit" role="button" aria-label="Change ${spec.name}"></span>`;
+        <span class="pick-species">${spec.tag}</span>`;
+      const edit = document.createElement('button');
+      edit.className = 'pick-edit jelly';
+      edit.dataset.ic = 'edit';
+      edit.setAttribute('aria-label', `Change ${spec.name}`);
+      edit.addEventListener('click', () => { Audio.unlock(); Audio.SFX.pop(); openMaker(spec); });
       const art = btn.querySelector('[data-art]');
       Art.paint(art, spec);
-      btn.style.setProperty('--c', art.style.getPropertyValue('--c'));
+      slot.style.setProperty('--c', art.style.getPropertyValue('--c'));
 
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         Audio.unlock();
-        if (e.target.closest('[data-edit]')) { Audio.SFX.pop(); openMaker(spec); return; }
         if (host.dataset.busy) return;
         host.dataset.busy = '1';
         Audio.SFX.pop();
@@ -121,7 +128,8 @@
         meet(spec, 1300);
       });
 
-      host.appendChild(btn);
+      slot.append(btn, edit);
+      host.appendChild(slot);
     });
     delete host.dataset.busy;
   }
@@ -800,9 +808,11 @@
       : location.protocol === 'file:' ? 'Yes (opened from a file)' : 'After the next visit';
   }
 
-  /** Motion off stills the bubbles and clouds; sound off stops the birds. */
+  /** Motion off (here, or "reduce motion" on the device) stills the
+      bubbles and clouds; sound off stops the birds. */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   function applyWorld() {
-    document.body.classList.toggle('still', !P.setting('motion'));
+    document.body.classList.toggle('still', !P.setting('motion') || reduceMotion.matches);
     Audio.ambience(false);
     Audio.ambience(!$('play').classList.contains('active'));
   }
@@ -912,6 +922,7 @@
     }
 
     applyWorld();
+    reduceMotion.addEventListener('change', applyWorld);
     // The level map is laid out for the screen's shape, so redraw it if that changes.
     let turning = 0;
     window.addEventListener('resize', () => {

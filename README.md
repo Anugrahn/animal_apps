@@ -7,7 +7,7 @@ and words, numbers and science, feelings and healthy habits, and play (mazes,
 memory, songs).
 
 The curriculum is shaped by the Lingokids content model
-(`interface/lingokids_content_architecture.md`). All content and art are
+(`animal-friends-v2/interface/lingokids_content_architecture.md`). All content and art are
 original; Lingokids' characters and licensed content are not used.
 
 - **No build step and no dependencies.** Plain HTML, CSS and JavaScript. Open
@@ -24,14 +24,16 @@ original; Lingokids' characters and licensed content are not used.
 project_apps/
 ├── animal-friends/        v1 ("Phase 0"): the original prototype, kept unchanged
 ├── animal-friends-v2/     the current app (all active work happens here)
-└── interface/             design references, mock-ups, AI art prompts and raw art sheets
+│   ├── docs/research/     the research behind decisions (kids-audio.md: the voice)
+│   └── interface/         design references, mock-ups, AI art prompts and raw art sheets
+└── tools/voice/           makes the recorded voice, on this computer
 ```
 
 | Folder | What it is | Start with |
 |---|---|---|
 | [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 14 subjects, 192 levels, 14 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/TUTORIAL.md) |
 | [`animal-friends/`](animal-friends/) | v1 foundation build: 3 SVG characters, one Letters module with 5 levels. Kept for reference. v2 migrates a v1 profile on first run | [README](animal-friends/README.md) |
-| [`interface/`](interface/) | Reference images, UI mock-ups, ChatGPT prompts used to make the art, and the original art sheets before they were cut up | see [Design and art pipeline](#design-and-art-pipeline) |
+| [`animal-friends-v2/interface/`](animal-friends-v2/interface/) | Reference images, UI mock-ups, ChatGPT prompts used to make the art, and the original art sheets before they were cut up | see [Design and art pipeline](#design-and-art-pipeline) |
 
 ---
 
@@ -99,7 +101,7 @@ animal-friends-v2/
   core/       router, UI shell, profile/progress, audio, speech, fx, levels, world, art, icons, CSS
   engines/    HOW to play: one file per family of game mechanics
   content/    WHAT to teach: plain data, one file per island, plus bank.js
-  art/        painted WebP/JPG assets cut from the sheets in interface/assets/
+  art/        painted WebP/JPG assets cut from the sheets in animal-friends-v2/interface/assets/
   vendor/     three.min.js (MIT), fredoka.woff2 (OFL)
 ```
 
@@ -109,7 +111,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.5.0`.
+  `af-v3.5.1`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
@@ -124,7 +126,7 @@ animal-friends-v2/
 |---|---|
 | v1 / Phase 0 (`animal-friends/`) | Module registry, star rules, level map, one Letters module, `localStorage` progress |
 | v2.0 | 3D characters, 14 subjects, 192 levels, 14 engines, island home, grown-up area, offline PWA |
-| v2.5 | Every menu rebuilt from the mock-ups in `interface/new_interface/`: one shared HUD and shared UI primitives |
+| v2.5 | Every menu rebuilt from the mock-ups in `animal-friends-v2/interface/new_interface/`: one shared HUD and shared UI primitives |
 | v2.6 | Closer match to the full-screen mock-ups: wooden signs, stage pills, maze board, Daily Journey track |
 | v2.7 | Painted backgrounds (`art/bg-*.jpg`). Subjects and level stones are placed at measured points on them |
 | v2.8 | Painted characters, icons and world pieces. `serve.py` added |
@@ -146,13 +148,13 @@ transparent background). Each sheet is cut into single WebP pictures under
 
 | File / folder | Purpose |
 |---|---|
-| `interface/*.png` | First reference images: home screen, level map, character setting, icons, maze and memory cards |
-| `interface/new_interface/` | Storyboard and menu/game mock-ups behind the v2.5 redesign |
-| `interface/DESIGN_PROMPTS.md` | The style lock and the prompts for full screens and backgrounds |
-| `interface/ASSET_PROMPTS.md` | Prompts for the character pose and island asset sheets |
-| `interface/GAME_NEEDS.md` | Every picture each game still needs, island by island, with ready-to-paste sheet prompts |
-| `interface/assets/` | The raw sheets: `background/`, `main/`, `icon_characters/`, `island_environment/`, `sheets/`, `game-needs/` |
-| `interface/lingokids_content_architecture.md` | Research report the curriculum is mapped against |
+| `animal-friends-v2/interface/*.png` | First reference images: home screen, level map, character setting, icons, maze and memory cards |
+| `animal-friends-v2/interface/new_interface/` | Storyboard and menu/game mock-ups behind the v2.5 redesign |
+| `animal-friends-v2/interface/DESIGN_PROMPTS.md` | The style lock and the prompts for full screens and backgrounds |
+| `animal-friends-v2/interface/ASSET_PROMPTS.md` | Prompts for the character pose and island asset sheets |
+| `animal-friends-v2/interface/GAME_NEEDS.md` | Every picture each game still needs, island by island, with ready-to-paste sheet prompts |
+| `animal-friends-v2/interface/assets/` | The raw sheets: `background/`, `main/`, `icon_characters/`, `island_environment/`, `sheets/`, `game-needs/` |
+| `animal-friends-v2/interface/lingokids_content_architecture.md` | Research report the curriculum is mapped against |
 
 If a background picture is replaced, the points measured on it (`ISLETS` in
 `core/world.js`, `PATH` in `core/levels.js`) have to be measured again. The

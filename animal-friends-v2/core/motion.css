@@ -74,7 +74,8 @@
 .home-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 7s ease-in-out infinite; }
 .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 9s ease-in-out 2s infinite; }
 body.still .mz-item, body.still .lm-ic, body.still .lv-node.is-next .lv-disc, body.still .isl-marker, body.still .cd-star, body.still .pad-hint,
-body.still .pop-b .opt-face { animation: none; }
+body.still .pop-b .opt-face, body.still .pick-plus span, body.still .jr-stop.is-next .jr-box, body.still .lv-kind,
+body.still .lv-chest.open { animation: none; }
 body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite; }
 
 /* ---------- picking things up ---------- */
@@ -96,6 +97,12 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
 }
 @keyframes puff { to { transform: translate(var(--dx), -12px) scale(1.7); opacity: 0; } }
 
+/* "Reduce motion" on the device: nothing springs, bobs, flies or grows,
+   it just appears where it ends up. (The pop game's bubbles still rise:
+   that is the game.) body.still is set too, see applyWorld in app.js. */
 @media (prefers-reduced-motion: reduce) {
-  .screen.active, .lm-ic, .lv-node.is-next .lv-disc, .isl-marker, .opt, .home-char .ch-img, .play-char .ch-img, .mz-item, .pad-hint { animation: none !important; }
+  *:not(.pop-b), ::before, ::after {
+    animation-duration: 1ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important; transition-delay: 0s !important;
+  }
 }

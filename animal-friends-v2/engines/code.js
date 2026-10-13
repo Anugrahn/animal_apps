@@ -24,6 +24,7 @@
   const E = AF.Engines;
   const DIRS = { n: [0, -1], e: [1, 0], s: [0, 1], w: [-1, 0] };
   const ICON = { n: 'up', e: 'right', s: 'down', w: 'back' };
+  const WORD = { n: 'up', e: 'right', s: 'down', w: 'left' };
   const HUE = { n: '#3E9BF0', w: '#58B368', s: '#EE5B5B', e: '#F5B81C' };
   const STEP = 420;
 
@@ -123,7 +124,7 @@
 
     function render(fresh) {
       progEl.innerHTML = Array.from({ length: MAX }, (_, i) => prog[i]
-        ? `<button class="chip${fresh && i === prog.length - 1 ? ' new' : ''}" data-n="${i}" style="--h:${HUE[prog[i]]}" aria-label="Step ${i + 1}">${AF.Icon.svg(ICON[prog[i]])}</button>`
+        ? `<span class="chip${fresh && i === prog.length - 1 ? ' new' : ''}" data-n="${i}" style="--h:${HUE[prog[i]]}" role="img" aria-label="Step ${i + 1}: ${WORD[prog[i]]}">${AF.Icon.svg(ICON[prog[i]])}</span>`
         : `<span class="chip empty${i === prog.length ? ' next' : ''}"></span>`).join('');
       grid.querySelectorAll('.cd.foot').forEach(c => c.classList.remove('foot'));
       if (lv.preview) walk(prog).trail.forEach(p => cell(p[0], p[1]).classList.add('foot'));
@@ -248,15 +249,9 @@
     stage.querySelector('[data-undo]').addEventListener('click', undo);
     stage.querySelector('[data-hint]').addEventListener('click', () => { AF.Audio.SFX.tap(); hint(); });
     stage.querySelector('[data-go]').addEventListener('click', run);
-    // Tapping an arrow in the plan takes the plan back to just before it.
-    progEl.addEventListener('click', (e) => {
-      const c = e.target.closest('.chip[data-n]');
-      if (!c || running || won) return;
-      prog = prog.slice(0, +c.dataset.n);
-      AF.Audio.SFX.flip();
-      unhint();
-      render();
-    });
+    // The plan itself is only to look at: its arrows are too small to tap
+    // safely, and one slip used to wipe the plan. The undo pad takes
+    // arrows away, one at a time.
     S.on(document, 'keydown', (e) => {
       const map = { ArrowUp: 'n', ArrowDown: 's', ArrowLeft: 'w', ArrowRight: 'e' };
       if (map[e.key]) { e.preventDefault(); add(map[e.key]); }

@@ -15,7 +15,7 @@ online service.
   between sentences and before the last word, makes letter sounds pure
   (/t/ is a puff of air, not "tuh"), builds blends from those sounds, and
   evens the loudness. The numbers come from
-  [`docs/research/kids-audio.md`](../../docs/research/kids-audio.md). To
+  [`animal-friends-v2/docs/research/kids-audio.md`](../../animal-friends-v2/docs/research/kids-audio.md). To
   change them, edit `post.py`, bump `POST` in `gen.mjs`, and run
   `node gen.mjs --convert-only`. That takes about 3 minutes and records
   nothing again.

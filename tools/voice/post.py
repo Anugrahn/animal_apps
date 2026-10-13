@@ -2,7 +2,7 @@
    .venv/bin/python post.py <jobs.json>
 jobs.json: [{"in": raw wav, "out": wav to write, "text": line, "kind": "say" | "sound",
              "parts": [raw wav, ...] (a blend: one take per sound)}]
-The numbers come from docs/research/kids-audio.md (section 9).
+The numbers come from animal-friends-v2/docs/research/kids-audio.md (section 9).
 
 * slower: each line is stretched in time (WSOLA, so the pitch stays the
   same) towards about 125 words a minute, never more than 60% longer, so

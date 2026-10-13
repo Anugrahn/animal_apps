@@ -388,9 +388,6 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 .shake { animation: nope .45s ease-in-out; }
 
 body.still .mk-done { animation: none; }
-@media (prefers-reduced-motion: reduce) {
-  .bub, .sc-cloud, .ch-img, .island { animation: none !important; }
-}
 
 
 /* ============================================================
@@ -401,7 +398,7 @@ body.still .mk-done { animation: none; }
 /* Every child control is at least --tap-min to touch, even when
    it is drawn smaller. */
 .round-btn { width: var(--btn); }
-.round-btn::after, .pad::after, .pad-hint::after, .big-round::after {
+.round-btn::after, .pad::after, .pad-hint::after, .big-round::after, .pick-edit::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--tap-min)); height: max(100%, var(--tap-min));
   translate: -50% -50%; border-radius: 50%;
 }
@@ -579,7 +576,6 @@ body[data-screen="game"] .sc-cloud { animation-play-state: paused; }
 @keyframes ch-sway { 0%, 100% { rotate: -1.8deg; } 50% { rotate: 1.8deg; } }
 @keyframes ch-hold { 50% { translate: -50% -60%; } }
 body.still .ch-paint .ch-body, body.still .ch-paint .acc-item { animation: none; }
-@media (prefers-reduced-motion: reduce) { .ch-paint .ch-body, .ch-paint .acc-item { animation: none; } }
 
 /* the avatar shows the painted face */
 .me-face { background: radial-gradient(circle at 40% 30%, #FFFFFF, #DDF3D2); }

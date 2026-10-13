@@ -714,6 +714,9 @@ img.emo { display: inline-block; width: 1.2em; height: 1.2em; object-fit: contai
 .mem-front { background: linear-gradient(#FFFDF6, #FFF3DC); box-shadow: inset 0 calc(var(--cw) * -.08) 0 #EED9B4, inset 0 0 0 calc(var(--cw) * .045) #fff; }
 .mem-e { font-size: 66cqmin; margin-top: -6%; }
 .mem-e img.emo { width: 1em; height: 1em; }
+/* a scene (one picture for a moment, like the puppy opening its gift) stands
+   in for two emoji, so it gets the room of two, and a little more height */
+img.emo.scene, .show img.emo.scene, .big-e img.emo.scene { width: 2.6em; height: 1.9em; }
 .mem-w { --g: #3D8BF2; color: var(--g); font-size: min(calc(130cqw / var(--len, 4)), 40cqw); -webkit-text-stroke: .06em color-mix(in srgb, var(--g) 55%, #0B2A3A); paint-order: stroke; }
 .mem:nth-child(3n+1) .mem-w { --g: #EF4C4C; } .mem:nth-child(3n+2) .mem-w { --g: #3CC46A; } .mem:nth-child(3n) .mem-w { --g: #F58A1F; }
 .mem-back svg.ic { width: 58%; height: 58%; }

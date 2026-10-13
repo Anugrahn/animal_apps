@@ -123,12 +123,12 @@
     // things
     '🔑': 'pic/key', '🎩': 'pic/tophat', '👃': 'pic/nose', '🌙': 'pic/moon', '☀️': 'pic/sun', '🌞': 'pic/sun',
     '🌳': 'pic/tree', '🌲': 'pic/tree', '⭐': 'ui/star', '🌟': 'ui/star', '❤️': 'ui/heart', '💗': 'ui/heart', '💛': 'ui/heart',
-    '📖': 'wear/book', '📚': 'prop/abc-books', '✏️': 'prop/abc-pencil', '🖍️': 'prop/abc-crayons', '🚂': 'prop/abc-train',
-    '🚌': 'prop/abc-bus', '🔤': 'subj/letters', '🔢': 'subj/numbers', '🧱': 'prop/abc-blocks',
+    '📖': 'wear/book', '📚': 'prop/abc-books', '✏️': 'prop/abc-pencil', '🖍️': 'prop/abc-crayons', '🚂': 'pic/steam-train',
+    '🚌': 'pic/bus', '🔤': 'subj/letters', '🔢': 'subj/numbers', '🧱': 'prop/abc-blocks',
     '🔬': 'prop/stem-microscope', '🔭': 'prop/stem-telescope', '🔍': 'prop/stem-magnifier', '🔎': 'prop/stem-magnifier',
     '🌋': 'prop/stem-volcano', '🚀': 'prop/stem-rocket', '⚙️': 'prop/stem-gears', '💡': 'prop/stem-bulb',
     '🧮': 'prop/stem-abacus', '📏': 'prop/stem-ruler', '🧪': 'prop/stem-tubes', '🌍': 'prop/stem-globe', '🌎': 'prop/stem-globe',
-    '🌈': 'prop/heart-rainbow', '🪁': 'prop/heart-kite', '🎈': 'wear/balloon', '🪴': 'prop/heart-can',
+    '🌈': 'prop/heart-rainbow', '🪁': 'prop/heart-kite', '🎈': 'wear/balloon', '🪴': 'pic/potted-plant',
     '🥁': 'prop/play-drum', '🎸': 'prop/play-guitar', '🎤': 'prop/play-mic', '🎵': 'prop/play-note', '🎶': 'prop/play-note',
     '🏆': 'ui/trophy', '🥇': 'ui/medal', '👍': 'ui/thumbs', '✨': 'ui/sparkle', '🧩': 'game/puzzle', '🪙': 'game/coin',
     '🏠': 'world/house', '🏡': 'world/house', '👑': 'wear/crown', '🧢': 'wear/cap', '🧣': 'wear/scarf', '🎒': 'wear/backpack',
@@ -157,13 +157,47 @@
     '♻️': 'pic/recycle', '🚿': 'pic/shower', '🧼': 'pic/soap', '🚰': 'pic/tap', '🪥': 'pic/toothbrush',
     '🧻': 'pic/towel', '🔵': 'pic/ball-blue', '🟢': 'pic/ball-green', '🟩': 'pic/tile-green', '🟠': 'pic/ball-orange',
     '🟧': 'pic/tile-orange', '🟣': 'pic/ball-purple', '🟪': 'pic/tile-purple', '🔴': 'pic/ball-red', '🟡': 'pic/ball-yellow',
-    '⬇️': 'pic/arrow-down', '❓': 'pic/question', '⬆️': 'pic/arrow-up', '💙': 'pic/heart-blue'
+    '⬇️': 'pic/arrow-down', '❓': 'pic/question', '⬆️': 'pic/arrow-up', '💙': 'pic/heart-blue',
+    // 2026-10 sheets (interface/ASSET_SHEETS.md, cut by tools/art/cut.py)
+    '🐇': 'pic/rabbit-running', '🐍': 'pic/snake', '🐑': 'pic/sheep', '🐓': 'pic/rooster', '🐔': 'pic/hen',
+    '🐘': 'pic/elephant', '🐙': 'pic/octopus', '🐛': 'pic/caterpillar', '🐜': 'pic/ant', '🐞': 'pic/ladybird',
+    '🐢': 'pic/turtle', '🐣': 'pic/chick-hatching-from-an-egg', '🐦': 'pic/bird', '🐪': 'pic/camel', '🐬': 'pic/dolphin',
+    '🐭': 'pic/mouse', '🐮': 'pic/cow', '🐳': 'pic/whale', '🐴': 'pic/horse', '🐵': 'pic/monkey',
+    '🐷': 'pic/pig', '🐿': 'pic/squirrel', '🦂': 'pic/scorpion', '🦅': 'pic/eagle', '🦆': 'pic/duck',
+    '🦇': 'pic/bat', '🦈': 'pic/friendly-shark', '🦉': 'pic/owl', '🦌': 'pic/reindeer', '🦒': 'pic/giraffe',
+    '🧸': 'pic/teddy-bear', '☕': 'pic/cup-of-hot-cocoa', '🌽': 'pic/corn-cob', '🍕': 'pic/slice-of-pizza', '🍚': 'pic/bowl-of-rice',
+    '🍞': 'pic/loaf-of-bread', '🍟': 'pic/chips', '🍩': 'pic/doughnut', '🍪': 'pic/biscuit', '🍬': 'pic/sweets',
+    '🍯': 'pic/honey-jar', '🍰': 'pic/slice-of-cake', '🍲': 'pic/pot-of-soup', '🍳': 'pic/frying-pan-with-an-egg', '🍽': 'pic/plate-with-knife-and-fork',
+    '🥄': 'pic/spoon', '🥒': 'pic/cucumber', '🥕': 'pic/carrot', '🥛': 'pic/glass-of-milk', '🥣': 'pic/bowl-of-breakfast-cereal',
+    '🥤': 'pic/fizzy-drink-cup-with-straw', '🥦': 'pic/broccoli', '🥪': 'pic/sandwich', '🥫': 'pic/tin-can', '🧀': 'pic/cheese',
+    '🌰': 'pic/seed', '🌱': 'pic/little-sprout', '🌷': 'pic/tulip', '🌹': 'pic/red-rose', '🌻': 'pic/sunflower',
+    '🌿': 'pic/green-plant', '🍁': 'pic/red-maple-leaf', '🍂': 'pic/autumn-leaves', '🍃': 'pic/green-leaves', '☁': 'pic/cloud',
+    '☄': 'pic/comet', '⛄': 'pic/snowman', '⛈': 'pic/thunder-cloud-with-rain', '⛰': 'pic/mountain', '🌅': 'pic/sunrise-over-hills',
+    '🌇': 'pic/sunset-over-a-town', '🌊': 'pic/water-wave', '🌜': 'pic/crescent-moon', '🌦': 'pic/sun-behind-a-rain-cloud', '🌧': 'pic/rain-cloud',
+    '🌫': 'pic/fog-cloud', '🌬': 'pic/wind', '🎋': 'pic/bamboo', '🏔': 'pic/snowy-mountain', '🏖': 'pic/beach-with-umbrella',
+    '🏜': 'pic/desert-with-cactus', '💦': 'pic/water-splash', '💧': 'pic/water-drop', '🔥': 'pic/campfire-flame', '🕳': 'pic/hole-in-the-ground',
+    '⚓': 'pic/anchor', '⛵': 'pic/sailing-boat', '✈': 'pic/aeroplane', '🚁': 'pic/helicopter', '🚒': 'pic/fire-engine',
+    '🚗': 'pic/car', '🚚': 'pic/truck', '🚦': 'pic/traffic-light', '🚲': 'pic/bicycle', '−': 'pic/minus-sign',
+    '☂': 'pic/umbrella', '⚽': 'pic/football', '⛏': 'pic/spade-for-digging', '✂': 'pic/scissors', '✉': 'pic/envelope-letter',
+    '❄': 'pic/snowflake', '🎁': 'pic/gift-box', '🎃': 'pic/pumpkin', '💊': 'pic/medicine-pill', '💎': 'pic/gem',
+    '📄': 'pic/sheet-of-paper', '📌': 'pic/pin', '📕': 'pic/red-book', '📦': 'pic/cardboard-box', '📰': 'pic/newspaper',
+    '📱': 'pic/phone', '📺': 'pic/television', '🔔': 'pic/bell', '🔨': 'pic/hammer', '🕯': 'pic/candle',
+    '🖼': 'pic/framed-picture', '🗑': 'pic/rubbish-bin', '🗺': 'pic/treasure-map', '🛋': 'pic/sofa', '🛍': 'pic/plastic-shopping-bag',
+    '🛏': 'pic/bed', '🛒': 'pic/shopping-trolley', '🤖': 'pic/toy-robot', '🥅': 'pic/goal-net', '🦴': 'pic/dog-bone',
+    '🧰': 'pic/toy-box', '🧴': 'pic/sun-cream-bottle', '🧹': 'pic/broom', '🧺': 'pic/laundry-basket', '🧽': 'pic/sponge',
+    '🪑': 'pic/chair', '🚪': 'pic/door', '🚯': 'pic/no-litter-sign', '⛸': 'pic/ice-skate', '⛺': 'pic/tent',
+    '🏊': 'pic/child-swimming', '🏞': 'pic/lake-with-trees', '🏪': 'pic/small-shop', '🏫': 'pic/school-building', '🏬': 'pic/big-store',
+    '🏭': 'pic/factory-with-smoke', '🏰': 'pic/sand-castle', '🐶🎁': 'pic/scene-happy-puppy-opening-gift', '🧸✋': 'pic/scene-angry-child-holding-teddy', '🍦💧': 'pic/scene-sad-ice-cream-dropped',
+    '🌙🥱': 'pic/scene-sleepy-child-yawning-under', '🌧🏠': 'pic/scene-bored-child-looking-window', '🎈🎂': 'pic/scene-excited-birthday-cake-with', '🎉🎂': 'pic/scene-surprised-surprise-birthday-party', '👋🏠': 'pic/scene-sad-waving-goodbye-house',
+    '👟✨': 'pic/scene-proud-child-tied-shoes', '🧱✨': 'pic/scene-happy-finished-tower-toy', '⏳': 'pic/sand-timer', '🅿': 'pic/car-park-sign', '🎉': 'pic/party-popper',
+    '🏷': 'pic/name-tag', '💤': 'pic/zzz-sleeping', '📢': 'pic/loudspeaker'
   };
 
   const EMOJI_IN = '.opt-emoji, .big-e, .mem-e, .mz-item, .sort-e, .mt-e, .bin-e, .group i, .story-e, .slot-e, .say-pic, .build-pic, .pattern i, .tr-pic, .breath-e, .maze-hud span, .pop-b .opt-emoji';
   /* Every emoji inside a learning picture that has a painting is swapped
      for it, one by one, so a picture made of two emoji ("🐶🎁") gets
-     both paintings, and an unpainted one stays as it is. */
+     both paintings, and an unpainted one stays as it is; unless the pair
+     has a painting of its own (a scene: the puppy opening its gift). */
   const GRAPHEME = /\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}\uFE0F?|\p{Emoji_Modifier})*/gu;
   const look = (e) => EMOJI[e] || EMOJI[e.replace(/\uFE0F/g, '')] || EMOJI[e + '\uFE0F'];
   function emojiPics(root) {
@@ -174,6 +208,8 @@
       const t = el.textContent;
       if (!t || !GRAPHEME.test(t)) return;
       GRAPHEME.lastIndex = 0;
+      const scene = t.trim().length > 2 && look(t.trim());
+      if (scene) { el.innerHTML = `<img class="emo scene" src="art/${scene}.webp" alt="${t.trim()}" draggable="false">`; return; }
       let hit = false;
       const html = t.replace(GRAPHEME, (e) => {
         const src = look(e);

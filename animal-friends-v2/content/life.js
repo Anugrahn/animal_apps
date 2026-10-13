@@ -160,7 +160,7 @@
   ];
   const BODY = [
     kind('It is bed time.', '🌙', ['😴', 'Go to sleep', 'Sleep helps you grow'], ['📺', 'Watch more TV']),
-    kind('You have been sitting all morning.', '💺', ['🤸', 'Run and play', 'Moving makes you strong'], ['🛋️', 'Sit some more']),
+    kind('You have been sitting all morning.', '🪑', ['🤸', 'Run and play', 'Moving makes you strong'], ['🛋️', 'Sit some more']),
     kind('You are thirsty.', '🥵', ['💧', 'Drink water', 'Water is the best drink'], ['🥤', 'A big fizzy drink']),
     kind('You come in from the garden.', '🌱', ['🧼', 'Wash your hands', 'Washing sends germs away'], ['🍪', 'Eat straight away']),
     kind('The sun is very strong.', '☀️', ['🧴', 'Sun cream and a hat', 'That protects your skin'], ['🙅', 'Nothing']),
@@ -195,7 +195,7 @@
       /* ---- Intermediate: the whole day, tidying, staying safe ---- */
       { id: 'h4', title: 'My day', icon: '🌞', type: 'order', sets: [
         { say: 'Good morning! What do we do first?', text: 'Good <b>morning</b>! What comes first?',
-          steps: [step('🌅', 'wake up'), step('👕', 'get dressed'), step('👟', 'shoes on'), step('🎒', 'off to school')],
+          steps: [step('🌅', 'wake up'), step('🪥', 'brush teeth'), step('👕', 'get dressed'), step('🥣', 'breakfast')],
           praise: 'Ready for the day!' },
         { say: 'Time for bed! What do we do first?', text: 'Time for <b>bed</b>! What comes first?',
           steps: [step('🛁', 'bath'), step('🪥', 'brush teeth'), step('📖', 'story'), step('😴', 'sleep')],

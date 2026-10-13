@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.5.2';
+const VERSION = 'af-v3.5.3';
 
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -138,7 +138,9 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      // only this app's old copies: another app on the same address (a
+      // shared host such as user.github.io) keeps its own
+      .then(keys => Promise.all(keys.filter(k => k.startsWith('af-') && k !== VERSION).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -151,7 +153,10 @@ self.addEventListener('fetch', (e) => {
   // Pictures never change under the same name: straight from the cache.
   // The page, code and styles do change: network first, so an update is
   // never mixed with old files, and the cache when there is no network.
+  // Only the app's own page is stored as the page. Opening any other file
+  // of the folder must not replace it.
   const page = e.request.mode === 'navigate';
+  if (page && !/\/(index\.html)?$/.test(url.pathname)) return;
   const code = page || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
   if (code) {
     // There is only one page, so every ?go=… link is stored as that page.

@@ -44,12 +44,16 @@
     catch (e) { return null; }              // private mode, blocked storage, bad JSON
   }
 
+  const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+
   function load() {
     state = blank();
     const saved = read(KEY);
-    if (saved) {
+    if (isObj(saved)) {
+      // Saved progress is used only in the shape this file writes it.
       Object.assign(state, saved);
-      state.settings = Object.assign(blank().settings, saved.settings || {});
+      state.settings = Object.assign(blank().settings, isObj(saved.settings) ? saved.settings : {});
+      state.character = saved.character ? AF.Art.normalise(saved.character) : null;
     } else {
       // Carry a v1 child's friend and stars across.
       const old = read(KEY_V1);
@@ -60,7 +64,7 @@
         state.createdAt = old.createdAt || null;
       }
     }
-    ['stars', 'attempts', 'log', 'days'].forEach(k => { if (!state[k]) state[k] = {}; });
+    ['stars', 'attempts', 'log', 'days'].forEach(k => { if (!isObj(state[k])) state[k] = {}; });
     return state;
   }
 

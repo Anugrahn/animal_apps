@@ -39,6 +39,9 @@ Then bump `VERSION` in `animal-friends-v2/sw.js`.
 
 - **See progress before it finishes:** `node gen.mjs --convert-only` puts the
   clips made so far into the app.
+- **Clean-up:** clips no line uses any more are deleted, unless that is more
+  than a quarter of them (more likely a mistake). After changing `POST`,
+  add `--prune` to delete the old clips.
 - **Styles:** `calm` (gentle), `lively` (more expressive and slower; the
   default) and `bubbly` (most excited).
 - **Switching style:** a new style records everything again.
@@ -50,7 +53,7 @@ Then bump `VERSION` in `animal-friends-v2/sw.js`.
 cd tools/voice
 npm install                                           # kokoro-js, lamejs (MP3), playwright
 uv venv --python 3.11 .venv                           # https://docs.astral.sh/uv/
-uv pip install --python .venv/bin/python chatterbox-tts "setuptools<81" audiotsm==0.1.2
+uv pip install --python .venv/bin/python chatterbox-tts==0.1.7 "setuptools<81" audiotsm==0.1.2 pyloudnorm==0.2.0
 ```
 
 The models download on first use, about 2 GB for Chatterbox.

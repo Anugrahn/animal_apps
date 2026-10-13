@@ -721,16 +721,29 @@
      grown-up gate, speech choice, break time
      ============================================================ */
 
-  /** A sum a small child cannot do. Wrong answer just closes it. */
+  /** A sum a small child cannot do, typed on a number pad: tapping at
+      random gets it right about once in a hundred tries (three answers to
+      pick from let one in three through). A wrong answer just closes it. */
   function gate(then) {
     const a = 3 + AF.U.rand(6), b = 3 + AF.U.rand(6), answer = a * b;
-    const opts = AF.U.shuffle([answer, answer + a, Math.max(2, answer - b)]);
+    let typed = '';
     $('gate-q').textContent = `What is ${a} × ${b}?`;
-    $('gate-opts').innerHTML = opts.map(v => `<button class="btn" data-v="${v}">${v}</button>`).join('');
+    $('gate-opts').innerHTML = '<output class="gate-typed" aria-live="polite">?</output>' +
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'].map(k => k === 'del'
+        ? '<button class="btn gate-key" data-k="del" data-ic="back" aria-label="Delete"></button>'
+        : `<button class="btn gate-key${k === 'ok' ? ' go' : ''}" data-k="${k}">${k === 'ok' ? 'OK' : k}</button>`).join('');
+    const shown = $('gate-opts').querySelector('.gate-typed');
     $('gate-opts').querySelectorAll('button').forEach(btn => btn.onclick = () => {
-      sheet('gate', false);
-      if (+btn.dataset.v === answer) { Audio.SFX.tap(); then(); }
-      else Audio.SFX.wrong();
+      const k = btn.dataset.k;
+      if (k === 'ok') {
+        sheet('gate', false);
+        if (+typed === answer) { Audio.SFX.tap(); then(); }
+        else Audio.SFX.wrong();
+        return;
+      }
+      typed = k === 'del' ? typed.slice(0, -1) : (typed + k).slice(0, 2);
+      shown.textContent = typed || '?';
+      Audio.SFX.tap();
     });
     $('gate-close').onclick = () => sheet('gate', false);
     sheet('gate', true);
@@ -838,7 +851,7 @@
       });
     });
     $('speech-note').textContent = {
-      check: 'The browser checks the word. In Chrome, audio is sent to Google to be recognised.',
+      check: 'The browser checks the word. The audio is sent to the browser’s maker to be recognised (Google in Chrome, Apple in Safari, Microsoft in Edge).',
       echo: 'Records a moment and plays it back. Nothing leaves this device.',
       tap: 'No microphone is used.'
     }[P.setting('speech')] || 'Not chosen yet — you will be asked the first time Say It! is played.';

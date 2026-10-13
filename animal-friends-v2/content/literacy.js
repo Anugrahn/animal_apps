@@ -30,7 +30,7 @@
     w([['star', '⭐'], ['car', '🚗'], ['jar', '🍯']]),
     w([['cake', '🍰'], ['snake', '🐍'], ['lake', '🏞️']]),
     w([['moon', '🌙'], ['spoon', '🥄'], ['balloon', '🎈']]),
-    w([['bear', '🐻'], ['pear', '🍐'], ['chair', '💺']]),
+    w([['bear', '🐻'], ['pear', '🍐'], ['chair', '🪑']]),
     w([['goat', '🐐'], ['boat', '⛵'], ['coat', '🧥']]),
     w([['fox', '🦊'], ['box', '📦'], ['socks', '🧦']]),
     w([['sun', '☀️'], ['bun', '🍞'], ['run', '🏃']])
@@ -57,7 +57,7 @@
       { id: 'l6', title: 'First sound', icon: '👂', type: 'choose', rounds: 7, gen: G.firstSound(SATPIN, 3) },
       { id: 'lt2', title: 'Trace p i n', icon: '✏️', type: 'trace', kind: 'letter', set: ['p', 'i', 'n', 'm', 'd'], rounds: 4 },
       { id: 'l7', title: 'Build a word', icon: '🧩', type: 'build', rounds: 4, extra: 1, pool: 'satpin',
-        words: w([['pin', '📌'], ['tap', '🚰'], ['nap', '😴'], ['sit', '🧘'], ['pan', '🍳'], ['tin', '🥫'], ['ant', '🐜']]) },
+        words: w([['pin', '📌'], ['tap', '🚰'], ['nap', '😴'], ['sit', '🪑'], ['pan', '🍳'], ['tin', '🥫'], ['ant', '🐜']]) },
       { id: 'l8', title: 'M and D', icon: 'm', type: 'choose', rounds: 8, gen: G.letterSound(SET2, 4, ['m', 'd']) },
       { id: 'lm1', title: 'Letter friends', icon: '🤝', type: 'match', rounds: 3, n: 3, pairs: PR.letter(SET2),
         say: 'Match each letter to its picture.', text: 'Match each <b>letter</b> to its picture' },
@@ -77,9 +77,9 @@
         gen: G.sight(['the', 'and', 'is', 'it', 'in', 'I', 'a', 'to', 'go', 'we', 'my', 'you', 'he', 'she', 'no', 'me'], 4) },
       { id: 'l17', title: 'Longer words', icon: '🏗️', type: 'build', rounds: 5, extra: 2, pool: 'satpinmdgockeurhbfl',
         words: w([['frog', '🐸'], ['hand', '✋'], ['milk', '🥛'], ['tent', '⛺'], ['lamp', '💡'], ['drum', '🥁'],
-          ['flag', '🚩'], ['sock', '🧦'], ['duck', '🦆'], ['bird', '🐦']]) },
+          ['flag', '🚩'], ['sock', '🧦'], ['duck', '🦆'], ['gift', '🎁']]) },
       { id: 'lt4', title: 'Write a word', icon: '📝', type: 'trace', kind: 'word', rounds: 3,
-        set: w([['sit', '🧘'], ['pin', '📌'], ['dog', '🐶'], ['cat', '🐱'], ['sun', '☀️'], ['hat', '🎩'], ['bed', '🛏️']]) }
+        set: w([['sit', '🪑'], ['pin', '📌'], ['dog', '🐶'], ['cat', '🐱'], ['sun', '☀️'], ['hat', '🎩'], ['bed', '🛏️']]) }
     ])
   });
 

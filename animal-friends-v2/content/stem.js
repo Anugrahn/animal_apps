@@ -37,7 +37,7 @@
       { id: 'nm1', title: 'Number & stars', icon: '⭐', type: 'match', rounds: 3, n: 3, pairs: PR.count(1, 5),
         say: 'Match each number to the stars.', text: 'Match each <b>number</b> to the stars' },
       { id: 'np1', title: 'Pop the number', icon: '🎈', type: 'pop', rounds: 4, gen: G.numeral(1, 5, 3) },
-      { id: 'n3', title: 'Find the number', icon: '👂', type: 'choose', rounds: 6, gen: G.numeral(1, 5, 3) },
+      { id: 'n3', title: 'Find the number', icon: '👂', type: 'choose', rounds: 6, gen: G.numeral(1, 10, 3) },
       { id: 'nt2', title: 'Trace 4 5 6', icon: '✏️', type: 'trace', kind: 'number', set: [4, 5, 6], ordered: true }
     ], [
       /* ---- Intermediate: numbers to ten, order, first sums ---- */
@@ -155,7 +155,7 @@
 
   const ALIVE = [it('🐶', 'dog', 'yes'), it('🌳', 'tree', 'yes'), it('🌸', 'flower', 'yes'), it('🐦', 'bird', 'yes'),
     it('🐟', 'fish', 'yes'), it('🐛', 'caterpillar', 'yes'), it('🪨', 'rock', 'no'), it('🚗', 'car', 'no'),
-    it('⚽', 'ball', 'no'), it('💺', 'chair', 'no'), it('🥄', 'spoon', 'no'), it('👟', 'shoe', 'no')];
+    it('⚽', 'ball', 'no'), it('🪑', 'chair', 'no'), it('🥄', 'spoon', 'no'), it('👟', 'shoe', 'no')];
   const ALIVE_BINS = [{ key: 'yes', emoji: '🌱', label: 'Living', c: '#7BD389' }, { key: 'no', emoji: '🧱', label: 'Not living', c: '#C9C3D9' }];
 
   const FLOAT = [it('🦆', 'duck', 'float'), it('⛵', 'boat', 'float'), it('🍃', 'leaf', 'float'), it('⚽', 'ball', 'float'),

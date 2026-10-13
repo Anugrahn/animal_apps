@@ -20,6 +20,12 @@ const ENGINE = arg('engine', 'chatterbox');
 const STYLES = { calm: [0.5, 0.5], lively: [0.8, 0.3], bubbly: [1.1, 0.25] };
 const STYLE = arg('style', 'lively');
 const VOICE = ENGINE === 'kokoro' ? arg('voice', 'af_heart') : `chatterbox-${STYLE}`;
+// A mistyped engine or style makes every clip look new, and the clean-up in
+// publish() would then delete every recording made so far: stop instead.
+if (!['chatterbox', 'kokoro'].includes(ENGINE) || (ENGINE === 'chatterbox' && !STYLES[STYLE])) {
+  console.error(`Unknown --engine "${ENGINE}" or --style "${STYLE}". Styles: ${Object.keys(STYLES).join(', ')}.`);
+  process.exit(1);
+}
 const SPEED = +arg('speed', '1');
 const SOUND_SPEED = 0.75;                  // letter sounds: slower, so the sound is heard
 const WAVS = new URL('./.wav-cache/', import.meta.url);   // Chatterbox takes, kept so a re-run is quick
@@ -108,9 +114,15 @@ function publish(quiet) {
   // a moment of silence, played on the first tap so phones allow the voice later
   const s = new Float32Array(2400); s[1200] = 0.02;
   fs.writeFileSync(new URL('silence.mp3', OUT), toMp3(s, 24000, 32));
-  // drop recordings no line uses any more
+  // drop recordings no line uses any more. More than a quarter at once is
+  // more likely a mistake than a content change, so that needs --prune
+  // (after changing POST, for example).
   const keep = new Set(jobs.map(j => j.o + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
-  for (const f of fs.readdirSync(OUT)) if (!keep.has(f)) fs.unlinkSync(new URL(f, OUT));
+  const stale = fs.readdirSync(OUT).filter(f => !keep.has(f));
+  const clipCount = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).length;
+  if (stale.length > clipCount / 4 && !process.argv.includes('--prune')) {
+    if (!quiet) console.warn(`${stale.length} of ${clipCount} clips are no longer used; kept. Run again with --prune to delete them.`);
+  } else stale.forEach(f => fs.unlinkSync(new URL(f, OUT)));
 
   const head = `/* Made by tools/voice/gen.mjs (voice ${VOICE}). Do not edit by hand. */\n`;
   fs.writeFileSync(new URL('index.js', OUT), head +

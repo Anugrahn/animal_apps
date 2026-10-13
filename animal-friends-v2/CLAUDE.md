@@ -16,6 +16,8 @@ Treat `UI_REDESIGN_SPEC.md` as the source of truth for interface presentation an
 - Preserve existing curriculum content.
 - Preserve level IDs and deep-link formats.
 - Preserve star scoring, unlocking, profile migration and saved progress.
+  (Decided 2026-10-13: a misheard word never costs a star, and a level that
+  already has stars is never locked. Keep both.)
 - Preserve the current no-build-step approach.
 - Do not introduce a framework or package dependency.
 - Keep the app functional offline.

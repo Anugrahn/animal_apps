@@ -5,13 +5,21 @@ Writes <wav dir>/<f>.wav. A clip far longer or shorter than its text
 should take (a garbled or dragged-out take) is made again, up to 3 times."""
 import json, os, sys, time
 import torch, torchaudio
+from huggingface_hub import hf_hub_download
 from chatterbox.tts import ChatterboxTTS
+
+# The model as it was when the voice was made: a newer upload would make
+# new lines sound different from the old ones.
+MODEL = 'ResembleAI/chatterbox'
+REVISION = '5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18'
 
 jobs = json.load(open(sys.argv[1]))
 out = sys.argv[2]
 os.makedirs(out, exist_ok=True)
 dev = 'mps' if torch.backends.mps.is_available() else 'cpu'
-model = ChatterboxTTS.from_pretrained(device=dev)
+for name in ['ve.safetensors', 't3_cfg.safetensors', 's3gen.safetensors', 'tokenizer.json', 'conds.pt']:
+    ckpt = os.path.dirname(hf_hub_download(MODEL, name, revision=REVISION))
+model = ChatterboxTTS.from_local(ckpt, dev)
 torch.manual_seed(7)
 
 

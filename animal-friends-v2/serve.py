@@ -3,8 +3,10 @@
 The plain `python3 -m http.server` keeps only five waiting connections,
 and the app now loads many pictures at once, so some were refused and
 showed as broken. This is the same server with room for many more.
---lan lets a phone on the same Wi-Fi (or hotspot) open it too."""
-import functools, http.server, os, sys
+--lan lets a phone on the same Wi-Fi (or hotspot) open it too.
+Only the app is served: no folder listings, and not the design references
+(interface/), the research (docs/), the notes (*.md) or hidden files."""
+import functools, http.server, os, sys, urllib.parse
 
 class Server(http.server.ThreadingHTTPServer):
     request_queue_size = 256
@@ -21,6 +23,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Cache-Control', 'no-cache')
         super().end_headers()
+
+    def send_head(self):
+        path = urllib.parse.unquote(self.path.split('?', 1)[0].split('#', 1)[0])
+        parts = [p for p in path.split('/') if p]
+        hidden = any(p.startswith('.') for p in parts) or (parts and parts[0] in ('interface', 'docs'))
+        if hidden or path.lower().endswith('.md') or (path.endswith('/') and path != '/'):
+            self.send_error(404)
+            return None
+        return super().send_head()
 
 handler = functools.partial(Handler, directory=here)
 Handler.extensions_map = dict(http.server.SimpleHTTPRequestHandler.extensions_map, **{'.webp': 'image/webp', '.webmanifest': 'application/manifest+json'})

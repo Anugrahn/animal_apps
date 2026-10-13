@@ -22,7 +22,6 @@ original; Lingokids' characters and licensed content are not used.
 
 ```
 project_apps/
-├── animal-friends/        v1 ("Phase 0"): the original prototype, kept unchanged
 ├── animal-friends-v2/     the current app (all active work happens here)
 │   ├── docs/research/     the research behind decisions (kids-audio.md: the voice)
 │   └── interface/         design references, mock-ups, AI art prompts and raw art sheets
@@ -32,7 +31,6 @@ project_apps/
 | Folder | What it is | Start with |
 |---|---|---|
 | [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 14 subjects, 192 levels, 14 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/TUTORIAL.md) |
-| [`animal-friends/`](animal-friends/) | v1 foundation build: 3 SVG characters, one Letters module with 5 levels. Kept for reference. v2 migrates a v1 profile on first run | [README](animal-friends/README.md) |
 | [`animal-friends-v2/interface/`](animal-friends-v2/interface/) | Reference images, UI mock-ups, ChatGPT prompts used to make the art, and the original art sheets before they were cut up | see [Design and art pipeline](#design-and-art-pipeline) |
 
 ---
@@ -111,7 +109,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.5.1`.
+  `af-v3.5.2`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
@@ -124,7 +122,7 @@ animal-friends-v2/
 
 | Version | What changed |
 |---|---|
-| v1 / Phase 0 (`animal-friends/`) | Module registry, star rules, level map, one Letters module, `localStorage` progress |
+| v1 / Phase 0 (`animal-friends/`, removed in v3.5.2; see commit `d28a71f` or earlier) | Module registry, star rules, level map, one Letters module, `localStorage` progress |
 | v2.0 | 3D characters, 14 subjects, 192 levels, 14 engines, island home, grown-up area, offline PWA |
 | v2.5 | Every menu rebuilt from the mock-ups in `animal-friends-v2/interface/new_interface/`: one shared HUD and shared UI primitives |
 | v2.6 | Closer match to the full-screen mock-ups: wooden signs, stage pills, maze board, Daily Journey track |

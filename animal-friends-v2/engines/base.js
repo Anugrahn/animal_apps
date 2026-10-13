@@ -173,8 +173,8 @@
           <div class="play-guide">
             <div class="play-friend"><div class="play-char" data-char></div></div>
             <div class="prompt-col">
-              <button class="speech prompt" data-replay aria-label="Say it again">
-                <span class="speech-text">${o.text || ''}</span><span class="prompt-ic" data-ic="sound"></span>
+              <button class="speech prompt" data-replay>
+                <span class="vh">Say it again: </span><span class="speech-text">${o.text || ''}</span><span class="prompt-ic" data-ic="sound"></span>
               </button>
             </div>
           </div>

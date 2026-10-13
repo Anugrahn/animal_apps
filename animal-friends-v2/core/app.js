@@ -73,7 +73,46 @@
     Audio.ambience(id === 'home' || id === 'journey' || id === 'area' || id === 'map' || id === 'pick');
   }
 
-  function sheet(id, open) { $(id).hidden = !open; }
+  /* Sheets are dialogs: while one is open, everything behind it is out
+     of reach (inert), focus moves into it and comes back to where it was
+     when it closes, and Escape closes it if it has a way out ([data-esc]). */
+  const openSheets = [];                      // [{ el, back }], newest last
+  let lastBack = null;                        // where focus came from, for a sheet that opens as another closes
+  function sheet(id, open) {
+    const el = $(id);
+    if (open === !el.hidden) return;
+    el.hidden = !open;
+    if (open) {
+      const title = el.querySelector('h2');
+      if (title) { title.id = title.id || id + '-title'; el.setAttribute('aria-labelledby', title.id); }
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      const from = document.activeElement;
+      openSheets.push({ el, back: from && from !== document.body && !from.closest('.sheet[hidden]') ? from : lastBack });
+    }
+    const i = open ? -1 : openSheets.findIndex(s => s.el === el);
+    const gone = i >= 0 ? openSheets.splice(i, 1)[0] : null;
+    const top = openSheets.length ? openSheets[openSheets.length - 1].el : null;
+    document.querySelectorAll('.screen, .sheet').forEach(x => { x.inert = !!top && x !== top; });
+    // Focus goes back where it was, or to the same button if the screen was drawn again meanwhile.
+    if (gone) lastBack = gone.back;
+    if (gone && gone.back) setTimeout(() => {
+      const b = gone.back, act = b.dataset && b.dataset.act;
+      const again = document.contains(b) ? b : b.id ? $(b.id) : act ? document.querySelector(`.screen.active [data-act="${act}"]`) : null;
+      if (again && (!top || top.contains(again))) again.focus({ preventScroll: true });
+    }, 0);
+    // (after the caller has filled the sheet in)
+    if (open) setTimeout(() => {
+      if (el.hidden || el.contains(document.activeElement)) return;
+      const first = el.querySelector('button:not([disabled]), [href], summary, [tabindex]:not([tabindex="-1"])');
+      if (first) first.focus({ preventScroll: true });
+    }, 0);
+  }
+  document.addEventListener('keydown', (e) => {
+    const top = openSheets.length && openSheets[openSheets.length - 1].el;
+    const out = top && top.querySelector('[data-esc]');
+    if (e.key === 'Escape' && out) { e.preventDefault(); out.click(); }
+  });
 
   /* ============================================================
      1. character picker
@@ -778,6 +817,8 @@
       const key = btn.getAttribute('data-toggle');
       const on = P.setting(key);
       btn.classList.toggle('on', !!on);
+      btn.setAttribute('role', 'switch');
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
       btn.querySelector('.sw-state').textContent = on ? 'On' : 'Off';
       btn.onclick = () => { P.setSetting(key, !P.setting(key)); Audio.SFX.tap(); applyWorld(); renderGrown(); };
     });
@@ -787,6 +828,7 @@
       if (key === 'speech' && value === 'ask') value = '';
       seg.querySelectorAll('button').forEach(b => {
         b.classList.toggle('on', b.dataset.v === value);
+        b.setAttribute('aria-pressed', b.dataset.v === value ? 'true' : 'false');
         if (key === 'speech') b.disabled = (b.dataset.v === 'check' && !AF.Speech.canCheck) || (b.dataset.v === 'echo' && !AF.Speech.canEcho);
         b.onclick = () => {
           P.setSetting(key, key === 'limit' ? +b.dataset.v : b.dataset.v);

@@ -171,8 +171,10 @@
       });
 
       // The treasure at the end opens once every level has a star.
-      const chest = document.createElement('div');
+      const chest = document.createElement('button');
       chest.className = 'lv-chest' + (allDone ? ' open' : '');
+      chest.setAttribute('aria-label', allDone ? 'Treasure chest' : 'Treasure chest: opens when every level has a star');
+      if (!allDone) chest.setAttribute('aria-disabled', 'true');
       chest.style.cssText = pct(pos[n]);
       chest.innerHTML = AF.World.chest(allDone);
       chest.addEventListener('click', () => { if (allDone && onChest) onChest(); });

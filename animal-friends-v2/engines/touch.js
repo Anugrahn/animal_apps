@@ -154,7 +154,7 @@
       const stage = E.frame(S, { text: lv.text || U.esc(lv.say), rounds: rounds, cls: 'stage-match' });
       stage.innerHTML = `
         <div class="mt-row mt-slots" style="--n:${per}">
-          ${order.map(i => `<button class="mt-slot" data-i="${i}"><span class="mt-face">${mface(set[i].b)}</span></button>`).join('')}
+          ${order.map(i => `<button class="mt-slot" data-i="${i}" aria-label="${U.esc(set[i].w)}"><span class="mt-face">${mface(set[i].b)}</span></button>`).join('')}
         </div>
         <div class="mt-row mt-items" style="--n:${per}">
           ${set.map((p, i) => `<button class="mt-item" data-i="${i}" style="--i:${i}" aria-label="${U.esc(p.w)}"><span class="mt-face">${mface(p.a)}</span></button>`).join('')}

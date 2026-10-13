@@ -16,7 +16,7 @@ Still no build step and no dependencies to install. To play, see
 [TUTORIAL.md](TUTORIAL.md). The short version: double-click `start.command`
 (Mac) or `start.bat` (Windows), or just open `index.html`.
 
-v1 is untouched in `../animal-friends/`.
+v1 lived in `../animal-friends/` until v3.5.2; it is still in the git history (commit `d28a71f` or earlier).
 
 ---
 

@@ -77,6 +77,8 @@ button {
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 button:disabled { opacity: .4; cursor: default; }
+/* read by screen readers, not shown */
+.vh { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 [hidden] { display: none !important; }
 
 /* ---------- the world outside ----------
@@ -398,7 +400,7 @@ body.still .mk-done { animation: none; }
 /* Every child control is at least --tap-min to touch, even when
    it is drawn smaller. */
 .round-btn { width: var(--btn); }
-.round-btn::after, .pad::after, .pad-hint::after, .big-round::after, .pick-edit::after {
+.round-btn::after, .pad::after, .pad-hint::after, .big-round::after, .pick-edit::after, .tutor-skip::after, .me-face::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--tap-min)); height: max(100%, var(--tap-min));
   translate: -50% -50%; border-radius: 50%;
 }
@@ -425,10 +427,11 @@ body.still .mk-done { animation: none; }
 
 /* the friend's face in a round frame */
 .me-face {
-  width: clamp(44px, 11vmin, 58px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; position: relative; flex: none;
+  width: clamp(44px, 11vmin, 58px); aspect-ratio: 1; border-radius: 50%; position: relative; flex: none;
   background: radial-gradient(circle at 40% 30%, #FFFDF6, #CFEFC5);
   box-shadow: 0 0 0 3px #fff, 0 4px 10px rgba(10,52,58,.25);
 }
+.me-clip { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; }
 .me-face .ch { position: absolute; width: 215%; left: -57%; top: -30%; }
 .me-face .ch::before { display: none; }
 .me-face .ch-img { animation: none; }

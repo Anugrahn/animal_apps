@@ -59,12 +59,12 @@
           ${o.help ? '<button class="round-btn small" data-act="help" data-ic="help" aria-label="How to play"></button>' : ''}
         </div>
         <div class="hud-right">
-          ${o.face === false ? '' : '<button class="me-face" data-act="me" aria-label="Your friend"></button>'}
+          ${o.face === false ? '' : '<button class="me-face" data-act="me" aria-label="Your friend"><span class="me-clip"></span></button>'}
           <div class="hud-pills">${UI.pills()}</div>
         </div>
         <div class="hud-mid">${o.logo ? UI.logo() : o.title ? UI.sign(o.title, o.crumb) : ''}</div>`;
       const face = el.querySelector('.me-face');
-      if (face) AF.Art.face(face);
+      if (face) AF.Art.face(face.firstElementChild);
     },
 
     /** Basic / Intermediate / Advanced. states[t] = { open, done, total } */

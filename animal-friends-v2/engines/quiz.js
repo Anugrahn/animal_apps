@@ -388,7 +388,7 @@
       <div class="tray-wrap">
         <div class="tray mem-tray" style="--pc:${cols};--pr:${Math.ceil(total / cols)};--lc:${Math.ceil(total / lrows)};--lr:${lrows}">
           ${cards.map((c, i) => `
-            <button class="mem" data-i="${i}" style="--i:${i};--h:${BACKS[(i + Math.floor(i / cols)) % BACKS.length]};--back:url(${new URL('art/ui/mem-' + MEMBACK[(i + Math.floor(i / cols)) % MEMBACK.length] + '.webp', location.href).href})" aria-label="Card">
+            <button class="mem" data-i="${i}" style="--i:${i};--h:${BACKS[(i + Math.floor(i / cols)) % BACKS.length]};--back:url(${new URL('art/ui/mem-' + MEMBACK[(i + Math.floor(i / cols)) % MEMBACK.length] + '.webp', location.href).href})" aria-label="Card ${i + 1}">
               <span class="mem-in">
                 <span class="mem-back">${AF.Icon.svg('paw')}</span>
                 <span class="mem-front">${face(c.face)}</span>
@@ -399,6 +399,9 @@
       <div class="stage-cap">Match the pairs!</div>`;
 
     const btns = Array.from(stage.querySelectorAll('.mem'));
+    // A card is called by its number while face down, by what is on it once seen.
+    const name = (b) => b.setAttribute('aria-label', b.classList.contains('up') || b.classList.contains('matched')
+      ? cards[b.dataset.i].w + (b.classList.contains('matched') ? ', found' : '') : `Card ${+b.dataset.i + 1}`);
     S.replay = () => E.talk(S, 'Find the pairs!');
     S.later(() => { S.replay(); S.mark(); }, 320);
 
@@ -408,6 +411,8 @@
       busy = true;
       S.later(() => btns.forEach(b => b.classList.add('up')), 500);
       btns.forEach((b, i) => S.later(() => { b.classList.remove('up'); AF.Audio.SFX.flip(); }, 2600 + i * 90));
+      S.later(() => btns.forEach(name), 500);
+      S.later(() => btns.forEach(name), 2700 + btns.length * 90);
       S.later(() => { busy = false; }, 2700 + btns.length * 90);
     }
 
@@ -415,6 +420,7 @@
       if (busy || btn.classList.contains('up')) return;
       const card = cards[btn.dataset.i];
       btn.classList.add('up');
+      name(btn);
       AF.Audio.SFX.flip();
       AF.Audio.say(card.say);
       open.push({ btn: btn, card: card });
@@ -425,7 +431,7 @@
       if (a.card.id === b.card.id) {
         found++;
         S.later(() => {
-          [a, b].forEach(x => { x.btn.classList.add('matched'); AF.FX.sparkleAt(x.btn, 8); });
+          [a, b].forEach(x => { x.btn.classList.add('matched'); name(x.btn); AF.FX.sparkleAt(x.btn, 8); });
           AF.Audio.SFX.right();
           AF.Art.react(S.charEl, 'happy');
           const num = stage.querySelector('[data-found]');
@@ -444,7 +450,7 @@
         busy = true;
         S.later(() => { a.btn.classList.add('no'); b.btn.classList.add('no'); }, 600);
         S.later(() => {
-          [a, b].forEach(x => x.btn.classList.remove('up', 'no'));
+          [a, b].forEach(x => { x.btn.classList.remove('up', 'no'); name(x.btn); });
           busy = false;
         }, 1150);
       }

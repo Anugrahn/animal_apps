@@ -39,6 +39,15 @@ Then bump `VERSION` in `animal-friends-v2/sw.js`.
 
 - **See progress before it finishes:** `node gen.mjs --convert-only` puts the
   clips made so far into the app.
+- **Calmer takes for the lines still too quick:** `node gen.mjs --calm`
+  records again, with the research's settings (less lively, a sentence at a
+  time, takes over 180 words a minute made again), every line in
+  `too-fast.txt` and every line with no recording yet. `calm.json` keeps
+  the list, so later runs keep them calm. Each line goes on playing its old
+  take until its calm one is made. Try it first with `--dry-run` (counts
+  and time, makes nothing) or `--limit 5`. About 2.5 hours on an M4 for
+  everything, about 1.5 hours for the ready-made friends' lines, which come
+  first. Run it plugged in, ideally overnight.
 - **Clean-up:** clips no line uses any more are deleted, unless that is more
   than a quarter of them (more likely a mistake). After changing `POST`,
   add `--prune` to delete the old clips.

@@ -2,6 +2,8 @@
 // sent anywhere) into animal-friends-v2/voice/.
 //   node gen.mjs [--engine chatterbox] [--style lively]      natural, expressive (default)
 //   node gen.mjs --engine kokoro [--voice af_heart] [--speed 1]   quicker to make, flatter
+//   node gen.mjs --calm [--dry-run] [--limit 5]   records again, calmly, the lines still too quick
+//                                                 and any line not recorded yet (see calm.json)
 // Chatterbox needs the Python set-up in .venv (see README.md here).
 // Writes voice/<id>.mp3, voice/index.js (line -> file, for the app) and
 // voice/files.js (the list sw.js stores for offline use). Only new lines
@@ -45,7 +47,7 @@ const phrases = JSON.parse(fs.readFileSync(new URL('./phrases.json', import.meta
 const bad = /undefined|NaN|\[object|null/;
 // What the voice reads: no HTML, curly quotes made plain.
 const spoken = (t) => t.replace(/<[^>]+>/g, '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
-const id = (text, speed) => crypto.createHash('sha1').update(`${VOICE}|${speed}|${text}`).digest('hex').slice(0, 12);
+const id = (text, speed, voice) => crypto.createHash('sha1').update(`${voice || VOICE}|${speed}|${text}`).digest('hex').slice(0, 12);
 // The app's file for a take after post.py has made it slower and clearer.
 // (A new name whenever that changes, so phones never keep an old copy.)
 const POST = 'kids-125-v3';
@@ -59,6 +61,19 @@ const presetNames = new Set([...presets.matchAll(/name:\s*'([^']+)'/g)].map(m =>
 const prioFile = new URL('./priority.json', import.meta.url);
 const prio = fs.existsSync(prioFile) ? JSON.parse(fs.readFileSync(prioFile, 'utf8')) : {};
 const LATE = 150000, OTHER_NAMES = 900000;
+
+/* Calm takes, for three-year-olds (docs/research/kids-audio.md, section 9,
+   change 6): less lively (exaggeration 0.55), each sentence voiced on its
+   own, and a take quicker than 180 words a minute is made again. calm.json
+   lists the lines voiced this way; --calm adds the lines post.py still
+   finds too quick (.wav-final/rates.json) and the lines not recorded yet.
+   A calm line keeps playing its old take until its calm one is made. */
+const CALM = [0.55, 0.3], CALM_VOICE = 'chatterbox-calm';
+const CALM_RUN = process.argv.includes('--calm');
+const calmFile = new URL('./calm.json', import.meta.url);
+const calm = new Set(fs.existsSync(calmFile) ? JSON.parse(fs.readFileSync(calmFile, 'utf8')) : []);
+const LIMIT = +arg('limit', '0');                // --limit 5: only that many takes (to try it out)
+const DRY = process.argv.includes('--dry-run');  // count and estimate, make nothing
 const jobs = [];                           // { text, speed, f, rank, parts? }: lower rank is made first
 // A blend ("buh … uh … guh") is not read out: post.py builds it from the
 // takes of its letter sounds, so it needs nothing recorded of its own.
@@ -67,6 +82,29 @@ const partsOf = (line, kind) => {
   return kind === 'sound' && parts.length > 1 && parts.every(p => phrases[p] === 'sound') ? parts.map(p => id(p, SOUND_SPEED)) : null;
 };
 const allClips = {}, allNamed = {};
+const fallback = {};                       // a calm clip's id -> the take it replaces, played until it is made
+const took = (f) => fs.existsSync(new URL(f + '.wav', WAVS));
+// One clip of a line (with the friend's name filled in, for a name line).
+function voiced(line, text, speed, more) {
+  const f = id(text, speed), o = outId(f);
+  if (!calm.has(line) || speed === SOUND_SPEED || more.parts) return Object.assign({ line, text, speed, f, o }, more);
+  const cf = id(text, speed, CALM_VOICE), co = outId(cf);
+  fallback[co] = o;
+  return Object.assign({ line, text, speed, f: cf, o: co, calm: true }, more);
+}
+if (CALM_RUN) {
+  // the lines post.py still finds too quick, and the lines with no take yet
+  const rates = fs.existsSync(new URL('rates.json', FINAL)) ? JSON.parse(fs.readFileSync(new URL('rates.json', FINAL), 'utf8')) : {};
+  const before = calm.size;
+  for (const [line, kind] of Object.entries(phrases)) {
+    if (kind === 'sound' || bad.test(line)) continue;
+    const texts = line.includes('{name}') ? NAMES.filter(n => presetNames.has(n)).map(n => line.split('{name}').join(n)) : [line];
+    const fs1 = texts.map(t => id(t, SPEED));
+    if (fs1.some(f => rates[outId(f)] > 150) || !fs1.every(took)) calm.add(line);
+  }
+  if (!DRY) fs.writeFileSync(calmFile, JSON.stringify([...calm].sort(), null, 1));
+  console.log(`calm.json: ${calm.size} lines (${calm.size - before} added)`);
+}
 for (const [line, kind] of Object.entries(phrases)) {
   if (bad.test(line)) continue;
   const speed = kind === 'sound' ? SOUND_SPEED : SPEED;
@@ -74,16 +112,20 @@ for (const [line, kind] of Object.entries(phrases)) {
   if (line.includes('{name}')) {
     allNamed[line] = {};
     for (const n of NAMES) {
-      const text = line.split('{name}').join(n), f = id(text, speed), o = outId(f);
-      allNamed[line][n] = o; jobs.push({ text, speed, f, o, rank: presetNames.has(n) ? rank + 1 : OTHER_NAMES + rank });
+      const text = line.split('{name}').join(n);
+      jobs.push(voiced(line, text, speed, { rank: presetNames.has(n) ? rank + 1 : OTHER_NAMES + rank }));
+      allNamed[line][n] = jobs[jobs.length - 1].o;
     }
   } else {
-    const f = id(line, speed), o = outId(f); allClips[line] = o; jobs.push({ text: line, speed, f, o, rank, parts: partsOf(line, kind) });
+    jobs.push(voiced(line, line, speed, { rank, parts: partsOf(line, kind) }));
+    allClips[line] = jobs[jobs.length - 1].o;
   }
 }
 jobs.sort((a, b) => a.rank - b.rank);
 
 const have = (f) => fs.existsSync(new URL(f + '.mp3', OUT));
+// the clip a line plays now: its own, or the take a calm one replaces until that is made
+const playing = (o) => have(o) ? o : fallback[o] && have(fallback[o]) ? fallback[o] : null;
 const todo = jobs.filter(j => !have(j.o));
 const ONLY_CONVERT = process.argv.includes('--convert-only');   // take what Chatterbox has made so far
 console.log(`${jobs.length} clips (${Object.keys(allClips).length} lines + ${Object.keys(allNamed).length} name lines × ${NAMES.length} names), ${todo.length} to make, voice ${VOICE}`);
@@ -93,7 +135,6 @@ console.log(`${jobs.length} clips (${Object.keys(allClips).length} lines + ${Obj
    recording, so the app gets the new voice bit by bit (reload to hear it). */
 function publish(quiet) {
   // new takes: slower and clearer (post.py), then a 64 kbps MP3 so consonants stay crisp
-  const took = (f) => fs.existsSync(new URL(f + '.wav', WAVS));
   const ready = todo.filter(j => !have(j.o) && (j.parts ? j.parts.every(took) : took(j.f)));
   if (ready.length) {
     fs.mkdirSync(FINAL, { recursive: true });
@@ -106,9 +147,9 @@ function publish(quiet) {
   }
   // Only lines with a recording go in the list; the rest use the device's voice.
   const clips = {}, named = {};
-  for (const [k, f] of Object.entries(allClips)) if (have(f)) clips[k] = f;
+  for (const [k, f] of Object.entries(allClips)) if (playing(f)) clips[k] = playing(f);
   for (const [k, m] of Object.entries(allNamed)) {
-    const got = Object.fromEntries(Object.entries(m).filter(([, f]) => have(f)));
+    const got = Object.fromEntries(Object.entries(m).filter(([, f]) => playing(f)).map(([n, f]) => [n, playing(f)]));
     if (Object.keys(got).length) named[k] = got;
   }
   // a moment of silence, played on the first tap so phones allow the voice later
@@ -117,7 +158,7 @@ function publish(quiet) {
   // drop recordings no line uses any more. More than a quarter at once is
   // more likely a mistake than a content change, so that needs --prune
   // (after changing POST, for example).
-  const keep = new Set(jobs.map(j => j.o + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
+  const keep = new Set(jobs.map(j => (playing(j.o) || j.o) + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
   const stale = fs.readdirSync(OUT).filter(f => !keep.has(f));
   const clipCount = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).length;
   if (stale.length > clipCount / 4 && !process.argv.includes('--prune')) {
@@ -135,17 +176,29 @@ function publish(quiet) {
   // Lines still quicker than 150 words a minute after post.py: worth recording again, more calmly.
   const ratesFile = new URL('rates.json', FINAL);
   const rates = fs.existsSync(ratesFile) ? JSON.parse(fs.readFileSync(ratesFile, 'utf8')) : {};
-  const fast = [...new Map(jobs.filter(j => have(j.o) && rates[j.o] > 150).map(j => [j.text, rates[j.o]])).entries()].sort((a, b) => b[1] - a[1]);
+  const fast = [...new Map(jobs.filter(j => playing(j.o) && rates[playing(j.o)] > 150).map(j => [j.text, rates[playing(j.o)]])).entries()].sort((a, b) => b[1] - a[1]);
   fs.writeFileSync(new URL('./too-fast.txt', import.meta.url), fast.map(([t, w]) => `${w}\t${t}\n`).join(''));
   let bytes = 0; for (const f of fs.readdirSync(OUT)) bytes += fs.statSync(new URL(f, OUT)).size;
   if (!quiet) console.log(`voice/ is ${(bytes / 1e6).toFixed(1)} MB; ${Object.keys(clips).length} of ${Object.keys(allClips).length} lines and ${Object.keys(named).length} name lines recorded; ${offline.length} clips stored for offline use; ${fast.length} lines still too fast (too-fast.txt)`);
 }
 
-if (todo.length && ENGINE === 'chatterbox' && !ONLY_CONVERT) {
+// What Chatterbox has to record (a blend is built, not recorded).
+const toRecord = todo.filter(j => !j.parts && !took(j.f)).slice(0, LIMIT || undefined);
+if (DRY) {
+  const calmN = toRecord.filter(j => j.calm).length, kept = toRecord.filter(j => j.calm && playing(j.o)).length;
+  // about 5.3 s a take on an M4 (gen.log); a calm take is voiced a sentence at a time and some are made again
+  const mins = (toRecord.length - calmN) * 5.3 / 60 + calmN * 5.3 * 1.5 / 60;
+  console.log(`dry run: ${toRecord.length} takes to record (${calmN} calm; ${kept} of those replace a take that keeps playing until then), about ${Math.round(mins)} min`);
+  console.log(`  ready players first: ${toRecord.filter(j => j.rank < OTHER_NAMES).length} takes, about ${Math.round(toRecord.filter(j => j.rank < OTHER_NAMES).length * 5.3 * 1.4 / 60)} min (the rest are names a child might type in)`);
+  process.exit(0);
+}
+if (toRecord.length && ENGINE === 'chatterbox' && !ONLY_CONVERT) {
   const [ex, cfg] = STYLES[STYLE];
   const list = new URL('./.todo.json', import.meta.url);
   // letter sounds are said calmly, so the sound itself is clear
-  fs.writeFileSync(list, JSON.stringify(todo.filter(j => !j.parts).map(j => ({ text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg }))));
+  fs.writeFileSync(list, JSON.stringify(toRecord.map(j => j.calm
+    ? { text: spoken(j.text), f: j.f, ex: CALM[0], cfg: CALM[1], calm: true }
+    : { text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg })));
   const py = spawn(new URL('./.venv/bin/python', import.meta.url).pathname, [new URL('./gen_cb.py', import.meta.url).pathname, list.pathname, WAVS.pathname],
     { stdio: ['ignore', 'pipe', 'inherit'], env: Object.assign({}, process.env, { PYTORCH_ENABLE_MPS_FALLBACK: '1' }) });
   py.stdout.on('data', (d) => {

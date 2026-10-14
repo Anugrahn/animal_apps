@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.5.7';
+const VERSION = 'af-v3.5.8';
 
 const FILES = [
   './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -138,9 +138,9 @@ async function store(cache, file) {
   }
 }
 
-/* Eight files at a time: one by one, a phone on a real connection needed
+/* Sixteen files at a time: one by one, a phone on a real connection needed
    a quarter of an hour before the app worked offline. */
-async function each(list, job, at = 8) {
+async function each(list, job, at = 16) {
   let next = 0;
   await Promise.all(Array.from({ length: at }, async () => { while (next < list.length) await job(list[next++]); }));
 }

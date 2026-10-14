@@ -104,26 +104,27 @@
     osc.stop(t0 + dur + 0.02);
   }
 
-  /* How long the "right!" chime rings. Speech that starts while it rings
-     waits for it: a small child can't pick words out from under a chime. */
-  const RIGHT_MS = 460;
+  /* How long the "right!" chime rings. Speech that starts while a chime
+     rings waits for it: a small child can't pick words out from under one. */
+  const RIGHT_MS = 460, WRONG_MS = 300, WIN_MS = 760;
+  const hush = (ms) => { if (unlocked && AF.Profile.setting('sound')) quietAt = Math.max(quietAt, performance.now() + ms); };
 
   const SFX = {
     tap:   () => tone(520, 0.09, 'sine', 0.13),
     right: () => {
       tone(660, 0.14, 'sine', 0.2); tone(880, 0.18, 'sine', 0.18, 0.1); tone(1180, 0.26, 'sine', 0.14, 0.2);
-      if (unlocked && AF.Profile.setting('sound')) quietAt = performance.now() + RIGHT_MS;
+      hush(RIGHT_MS);
     },
     /* Deliberately soft and low — never a harsh buzzer. A child
        should hear "not that one", not "you failed". */
-    wrong: () => { tone(300, 0.16, 'triangle', 0.12); tone(250, 0.2, 'triangle', 0.1, 0.1); },
+    wrong: () => { tone(300, 0.16, 'triangle', 0.12); tone(250, 0.2, 'triangle', 0.1, 0.1); hush(WRONG_MS); },
     pop:   () => tone(760, 0.08, 'triangle', 0.16),
     flip:  () => tone(420, 0.07, 'triangle', 0.12),
     step:  () => tone(360, 0.05, 'sine', 0.07),
     bump:  () => tone(150, 0.1, 'triangle', 0.1),
     drum:  () => { tone(140, 0.18, 'sine', 0.3); tone(90, 0.22, 'triangle', 0.2, 0.01); },
     star:  (i) => tone(700 + (i || 0) * 180, 0.3, 'sine', 0.17, (i || 0) * 0.16),
-    win:   () => [0, 1, 2, 3].forEach(i => tone([523, 659, 784, 1047][i], 0.36, 'sine', 0.17, i * 0.13)),
+    win:   () => { [0, 1, 2, 3].forEach(i => tone([523, 659, 784, 1047][i], 0.36, 'sine', 0.17, i * 0.13)); hush(WIN_MS); },
     mic:   () => { tone(660, 0.1, 'sine', 0.14); tone(990, 0.14, 'sine', 0.12, 0.09); }
   };
 
@@ -157,7 +158,7 @@
   function ambLoop() {
     ambTimer = setTimeout(() => {
       if (!ambOn) return;
-      if (unlocked && document.visibilityState === 'visible') chirp();
+      if (unlocked && document.visibilityState === 'visible' && !talking) chirp();   // never over the friend's voice
       ambLoop();
     }, 5000 + Math.random() * 9000);
   }
@@ -190,7 +191,13 @@
      friend must not undo that by talking fast. */
   const clipRate = (pitch) => Math.max(0.93, Math.min(1.03, 1 + ((pitch || 1) - 1) * 0.2));
 
+  /* Each play of the one player is a turn. A line whose turn is over (a
+     newer line took the player) must not stop the newer one when its own
+     loading fails or is cut short: that newer line would then fall back to
+     the device's voice. */
+  let turn = 0;
   function stopClip() {
+    turn++;
     if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }
   }
 
@@ -203,10 +210,12 @@
     clip.src = 'voice/' + file + '.mp3';
     clip.preservesPitch = clip.mozPreservesPitch = clip.webkitPreservesPitch = false;
     clip.playbackRate = clipRate(pitch);
+    const mine = turn;
+    const failed = () => { if (mine !== turn) return; stopClip(); fallback(); };
     clip.onended = end;
-    clip.onerror = () => { stopClip(); fallback(); };
+    clip.onerror = failed;
     const p = clip.play();
-    if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
+    if (p && p.catch) p.catch(failed);
     return true;
   }
 

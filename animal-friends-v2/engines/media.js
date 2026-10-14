@@ -203,6 +203,6 @@
       S.later(() => cycle(n + 1), IN + OUT);
     }
 
-    S.later(() => cycle(0), 3600);
+    S.after(() => cycle(0), 3600);           // (after the opening line, however long it takes)
   };
 })(window.AF = window.AF || {});

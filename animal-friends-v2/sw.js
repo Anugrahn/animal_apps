@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.5.6';
+const VERSION = 'af-v3.5.7';
 
 const FILES = [
   './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -122,26 +122,37 @@ async function reuse(cache, file) {
   return true;
 }
 
-/* One file at a time. Asking for all of them at once can overwhelm a
-   small local server (the launcher's) and make the install fail.
-   Each file gets three tries, so one dropped request does not cost the
-   whole offline copy, and skips the browser's own cache, so a new
-   VERSION never stores an old picture. */
+/* Each file gets three tries, so one dropped request does not cost the
+   whole offline copy, and skips the browser's own cache, so a new VERSION
+   never stores an old picture. A host may answer index.html by sending
+   the browser on to "/" (Cloudflare does): the page itself is kept, not
+   the detour, because a browser won't open a page from a detour. */
 async function store(cache, file) {
   for (let i = 0; ; i++) {
-    try { return await cache.add(new Request(file, { cache: 'reload' })); }
-    catch (err) { if (i >= 2) throw err; await new Promise(r => setTimeout(r, 800 * (i + 1))); }
+    try {
+      let res = await fetch(new Request(file, { cache: 'reload' }));
+      if (!res.ok) throw new Error(res.status + ' ' + file);
+      if (res.redirected) res = new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+      return await cache.put(file, res);
+    } catch (err) { if (i >= 2) throw err; await new Promise(r => setTimeout(r, 800 * (i + 1))); }
   }
+}
+
+/* Eight files at a time: one by one, a phone on a real connection needed
+   a quarter of an hour before the app worked offline. */
+async function each(list, job, at = 8) {
+  let next = 0;
+  await Promise.all(Array.from({ length: at }, async () => { while (next < list.length) await job(list[next++]); }));
 }
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const cache = await caches.open(VERSION);
-    for (const file of FILES) await store(cache, file);
+    await each(FILES, file => store(cache, file));
     // A voice clip that won't come down is skipped, so it never costs the
     // whole offline copy: the device's voice says that line, and the clip
     // is stored the first time it plays (see fetch).
-    for (const file of CLIPS) if (!(await reuse(cache, file).catch(() => false))) await store(cache, file).catch(() => {});
+    await each(CLIPS, file => reuse(cache, file).catch(() => false).then(had => had || store(cache, file)).catch(() => {}));
     await self.skipWaiting();
   })());
 });
@@ -167,7 +178,7 @@ self.addEventListener('fetch', (e) => {
   // Only the app's own pages are stored as pages (the app, and its privacy
   // page). Opening any other file of the folder must not replace them.
   const page = e.request.mode === 'navigate';
-  const privacy = page && /\/privacy\.html$/.test(url.pathname);
+  const privacy = page && /\/privacy(\.html)?$/.test(url.pathname);
   if (page && !privacy && !/\/(index\.html)?$/.test(url.pathname)) return;
   const code = page || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
   if (code) {
@@ -191,11 +202,33 @@ self.addEventListener('fetch', (e) => {
   // A voice line not stored at install (a name line for a suggested
   // name) is stored the first time it plays, for next time offline.
   const keep = url.pathname.includes('/voice/');
+  const range = e.request.headers.get('range');
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => hit ||
+    caches.match(e.request, { ignoreSearch: true }).then(hit => hit ? (range ? piece(hit, range) : hit) :
       fetch(e.request).catch(() => fetch(e.request)).then(res => {
-        if (keep && res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
-        return res;
+        if (keep && res.status === 200) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
+        return range && res.status === 200 ? piece(res, range) : res;     // (a host that ignores Range)
       }).catch(() => Response.error()))
   );
 });
+
+/* Safari asks for a sound in pieces ("Range: bytes=0-1", then the rest)
+   and won't play it if the whole file comes back instead, so a stored
+   clip is cut to the piece asked for. */
+async function piece(res, range) {
+  const m = /bytes=(\d*)-(\d*)/.exec(range);
+  if (!m || (m[1] === '' && m[2] === '')) return res;
+  const buf = await res.arrayBuffer(), size = buf.byteLength;
+  const start = m[1] === '' ? Math.max(0, size - +m[2]) : +m[1];
+  const end = m[1] !== '' && m[2] !== '' ? Math.min(+m[2], size - 1) : size - 1;
+  if (start >= size) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } });
+  return new Response(buf.slice(start, end + 1), {
+    status: 206,
+    headers: {
+      'Content-Type': res.headers.get('Content-Type') || 'audio/mpeg',
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Content-Length': String(end - start + 1),
+      'Accept-Ranges': 'bytes'
+    }
+  });
+}

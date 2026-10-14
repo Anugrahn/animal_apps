@@ -63,7 +63,24 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       if (lv.pairs && lv.say) { S(lv.say); lv.pairs.forEach(pr => { S(pr.sayA || pr.w); S(pr.say || pr.w); }); }
       (lv.sets || []).forEach(s => { S(s.say); if (s.praise) S(s.praise); (s.steps || []).forEach(st => S(st.say || st.label)); });
       // Build a word: the blend of its sounds, then the word itself
-      if (lv.type === 'build') (lv.words || []).forEach(x => { S(AF.blend(x.w), 'sound'); S(x.w); });
+      if (lv.type === 'build') (lv.words || []).forEach(x => { S(AF.blend(x.w), 'sound'); S(x.w); S(`Build the word, ${x.w}.`); });
+      // Lines the games build from a level's data, so none depends on the bot
+      // happening to reach it (engines/voice.js, touch.js, quiz.js, media.js).
+      if (lv.type === 'speak') { (lv.words || []).forEach(x => { S(`Say, ${x.w}.`); S(x.w); }); ['Great!', 'Good try!', 'Well done!'].forEach(t => S(t)); }
+      if (lv.type === 'trace') {
+        const LINE = { across: 'a line across', down: 'a line down', slide: 'a slide', zigzag: 'a zig zag', wave: 'a wave',
+          hill: 'a hill', circle: 'a circle', square: 'a square', triangle: 'a triangle', loop: 'a loop' };
+        (lv.set || []).forEach(x => {
+          if (lv.kind === 'word') { S(`Write the word, ${x.w}.`); S(x.w); }
+          else if (lv.kind === 'number') { S(`Trace number ${AF.NUM[+x]}.`); S(AF.NUM[+x]); }
+          else if (lv.kind === 'line') { S(`Draw ${LINE[x]}.`); S('Lovely!'); }
+          else if (AF.PHONICS[x]) { S('Trace the letter that says'); S(AF.PHONICS[x].say, 'sound'); S(`${AF.PHONICS[x].say} … ${AF.PHONICS[x].word}`); }
+        });
+      }
+      if (lv.type === 'memory' && lv.pairs) lv.pairs.forEach(p => { S(p.sayA || p.w); S(p.sayB || p.w); });
+      // a story: each page, every word a child can tap, and its questions
+      (lv.pages || []).forEach(pg => { S(pg.text); String(pg.text).split(/\s+/).forEach(w => { w = w.replace(/[^A-Za-z']/g, ''); if (w && w !== 'name') S(w); }); });
+      (lv.quiz || []).forEach(q => { S(q.say); if (q.praise) S(q.praise); });
     }
     // the friend's own words, for every kind of animal
     Object.keys(AF.Art.SPECIES || {}).forEach(k => { S(AF.Art.SPECIES[k].cheer); S(AF.Art.SPECIES[k].cheer + ' Three stars!'); });

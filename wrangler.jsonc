@@ -1,0 +1,13 @@
+// Cloudflare Workers deploy of Animal Friends (see DEPLOY.md).
+// Build command: sh tools/deploy/cf-build.sh    Deploy command: npx wrangler deploy
+{
+  "name": "animal-apps",
+  "compatibility_date": "2025-09-01",
+  "main": "tools/deploy/worker.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // only voice clips pass through the worker (for Range requests)
+    "run_worker_first": ["/voice/*"]
+  }
+}

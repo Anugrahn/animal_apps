@@ -22,6 +22,7 @@
   let ctx = null;
   let saying = 0;           // counts utterances, so a cut-off one knows it was
   let talking = 0;          // the utterance still being said (0 = quiet)
+  let asking = 0;           // the utterance that is a game's question (E.talk), while it lasts
   let quietAt = 0;          // when the last "right!" chime has finished (performance.now())
 
   /* Voices known to be clear and well-articulated for children.
@@ -108,10 +109,14 @@
      rings waits for it: a small child can't pick words out from under one. */
   const RIGHT_MS = 460, WRONG_MS = 300, WIN_MS = 760;
   const hush = (ms) => { if (unlocked && AF.Profile.setting('sound')) quietAt = Math.max(quietAt, performance.now() + ms); };
+  /* A child who answers before the question has finished has heard enough:
+     the question stops, so the chime doesn't sound over it. */
+  const answered = () => { if (talking && talking === asking) Audio.stop(); };
 
   const SFX = {
     tap:   () => tone(520, 0.09, 'sine', 0.13),
     right: () => {
+      answered();
       tone(660, 0.14, 'sine', 0.2); tone(880, 0.18, 'sine', 0.18, 0.1); tone(1180, 0.26, 'sine', 0.14, 0.2);
       hush(RIGHT_MS);
     },
@@ -124,7 +129,7 @@
     bump:  () => tone(150, 0.1, 'triangle', 0.1),
     drum:  () => { tone(140, 0.18, 'sine', 0.3); tone(90, 0.22, 'triangle', 0.2, 0.01); },
     star:  (i) => tone(700 + (i || 0) * 180, 0.3, 'sine', 0.17, (i || 0) * 0.16),
-    win:   () => { [0, 1, 2, 3].forEach(i => tone([523, 659, 784, 1047][i], 0.36, 'sine', 0.17, i * 0.13)); hush(WIN_MS); },
+    win:   () => { answered(); [0, 1, 2, 3].forEach(i => tone([523, 659, 784, 1047][i], 0.36, 'sine', 0.17, i * 0.13)); hush(WIN_MS); },
     mic:   () => { tone(660, 0.1, 'sine', 0.14); tone(990, 0.14, 'sine', 0.12, 0.09); }
   };
 
@@ -266,6 +271,7 @@
     say(text, opts) {
       opts = opts || {};
       const mine = talking = ++saying;
+      if (opts.question) asking = mine;
       let ended = false, timer = 0;
       const end = () => {
         if (ended) return;

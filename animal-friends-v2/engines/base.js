@@ -212,6 +212,6 @@
   /** Talk + a little "talking" wobble from the character. */
   AF.Engines.talk = function (S, text, opts) {
     AF.Art.react(S.charEl, 'talk');
-    AF.Audio.say(text, opts);
+    AF.Audio.say(text, Object.assign({ question: true }, opts));
   };
 })(window.AF = window.AF || {});

@@ -431,7 +431,8 @@
       open = [];
       if (a.card.id === b.card.id) {
         found++;
-        S.later(() => {
+        // the chime once the second card's name has been said, not over it
+        S.after(() => {
           [a, b].forEach(x => { x.btn.classList.add('matched'); name(x.btn); AF.FX.sparkleAt(x.btn, 8); });
           AF.Audio.SFX.right();
           AF.Art.react(S.charEl, 'happy');

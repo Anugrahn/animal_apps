@@ -211,6 +211,7 @@
         pick(null);
         slots.forEach(x => x.classList.remove('hint'));
         left--;
+        AF.Audio.stop();             // the picked card's name: the praise says it again, after the chime
         AF.Audio.SFX.pop();
         AF.FX.send(el, sl, () => {
           if (!S.alive) return;
@@ -534,12 +535,14 @@
       const star = stage.querySelector(`.pop-need [data-n="${count}"]`);
       if (star) star.classList.add('on');
       count++;
-      if (count === 1 && cur.praise) AF.Audio.say(cur.praise, { rate: 0.8 });
       if (count < need) return;
 
       locked = true;
       S.lap();
       AF.Audio.SFX.right();
+      // The praise comes once the round is won, after the chime: said at the
+      // first pop, the next pops and the chime sounded over it.
+      if (cur.praise) AF.Audio.say(cur.praise, { rate: 0.8 });
       AF.Art.react(S.charEl, 'happy');
       live().forEach((x, i) => S.later(() => burst(x), 80 + i * 70));
       S.after(() => {

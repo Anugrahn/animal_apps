@@ -55,12 +55,16 @@
         <div class="say-wave" aria-hidden="true">${'<i></i>'.repeat(13)}</div>
         <div class="say-mode"></div>`;
 
-      S.replay = () => { E.talk(S, `Say, ${word.w}.`); };
+      // with no microphone the tick is the way on: it wakes up once the word has been said
+      const wakeOk = () => { if (S.alive && !locked && mode === 'tap') stage.querySelector('[data-ok]').classList.add('wake'); };
+      S.replay = () => { E.talk(S, `Say, ${word.w}.`, { onEnd: wakeOk }); };
       stage.querySelector('[data-hear]').onclick = () => { if (!busy) { AF.Art.react(S.charEl, 'talk'); model(true); } };
       stage.querySelector('[data-mic]').onclick = mic;
       stage.querySelector('[data-ok]').onclick = () => { if (!busy && !locked) win('Well done!'); };
       controls();
+      if (mode === 'tap') status('Say it out loud, then tap the <b>tick</b>');
       S.later(() => { S.replay(); S.mark(); }, 320);
+      S.later(wakeOk, 4000);
     }
 
     /* Which buttons show depends on the mode in use right now. */
@@ -70,6 +74,8 @@
       // mode the recogniser decides, so it stays hidden.
       stage.querySelector('[data-ok]').hidden = mode === 'check' || (mode === 'echo' && !heardOnce);
       stage.querySelector('.say-mode').textContent = BADGE[mode];
+      // the sound wave belongs to the microphone
+      stage.querySelector('.say-wave').hidden = mode === 'tap';
     }
 
     function status(html, cls) {
@@ -145,7 +151,7 @@
       S.later(() => AF.Audio.say(cheer), 350);
       S.after(() => {
         S.round++;
-        if (S.round >= words.length) S.done(); else next();
+        if (S.round >= words.length) S.done(); else E.swap(S, next);
       }, 1900);
     }
 

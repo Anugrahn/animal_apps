@@ -15,11 +15,17 @@
    A drag that ends on nothing springs back and costs nothing.
    After a real drag the browser's follow-up "click" is swallowed,
    so the engine's tap handler does not fire as well.
+
+   Small hands rarely tap dead still: a finger may slide 20px or so
+   (SLOP), and a quick press-and-slide that lands on no target is a
+   tap too, not a drag that silently did nothing (v4.1).
    ============================================================ */
 (function (AF) {
   'use strict';
 
-  const SLOP = 9;          // px a finger may wander and still be a tap
+  const SLOP = 22;         // px a finger may wander and still be a tap
+  const QUICK = 260;       // ms: a press this short that lands on nothing is a tap
+  const NEAR = 44;         // px: a press that ends this close to where it began, on nothing, is a tap
   const REACH = 26;        // px of forgiveness around a target
 
   function hit(targets, x, y) {
@@ -47,7 +53,7 @@
 
       el.addEventListener('pointerdown', (e) => {
         if (st || (o.can && !o.can())) return;
-        st = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
+        st = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false };
         try { el.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
       });
 
@@ -73,10 +79,17 @@
         const was = st;
         st = null;
         if (!was.moved) return;                      // a tap: the click handler has it
-        el._dragged = Date.now();
         const t = e.type === 'pointercancel' ? null : hit(o.targets(), e.clientX, e.clientY);
         hover(null);
-        if (t && S.alive && o.drop(t, el) !== false) return;
+        if (t && S.alive) {
+          el._dragged = Date.now();
+          if (o.drop(t, el) !== false) return;
+          AF.Drag.home(el);
+          return;
+        }
+        // landed on nothing: a quick or short slide was meant as a tap, so the click goes through
+        const tap = Date.now() - was.t < QUICK || Math.hypot(e.clientX - was.x, e.clientY - was.y) < NEAR;
+        if (!tap) el._dragged = Date.now();
         AF.Drag.home(el);
       };
       el.addEventListener('pointerup', end);

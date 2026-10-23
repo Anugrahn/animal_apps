@@ -10,5 +10,7 @@ Headless checks for Animal Friends, run on this computer with the app served
 | `node play.mjs phonics math [--workers 8] [--only m3-5,m4-6]` | Plays every level of the subjects to its result screen, like a child tapping everything (it traces with the keyboard and taps the arrows in a maze). Prints levels that never finish and any page error. No subject named: all of them. |
 | `node today.mjs` | Today's Study on a Monday, Tuesday, a Wednesday with yesterday's lessons left over, a Saturday (review) and a Sunday, with a fake clock. |
 | `node migrate.mjs` | Loads a first-curriculum profile (Letters, Numbers, Stories stars) and checks the stars move to `legacyStars` once and the total stays the same. |
+| `node trace.mjs [out-dir]` | Traces like a child: watches the demo, tries to jump to the end of a stroke (must not count), lifts the finger half-way and carries on, writes a 3-stroke m and a Bahasa word with a fast, wobbly finger. Saves screenshots to `out-dir` if given. |
 | `node offline.mjs` | Lets the service worker store the app, goes offline, and opens lessons of every core subject from the cache. |
+| `sh steps.sh <out-dir> 844x390` | Screenshots of one step of every kind of game (choose, sort, order, memory, intro, trace, build, match, story, pop, maze) at a screen size. |
 | `node shots.mjs 390x844 out home=go:home map=go:map:math:2` | Screenshots of deep links at a screen size (`name=go:<link>[@ms]`). |

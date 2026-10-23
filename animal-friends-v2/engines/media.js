@@ -26,12 +26,19 @@
     const lv = S.level;
     const name = AF.Profile.skin().name;
     const fill = (s) => String(s).replace(/\{name\}/g, name);
-    let page = 0;
+    let page = 0, turned = 0, reading = 0;
 
     function read() {
       const el = S.host.querySelector('.story-text');
       if (el) { el.classList.remove('reading'); void el.offsetWidth; el.classList.add('reading'); }
-      AF.Audio.say(fill(lv.pages[page].text), { rate: 0.8 });
+      const mine = ++reading, at = page;
+      const wake = () => {
+        if (mine !== reading || at !== page || !S.alive) return;
+        const go = S.host.querySelector('.story [data-next]');
+        if (go) go.classList.add('wake');
+      };
+      AF.Audio.say(fill(lv.pages[page].text), { rate: 0.8, onEnd: wake });
+      S.later(wake, 2500 + lv.pages[page].text.length * 90);
     }
 
     function show() {
@@ -57,8 +64,11 @@
 
       S.host.querySelectorAll('[data-me]').forEach(el => AF.Art.paint(el));
       S.host.querySelector('[data-say]').onclick = read;
-      S.host.querySelector('[data-prev]').onclick = () => { if (page > 0) { AF.Audio.SFX.tap(); page--; show(); } };
+      // one turn per tap: a quick second tap must not skip a page
+      const turn = () => { const now = Date.now(); if (now - turned < 450) return false; turned = now; return true; };
+      S.host.querySelector('[data-prev]').onclick = () => { if (page > 0 && turn()) { AF.Audio.SFX.tap(); page--; show(); } };
       S.host.querySelector('[data-next]').onclick = () => {
+        if (!turn()) return;
         AF.Audio.SFX.tap();
         if (!last) { page++; show(); return; }
         AF.Audio.stop();
@@ -103,7 +113,7 @@
       <div class="song-btns">
         <button class="btn" data-again hidden><i data-ic="retry"></i> Again</button>
         <button class="drum" data-drum data-ic="drum" aria-label="Drum"></button>
-        <button class="btn go" data-done hidden>Done <i data-ic="check"></i></button>
+        <button class="big-round song-done" data-done data-ic="check" style="--h:#3CC46A" aria-label="Done" hidden></button>
       </div>`;
 
     const drum = stage.querySelector('[data-drum]');
@@ -152,7 +162,7 @@
         stage.querySelector('[data-again]').hidden = false;
         stage.querySelector('[data-done]').hidden = false;
         AF.Art.react(S.charEl, 'cheer');
-        AF.Audio.say('Yay! Again?');
+        AF.Audio.say('Yay! Well done!');
       }, t * 1000 + 300);
     }
 
@@ -186,7 +196,7 @@
         pic.textContent = '😌';
         AF.Audio.say('I feel calm. Well done.');
         AF.Art.react(S.charEl, 'happy');
-        S.later(() => S.done(), 2600);
+        S.after(() => S.done(), 1200);
         return;
       }
       dots().forEach((d, i) => { d.className = i < n ? 'done' : (i === n ? 'now' : ''); });

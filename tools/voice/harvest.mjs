@@ -99,6 +99,17 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       (lv.quiz || []).forEach(q => { S(q.say); if (q.praise) S(q.praise); });
       // the cards that open a lesson ("a … aaah … apple")
       (lv.cards || []).forEach(c => { S(tpl(c.say)); if (c.sound) S(c.sound, 'sound'); });
+      // what the maze says as things are picked up (engines/maze.js), so none waits for the bot to find it
+      if (lv.type === 'maze') {
+        const COUNT = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+        const t = lv.targets || [];
+        t.forEach(x => { S(`${x.label}!`); if (lv.ordered) S(`Find ${x.say || x.label} first.`); });
+        for (let k = 1; k <= t.length; k++) S(`${COUNT[k] || k}!`);
+        S(lv.done || 'Now go home!');
+        (lv.decoys || []).forEach(d => S(`That is ${d.say || AF.U.a(d.label)}. ${lv.want ? 'Find the ' + lv.want + '.' : 'Not that one.'}`));
+        S(lv.want ? `Find the ${lv.want} first!` : 'Find them all first!');
+      }
+      if (lv.type === 'code') ['Get the stars on the way!', 'Not home yet. Add more arrows!', 'Oops! That is the edge.', 'Oops! A rock is in the way.'].forEach(x => S(x));
     }
     // what each subject calls its stages: "Finish Step 1 first."
     AF.registry.forEach(m => AF.stageNames(m).forEach(n => S(`Finish ${n} first.`)));
@@ -108,7 +119,10 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
     ['Hi! I am {name}. Let\'s play!', 'Hello! I am {name}.', 'Coming soon!', 'Finish the one before first.',
       'Finish Basic first.', 'Finish Intermediate first.', 'You found all the treasure!',
       'Time for a break! See you tomorrow.', 'Well done!',
-      'You did it all today! Well done!', 'It is review day! Let’s play what we learned.', 'Here is today’s study. Let’s start!'].forEach(t => S(t));
+      'You did it all today! Well done!', 'It is review day! Let’s play what we learned.', 'Here is today’s study. Let’s start!',
+      'Yay! Well done!', 'I feel calm. Well done.'].forEach(t => S(t));
+    // the lines the games say themselves, in English (AF.STR.en, engines/base.js)
+    Object.keys(AF.STR.en).forEach(k => { const v = AF.STR.en[k]; if (typeof v === 'string' && /[.!?]$/.test(v)) S(v); });
     return out;
   }));
   await ctx.close();

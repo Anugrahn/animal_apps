@@ -500,18 +500,39 @@
 
   /* ---------- a lesson: Story -> Real life -> Play -> Quiz ---------- */
 
-  const ch = (gen, rounds) => ({ type: 'choose', rounds: rounds || 3, gen: gen });
+  /* A step's questions are a fixed bank, picked once from its question
+     maker with a fixed seed: plenty for a lesson and its replays, the
+     same on every device, and few enough that every line can be
+     recorded with the natural voice (random sums and story problems
+     made thousands of different sentences). */
+  let seed = 7;
+  function bank(gen, size) {
+    const real = Math.random;
+    let st = (seed = (seed * 48271) % 2147483647);
+    Math.random = () => { st = (st * 16807) % 2147483647; return (st - 1) / 2147483646; };
+    try {
+      const out = [], seen = {};
+      for (let i = 0; i < size * 25 && out.length < size; i++) {
+        const r = gen({ round: i, last: out.length ? out[out.length - 1].answer : null, stretch: false });
+        const k = r.say + '|' + (r.praise || '');
+        if (!seen[k]) { seen[k] = 1; out.push(r); }
+      }
+      return G.ask(out);
+    } finally { Math.random = real; }
+  }
+
+  const ch = (gen, rounds) => ({ type: 'choose', rounds: rounds || 3, gen: bank(gen, 10) });
   function lesson(id, title, topic, story, life, play, quiz) {
     return L(id, title, [
       { step: 'story', type: 'intro', cards: story },
       Object.assign({ step: 'life' }, life),
       Object.assign({ step: 'play' }, play),
-      Object.assign({ step: 'quiz' }, quiz, { rounds: quiz.rounds || 4 })
+      Object.assign({ step: 'quiz' }, quiz, { rounds: 4 })
     ], { topic: topic });
   }
   function review(id, quiz, play) {
     return L(id, 'Review', [
-      { step: 'review', type: 'choose', rounds: 6, gen: quiz },
+      { step: 'review', type: 'choose', rounds: 6, gen: bank(quiz, 14) },
       Object.assign({ step: 'play' }, play)
     ], { review: true });
   }

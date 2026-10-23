@@ -25,6 +25,7 @@
   /* one question maker, then another, in turn */
   const mix = (...gens) => (ctx) => gens[ctx.round % gens.length](ctx);
   const pure = (k) => P[k].say.replace(/(.)\1+/g, '$1');
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
   /* ---------------- Step 1: a to z ---------------- */
 
@@ -94,8 +95,8 @@
     return {
       step: 'play', type: 'sort', rounds: 6,
       items: items, bins: [{ key: a.key, emoji: a.e, label: a.label, c: '#F2A03D' }, { key: b.key, emoji: b.e, label: b.label, c: '#4D9DE0' }],
-      ask: i => `${i.w}. ${a.word}, or ${b.word}?`,
-      tell: (i, bin) => `${i.w}, like ${bin.key === a.key ? a.word : b.word}`
+      ask: i => `${cap(i.w)}. ${cap(a.word)}, or ${b.word}?`,
+      tell: (i, bin) => `${cap(i.w)}, like ${bin.key === a.key ? a.word : b.word}`
     };
   }
   const tag = (list, bin) => list.map(x => ({ e: x.e, w: x.w, bin: bin }));

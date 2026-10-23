@@ -98,7 +98,8 @@
       build: (w) => `Build the word, ${w}.`, buildText: (w) => `Build the word <b>${U.esc(w)}</b>`,
       write: (w) => `Write the word, ${w}.`, writeText: (w) => `Write <b>${U.esc(w)}</b>`,
       traceNum: (n) => `Trace number ${AF.NUM[n] || n}.`, traceNumText: (n) => `Trace number <b>${n}</b>`,
-      traceLetter: 'Trace the letter that says', start: 'Start at the green dot',
+      traceLetter: 'Trace the letter that says', start: 'Start at the green dot', startSay: 'Start at the green dot.',
+      watch: 'Watch me first!', yourTurn: 'Your turn!',
       pairs: 'Find the pairs!', pairsText: 'Find the <b>pairs</b>!', pairsCap: 'Match the pairs!',
       questions: 'Questions', theEnd: 'The end',
       look: 'Look and listen', lookText: 'Look and <b>listen</b>',
@@ -108,7 +109,8 @@
       build: (w) => `Susun kata, ${w}.`, buildText: (w) => `Susun kata <b>${U.esc(w)}</b>`,
       write: (w) => `Tebalkan, ${w}.`, writeText: (w) => `Tebalkan <b>${U.esc(w)}</b>`,
       traceNum: (n) => `Tebalkan angka ${n}.`, traceNumText: (n) => `Tebalkan angka <b>${n}</b>`,
-      traceLetter: 'Tebalkan hurufnya', start: 'Mulai dari titik hijau',
+      traceLetter: 'Tebalkan hurufnya', start: 'Mulai dari titik hijau', startSay: 'Mulai dari titik hijau, ya.',
+      watch: 'Lihat aku dulu!', yourTurn: 'Sekarang giliranmu!',
       pairs: 'Cari pasangannya!', pairsText: 'Cari <b>pasangannya</b>!', pairsCap: 'Cocokkan pasangannya!',
       questions: 'Pertanyaan', theEnd: 'Selesai',
       look: 'Lihat dan dengarkan', lookText: 'Lihat dan <b>dengarkan</b>',
@@ -165,6 +167,13 @@
         const id = setTimeout(() => { if (S.alive) fn(); }, ms);
         timers.push(id);
         return id;
+      },
+      /** Like later(), but only if the round has not moved on meanwhile
+          (and `still()`, when given, says it may): a re-ask or a hint
+          sound must never land on top of the praise or the next round. */
+      soon(fn, ms, still) {
+        const r = S.round;
+        return S.later(() => { if (S.round === r && (!still || still())) fn(); }, ms);
       },
       /** Like later(), but also lets the friend finish talking first (up to
           8 s more), so a slow, clear line is never cut off by what comes next. */

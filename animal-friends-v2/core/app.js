@@ -611,7 +611,6 @@
     const host = $('play-host');
     host.innerHTML = '';
     drawSteps(null);
-    if (level.type !== 'lesson') readyCard(mod, level, kind);
 
     const api = {
       character: P.character,
@@ -624,7 +623,10 @@
     };
 
     show('play');
-    mod.play(host, level, api);
+    // the game starts once its "ready" card has gone, so the first question,
+    // or the memory cards' first look, is never hidden under it
+    const go = () => { if (current.level === level && $('play').classList.contains('active')) mod.play(host, level, api); };
+    if (level.type === 'lesson') go(); else readyCard(mod, level, kind, go);
   }
 
   /* A lesson's steps above the game, the one being played lit up. */
@@ -714,18 +716,27 @@
   const KIND_NAME = { trace: 'Trace', pop: 'Pop!', code: 'Coding', speak: 'Say it', story: 'Story', memory: 'Memory',
     maze: 'Maze', match: 'Match', sort: 'Sort', song: 'Sing', puzzle: 'Build', path: 'In order', treasure: 'Breathe',
     numbers: 'Numbers', shapes: 'Shapes', coin: 'Quiz', intro: 'Listen' };
-  function readyCard(mod, level, kind) {
+  let readyTurn = 0;
+  function readyCard(mod, level, kind, then) {
     const old = $('ready'); if (old) old.remove();
-    if (!AF.FX.motionOK()) return;
+    const turn = ++readyTurn;                 // (an older card's timer must not start this game again)
+    if (!AF.FX.motionOK()) { then(); return; }
     const el = document.createElement('button');
     el.id = 'ready';
     el.className = 'ready-card';  // (not 'ready': the result buttons use that)
     el.style.setProperty('--c', mod.colour || '#3D8BF2');
     el.innerHTML = `<img src="art/${kind}.webp" alt="" draggable="false"><span class="ready-kind">${KIND_NAME[kind.split('/')[1]] || mod.title}</span><b>${AF.U.esc(level.title)}</b>`;
-    const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 300); };
+    let gone = false;
+    const close = () => {
+      if (gone) return;
+      gone = true;
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 300);
+      setTimeout(() => { if (turn === readyTurn) then(); }, 220);
+    };
     el.onclick = close;
     $('play').appendChild(el);
-    setTimeout(close, 1300);
+    setTimeout(close, 1200);
   }
 
   function goHome() {

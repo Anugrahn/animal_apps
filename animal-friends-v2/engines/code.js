@@ -121,10 +121,12 @@
     S.later(() => { S.replay(); S.mark(); }, 320);
 
     const unhint = () => stage.querySelectorAll('.hintme').forEach(x => x.classList.remove('hintme'));
+    let crashAt = -1;            // the arrow that hit a rock last time: it stays red until it is mended
+    let lastAdd = { d: null, t: 0 };
 
     function render(fresh) {
       progEl.innerHTML = Array.from({ length: MAX }, (_, i) => prog[i]
-        ? `<span class="chip${fresh && i === prog.length - 1 ? ' new' : ''}" data-n="${i}" style="--h:${HUE[prog[i]]}" role="img" aria-label="Step ${i + 1}: ${WORD[prog[i]]}">${AF.Icon.svg(ICON[prog[i]])}</span>`
+        ? `<span class="chip${fresh && i === prog.length - 1 ? ' new' : ''}${i === crashAt ? ' bad' : ''}" data-n="${i}" style="--h:${HUE[prog[i]]}" role="img" aria-label="Step ${i + 1}: ${WORD[prog[i]]}">${AF.Icon.svg(ICON[prog[i]])}</span>`
         : `<span class="chip empty${i === prog.length ? ' next' : ''}"></span>`).join('');
       grid.querySelectorAll('.cd.foot').forEach(c => c.classList.remove('foot'));
       if (lv.preview) walk(prog).trail.forEach(p => cell(p[0], p[1]).classList.add('foot'));
@@ -132,6 +134,10 @@
 
     function add(d) {
       if (running || won) return;
+      // a small finger's double tap is one arrow, not two
+      const now = Date.now();
+      if (lastAdd.d === d && now - lastAdd.t < 250) return;
+      lastAdd = { d: d, t: now };
       unhint();
       if (prog.length >= MAX) {
         AF.Audio.SFX.bump();
@@ -147,7 +153,9 @@
     function undo() {
       if (running || won || !prog.length) return;
       unhint();
-      prog.pop();
+      // after a crash, one undo takes the plan back to just before the red arrow
+      if (crashAt >= 0 && crashAt < prog.length) { prog.length = crashAt; crashAt = -1; }
+      else prog.pop();
       AF.Audio.SFX.flip();
       render();
     }
@@ -171,6 +179,7 @@
       unhint();
       if (!prog.length) { hint(); AF.Audio.SFX.tap(); return; }
       running = true;
+      crashAt = -1;
       stage.classList.add('running');
       grid.querySelectorAll('.cd.foot').forEach(c => c.classList.remove('foot'));
       AF.Audio.SFX.tap();
@@ -186,7 +195,7 @@
           put(start[0], start[1]);
           me.classList.remove('face-w');
           grid.querySelectorAll('.cd-star').forEach(s => s.classList.remove('got'));
-          progEl.querySelectorAll('.chip').forEach(c => c.classList.remove('on', 'bad'));
+          progEl.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
           stage.classList.remove('running');
           running = false;
           if (fails >= 2 || S.api.help >= 1) hint();   // a nudge after a couple of tries
@@ -220,6 +229,7 @@
           void me.offsetWidth;
           me.classList.add('bump-' + d);
           if (chips[i]) chips[i].classList.add('bad');
+          crashAt = i;
           AF.Audio.SFX.bump();
           fail(nx < 0 || ny < 0 || nx >= W || ny >= H ? 'Oops! That is the edge.' : 'Oops! A rock is in the way.');
           return;

@@ -115,6 +115,52 @@ A new engine, `intro`, opens most lessons: one big card at a time (a letter,
 a number, a picture, a word), said by the friend; tap it to hear it again,
 the green arrow goes on. Nothing can be got wrong there.
 
+### v4.1: smoother engines for small hands
+
+A review of every engine for 3–5-year-olds, and tracing written again.
+
+- **Tracing** (`engines/trace.js`, its own file now): the friend's pencil
+  writes the letter first ("Watch me first!"), calmly, stroke by stroke; a tap
+  skips it. The child's ink then glides after the finger frame by frame (the
+  finger is matched to the line a little way ahead of the ink), so a jerky
+  finger still draws one smooth line, but it cannot leap to the end. Each
+  stroke starts at a numbered green dot, little arrows show the way, later
+  strokes wait as grey numbers, and a lifted finger carries on where the ink
+  stopped. A finished letter glows and is named before the next one comes.
+  The caption under the board keeps its place, so the board never moves under
+  a finger (it used to jump about 20px when drawing began).
+- **Taps that slide count as taps** (`drag.js`): a finger may wander 22px, and
+  a quick press-and-slide that lands on nothing is a tap, not a silent drag.
+  Bubbles pop the moment they are pressed.
+- **Nothing talks over the praise**: re-asks and hint sounds after a second
+  miss only happen if the round has not moved on (`S.soon` in `base.js`);
+  Build moves on after each line has been said instead of a chain that could
+  stall for 13 s; Memory chimes once each card's name is said, lets a wrong
+  pair be seen and heard before it turns back, cheers only after the last pair,
+  and shows a pair for a moment after every fourth miss; the calm breathing's
+  last line is said to the end.
+- **The same help everywhere**: after two misses every game shows the way and
+  asks again (Order, Sort and Match only glowed before).
+- **Every game starts after its "ready" card**, so the first question and the
+  memory cards' first look are never hidden under it.
+- **Maze**: one tap is one step (walking on starts after a 0.4 s hold), and
+  the hint's trail stays until the friend walks along it. **Coding**: the arrow
+  that hit a rock stays red, one undo takes the plan back to it, and a double
+  tap adds one arrow.
+- **Say it** without a microphone tells the child to tap the tick, which
+  wakes up once the word has been said. **Stories** read each page once, a
+  quick double tap no longer skips a page, and Next lights up when the page has
+  been read. **Songs** end on a big green Done.
+- **Sizes and layout**: maze and coding arrows, Say-it buttons and the story
+  pager are finger-sized (about 2 cm). On a phone held sideways the friend and
+  the question move to a column on the left and the game gets the whole height;
+  Sort puts the thing beside its baskets on any wide screen; three answers on
+  an upright phone put the third in the middle; eight memory cards make two
+  neat columns.
+- **Math questions are a fixed bank per step** (picked once with a fixed seed),
+  so every line can be recorded with the natural voice: random sums and story
+  problems had made about 9,000 different sentences.
+
 ## How it moves
 
 The first v2 looked soft and moved stiffly. `core/motion.css` is the fix, in
@@ -445,10 +491,11 @@ core/
 engines/        HOW to play
   base.js       registry, stages, sessions (auto-cancelled timers, child sessions), shared frame, AF.STR (en / id lines)
   lesson.js     a lesson's steps in a row · intro cards
+  trace.js      writing a letter, number, word or line (v4.1)
   drag.js       pick a thing up and put it somewhere
   quiz.js       choose · order · build · memory
   maze.js       the hedge maze
-  touch.js      sort · match · trace · pop
+  touch.js      sort · match · pop
   code.js       first coding: plan the walk, then press Go
   voice.js   media.js (story · song · breathe)
   engines.css

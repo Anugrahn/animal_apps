@@ -113,7 +113,7 @@
         // No dead ends: after two misses the wrong cards fade out.
         if (wrong >= 2) {
           btns.forEach(b => { if (cur.options[b.dataset.i].key !== cur.answer) b.classList.add('dimmed'); });
-          S.later(prompt, 500);
+          S.soon(prompt, 500, () => !locked);
         }
         return;
       }
@@ -185,6 +185,7 @@
         nope(S, btn);
         AF.Drag.home(btn);
         if (wrong >= 2) btns.filter(b => +b.dataset.i === firstEmpty())[0].classList.add('hint');
+        if (wrong === 2) S.soon(() => S.replay(), 500, () => !locked);
         return false;
       }
 
@@ -260,9 +261,10 @@
         </div>
         <div class="tiles">${tiles.map(c => `<button class="tile-l" data-c="${U.esc(c)}">${U.esc(c)}</button>`).join('')}</div>`;
 
-      S.replay = () => E.talk(S, E.t(S, 'build', word.w), {
-        onEnd: () => { if (S.alive && !locked) sound(parts[pos]); }
-      });
+      S.replay = () => {
+        if (locked) return;                          // (the word is done: nothing to ask)
+        E.talk(S, E.t(S, 'build', word.w), { onEnd: () => { if (S.alive && !locked) sound(parts[pos]); } });
+      };
 
       const btns = Array.from(stage.querySelectorAll('.tile-l'));
       const free = (b) => !locked && !b.classList.contains('used') && !b.classList.contains('flying');
@@ -288,7 +290,7 @@
         if (wrong >= 2) {
           const hint = btns.filter(b => b.dataset.c === parts[pos] && !b.classList.contains('used'))[0];
           if (hint) hint.classList.add('hint');
-          S.later(() => sound(parts[pos]), 450);
+          S.soon(() => sound(parts[pos]), 450, () => !locked);
         }
         return false;
       }
@@ -317,18 +319,17 @@
       AF.FX.sparkleAt(stage.querySelector('.build-slots'), 16);
       stage.querySelector('.build-slots').classList.add('done');
       AF.Audio.SFX.right();
-      // Blend it: the sounds run together, a breath, then the whole word.
-      let moved = false;
-      const move = () => {
-        if (moved) return;
-        moved = true;
-        S.round++;
-        if (S.round >= words.length) S.done(); else E.swap(S, next);
-      };
-      const whole = () => S.later(() => AF.Audio.say(word.w, { onEnd: () => S.later(move, 900) }), 600);
-      if (word.parts || id) AF.Audio.say(parts.join(' … '), { rate: 0.75, onEnd: whole });
-      else AF.Audio.sound(AF.blend(word.w), { onEnd: whole });
-      S.later(move, 12000);         // in case something cut the blend off
+      // Blend it: the sounds run together, a breath, then the whole word,
+      // each after the last has been said (S.after), so nothing can stall it.
+      if (word.parts || id) AF.Audio.say(parts.join(' … '), { rate: 0.75 });
+      else AF.Audio.sound(AF.blend(word.w));
+      S.after(() => {
+        AF.Audio.say(word.w);
+        S.after(() => {
+          S.round++;
+          if (S.round >= words.length) S.done(); else E.swap(S, next);
+        }, 900);
+      }, 600);
       return true;
     }
 
@@ -387,8 +388,8 @@
     // pairs found show as the progress dots every game has
     const stage = E.frame(S, { text: E.t(S, 'pairsText'), cls: 'stage-memory', rounds: n });
     const total = cards.length;
-    // upright phone: as few columns as keep the cards big (2 for six cards, 3 for up to twelve)
-    const cols = total <= 6 ? 2 : total <= 12 ? 3 : 4;
+    // upright phone: as few columns as keep the cards big (2 for up to ten cards, then 3 or 4)
+    const cols = total <= 10 ? 2 : total % 3 === 0 ? 3 : 4;   // (eight cards: two neat columns, no gap)
     // on a wide screen: the fewest rows that leave no gap and no more than eight across
     const lrows = [2, 3, 4].filter(r => total % r === 0 && total / r <= 8)[0] || 3;
     stage.innerHTML = `
@@ -396,7 +397,7 @@
       <div class="tray-wrap">
         <div class="tray mem-tray" style="--pc:${cols};--pr:${Math.ceil(total / cols)};--lc:${Math.ceil(total / lrows)};--lr:${lrows}">
           ${cards.map((c, i) => `
-            <button class="mem" data-i="${i}" style="--i:${i};--h:${BACKS[(i + Math.floor(i / cols)) % BACKS.length]};--back:url(${new URL('art/ui/mem-' + MEMBACK[(i + Math.floor(i / cols)) % MEMBACK.length] + '.webp', location.href).href})" aria-label="Card ${i + 1}">
+            <button class="mem" data-i="${i}" style="--i:${i};--h:${lv.clay ? BACKS[0] : BACKS[(i + Math.floor(i / cols)) % BACKS.length]};--back:url(${new URL('art/ui/mem-' + (lv.clay ? 'paw' : MEMBACK[(i + Math.floor(i / cols)) % MEMBACK.length]) + '.webp', location.href).href})" aria-label="Card ${i + 1}">
               <span class="mem-in">
                 <span class="mem-back">${AF.Icon.svg('paw')}</span>
                 <span class="mem-front">${face(c.face)}</span>
@@ -424,13 +425,29 @@
       S.later(() => { busy = false; }, 2700 + btns.length * 90);
     }
 
+    /* a pair not found yet shows itself for a moment */
+    function peek() {
+      const left = btns.filter(x => !x.classList.contains('matched') && !x.classList.contains('up'));
+      if (!left.length) return;
+      const id = cards[U.one(left).dataset.i].id;
+      const pair = left.filter(x => cards[x.dataset.i].id === id);
+      busy = true;
+      pair.forEach(x => x.classList.add('up', 'peek'));
+      S.later(() => { pair.forEach(x => x.classList.remove('up', 'peek')); AF.Audio.SFX.flip(); busy = false; }, 1100);
+    }
+
     btns.forEach(btn => btn.addEventListener('click', () => {
       if (busy || btn.classList.contains('up')) return;
       const card = cards[btn.dataset.i];
       btn.classList.add('up');
       name(btn);
       AF.Audio.SFX.flip();
-      AF.Audio.say(card.say);
+      // the pair's chime comes when this card's own name has been said (or
+      // soon after, if a quick finger cut it short), never over it
+      let named = null, fired = false;
+      const afterName = () => { if (fired || !S.alive) return; fired = true; if (named) named(); };
+      AF.Audio.say(card.say, { onEnd: afterName });
+      S.later(afterName, 1700);
       open.push({ btn: btn, card: card });
       if (open.length < 2) return;
 
@@ -438,30 +455,35 @@
       open = [];
       if (a.card.id === b.card.id) {
         found++;
-        // the chime once the second card's name has been said, not over it
-        S.after(() => {
+        const last = found === n;
+        if (last) { busy = true; S.lap(); }
+        named = () => {
           [a, b].forEach(x => { x.btn.classList.add('matched'); name(x.btn); AF.FX.sparkleAt(x.btn, 8); });
           AF.Audio.SFX.right();
           AF.Art.react(S.charEl, 'happy');
           stage.querySelector('[data-found]').textContent = `${found} of ${n} pairs found`;
           const d = S.host.querySelector('.play-dots');
           if (d) d.innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i < found ? 'done' : ''}${i === found ? ' now' : ''}"></i>`).join('');
-        }, 380);
-        if (found === n) {
-          S.lap();
+          if (!last) return;
+          // the last pair: its chime, then the whole tray cheers, then the result
           // Roughly one miss per pair is just exploring, not a mistake.
           S.mistakes = Math.max(0, Math.ceil((misses - n) / 2));
-          S.later(() => { stage.querySelector('.tray').classList.add('won'); AF.Audio.SFX.win(); }, 800);
-          S.later(() => S.done(), 2000);
-        }
+          S.later(() => { stage.querySelector('.tray').classList.add('won'); AF.Audio.SFX.win(); }, 600);
+          S.after(() => S.done(), 1700);
+        };
       } else {
         misses++;
         busy = true;
-        S.later(() => { a.btn.classList.add('no'); b.btn.classList.add('no'); }, 600);
-        S.later(() => {
-          [a, b].forEach(x => { x.btn.classList.remove('up', 'no'); name(x.btn); });
-          busy = false;
-        }, 1150);
+        // they stay up until the second name is said, so the child can see and hear both
+        named = () => {
+          a.btn.classList.add('no'); b.btn.classList.add('no');
+          S.later(() => {
+            [a, b].forEach(x => { x.btn.classList.remove('up', 'no'); name(x.btn); });
+            busy = false;
+            // help, as in every game: after a few misses one pair peeks up for a moment
+            if (misses % 4 === 0) peek();
+          }, (lv.tier || 0) === 0 ? 1000 : 650);
+        };
       }
     }));
   };

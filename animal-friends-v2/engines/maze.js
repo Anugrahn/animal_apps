@@ -107,6 +107,9 @@
     let px = 0, py = 0, got = 0, moving = false, won = false, lastMove = Date.now();
     let lead = null;                 // the square under a finger held on the board
     let held = null;                 // the arrow (or key) being held down
+    let heldAt = 0;                  // since when: a hold walks on only after HOLD ms
+    const HOLD = 400;                // (a child's ordinary tap lasts 100–350 ms: one tap, one step)
+    const holding = () => held && Date.now() - heldAt >= HOLD;
     let queued = null;               // an arrow pressed while still mid-step
 
     /* ---- the hedges: one soft, thick line per wall ---- */
@@ -245,12 +248,15 @@
       AF.FX.puff(r.left + r.width / 2, r.bottom - r.height * 0.12);
       place();
       AF.Audio.SFX.step();
+      // the hint's trail is used up as the friend walks along it
+      const here = cellEl(px, py);
+      if (here) here.classList.remove('trail');
       S.later(() => {
         const want = queued;
         queued = null;
         if (arrive()) { stop(); return; }
         const next = (want && open[py][px][want]) ? want
-          : (held && open[py][px][held]) ? held
+          : (holding() && open[py][px][held]) ? held
           : towards();
         if (next) step(next); else stop();
       }, STEP);
@@ -259,7 +265,6 @@
     function go(dir, quiet) {
       if (won) return;
       if (moving) { queued = dir; return; }       // remembered for the next square
-      clearTrail();
       if (!open[py][px][dir]) {
         if (quiet) return;
         AF.Audio.SFX.bump();
@@ -340,7 +345,7 @@
         el.classList.add('trail');
       });
       clearTimeout(trailTimer);                     // a newer hint keeps its full time
-      trailTimer = S.later(clearTrail, 3200);
+      trailTimer = S.later(clearTrail, 6000);
     }
     let trailTimer = 0;
 
@@ -349,7 +354,7 @@
     stage.querySelectorAll('[data-d]').forEach(b => {
       let pressed = false;
       const up = () => { if (held === b.dataset.d) held = null; };
-      b.addEventListener('pointerdown', () => { pressed = true; held = b.dataset.d; go(b.dataset.d); });
+      b.addEventListener('pointerdown', () => { pressed = true; held = b.dataset.d; heldAt = Date.now(); go(b.dataset.d); });
       b.addEventListener('pointerup', up);
       b.addEventListener('pointercancel', up);
       b.addEventListener('pointerleave', up);
@@ -363,8 +368,7 @@
       const dir = map[e.key];
       if (!dir) return;
       e.preventDefault();
-      held = dir;
-      if (!e.repeat) go(dir);
+      if (!e.repeat) { held = dir; heldAt = Date.now(); go(dir); }
     });
     S.on(document, 'keyup', (e) => {
       const map = { ArrowUp: 'n', ArrowDown: 's', ArrowLeft: 'w', ArrowRight: 'e', w: 'n', s: 's', a: 'w', d: 'e' };

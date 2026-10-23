@@ -1,5 +1,7 @@
 // Collects every line Animal Friends speaks, so it can be voiced ahead of time.
-//   node harvest.mjs [http://localhost:8765/]   (with the app being served)
+//   node harvest.mjs [http://localhost:8765/] [--quick]   (with the app being served)
+// --quick: only the level data and the fixed lines (a minute, no bot), added
+// to the phrases.json there is: for a small change after a full harvest.
 // Writes phrases.json: { "text": "say" | "sound" }. The friend's name is
 // written as {name}, so a line is voiced once for every ready-made name.
 // Three sources: each level's question generator sampled many times, the
@@ -11,7 +13,8 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 
-const BASE = process.argv[2] || 'http://localhost:8765/';
+const QUICK = process.argv.includes('--quick');
+const BASE = process.argv.slice(2).filter(a => !a.startsWith('--'))[0] || 'http://localhost:8765/';
 const WORKERS = 8, LEVEL_MS = 75000, LESSON_MS = 200000;
 const found = {};          // text -> 'say' | 'sound'
 
@@ -120,7 +123,14 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       'Finish Basic first.', 'Finish Intermediate first.', 'You found all the treasure!',
       'Time for a break! See you tomorrow.', 'Well done!',
       'You did it all today! Well done!', 'It is review day! Let’s play what we learned.', 'Here is today’s study. Let’s start!',
-      'Yay! Well done!', 'I feel calm. Well done.'].forEach(t => S(t));
+      'Yay! Well done!', 'I feel calm. Well done.',
+      // core/app.js: what the menus, the maker, the speech question and the celebrations say
+      'Good morning! Where shall we go?', 'Hello! Where shall we go?', 'Good evening! Where shall we go?',
+      'Let’s make your friend! Tap an animal.', 'Let’s ask a grown-up!', 'Treasure! Off we go to the next one!',
+      'You did all of today’s study! Hooray!', 'You finished it all! You are a star!', 'You opened the treasure! The next one is open!'].forEach(t => S(t));
+    AF.AREAS.forEach(a => S(`${a.island}!`));
+    AF.registry.filter(m => m.lang !== 'id').forEach(m => S(`${m.title}! Let’s go!`));
+    AF.registry.filter(m => m.lang === 'id').forEach(m => S(`${m.title}! Let’s go!`));   // (said by the English voice, in the menus)
     // the lines the games say themselves, in English (AF.STR.en, engines/base.js)
     Object.keys(AF.STR.en).forEach(k => { const v = AF.STR.en[k]; if (typeof v === 'string' && /[.!?]$/.test(v)) S(v); });
     return out;
@@ -129,6 +139,11 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
 }
 
 // 2. app screens: tutorial, maker voices, greetings, result lines
+if (QUICK) {
+  // keep every line the last full harvest found, add the new ones
+  const old = JSON.parse(fs.readFileSync(new URL('./phrases.json', import.meta.url), 'utf8'));
+  for (const [t, k] of Object.entries(old)) if (!(t in found)) found[t] = k;
+}
 {
   const { ctx, p } = await page(browser);
   await p.evaluate(() => { const b = document.getElementById('btn-tutor'); if (b) b.click(); });
@@ -143,7 +158,7 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
 }
 
 // 3. play every level, recording what is said
-{
+if (!QUICK) {
   const { ctx: c0, p: p0 } = await page(browser);
   const jobs = await p0.evaluate(() => AF.registry.flatMap(m => m.levels.map((l, i) => ({ m: m.id, i, soon: !!l.soon || (l.lang || m.lang) === 'id', lesson: l.type === 'lesson' })))).then(j => j.filter(x => !x.soon));
   await c0.close();

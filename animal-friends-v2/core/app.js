@@ -70,6 +70,12 @@
     if (host.dataset.k !== String(set && area)) {
       host.dataset.k = String(set && area);
       host.innerHTML = set ? set.map(n => `<img src="art/prop/${n}.webp" alt="" draggable="false">`).join('') : '';
+      host.onclick = (e) => {
+        const img = e.target.closest('img');
+        if (!img) return;
+        img.classList.remove('wiggle'); void img.offsetWidth; img.classList.add('wiggle');
+        Audio.SFX.pop();
+      };
     }
     Audio.ambience(id === 'home' || id === 'journey' || id === 'area' || id === 'map' || id === 'pick');
   }
@@ -209,6 +215,7 @@
     let tab = 'species';
 
     show('maker');
+    if (!from) Audio.say('Let’s make your friend! Tap an animal.');
     $('maker').querySelector('.hud-maker').innerHTML = AF.UI.pills();
     liveView = Art.live($('maker-live'), spec);
     const nameEl = $('maker-name');
@@ -413,6 +420,7 @@
     return open ? open.mod.area : AF.AREAS[0].id;
   }
 
+  let lastGreet = 0;
   function renderHome() {
     const skin = P.skin();
     Art.paint($('home-char'));
@@ -420,6 +428,8 @@
     const hour = new Date().getHours();
     const hello = hour < 12 ? 'Good morning!' : hour < 18 ? 'Hello!' : 'Good evening!';
     $('home-hello').innerHTML = `${hello} I’m <b>${AF.U.esc(skin.name)}</b>.<br>Where shall we go?`;
+    // said too: most of the children here cannot read yet (not every time home is drawn)
+    if (Date.now() - lastGreet > 60000) { lastGreet = Date.now(); Audio.say(`${hello} Where shall we go?`); }
 
     /* ---- Today's Study: one pill that opens today's plan; its stars
        show how many of today's lessons are done ---- */
@@ -431,6 +441,8 @@
     const pill = $('jr-open');
     pill.hidden = !picks.length;
     $('today-row').innerHTML = picks.map(p => `<span class="${isDone(p) ? 'on' : ''}" data-ic="star"></span>`).join('');
+    pill.classList.toggle('all-done', picks.length > 0 && !next);
+    pill.querySelector('.jr-play').dataset.ic = next ? 'play' : 'check';
     pill.setAttribute('aria-label', `Today’s Study: ${done} of ${picks.length} done` + (next ? `. Next: ${next.mod.title}, ${next.level.title}` : ''));
     pill.onclick = () => { Audio.unlock(); Audio.SFX.pop(); openJourney(); };
 
@@ -448,7 +460,7 @@
         <button class="island${area.id === rec ? ' is-rec' : ''}" style="--c:${area.colour};--i:${i}" aria-label="${area.island}: ${area.title}">
           ${AF.World.island(area.id, area.colour)}
           <span class="isl-label">${area.island}</span>
-          <span class="isl-stars"><i data-ic="star"></i>${stars}</span>
+          ${stars ? `<span class="isl-stars"><i data-ic="star"></i>${stars}</span>` : ''}
           ${area.id === rec ? '<span class="isl-marker" data-ic="down" aria-hidden="true"></span>' : ''}
         </button>`;
       cell.querySelector('.island').addEventListener('click', () => { Audio.unlock(); Audio.SFX.pop(); openArea(area.id); });
@@ -477,10 +489,11 @@
       b.style.setProperty('--i', i);
       const stage = p.mod.core ? AF.Levels.stageName(p.mod, p.level.tier || 0) : '';
       b.setAttribute('aria-label', `${p.mod.title}, ${p.level.title}${stage ? ', ' + stage : ''}${isDone ? ', done' : ''}`);
+      // a numbered stop on the day's road; only the next one has a big play button
       b.innerHTML = `
-        ${AF.Icon.jelly(p.mod.id, p.mod.colour, '', p.mod.icon)}
+        <span class="jy-stop">${AF.Icon.jelly(p.mod.id, p.mod.colour, '', p.mod.icon)}<i class="jy-num">${i + 1}</i></span>
         <span class="jy-text"><b>${AF.U.esc(p.mod.title)}${TAG[p.kind] ? `<em class="jy-tag">${TAG[p.kind]}</em>` : ''}</b><small>${stage ? AF.U.esc(stage) + ' · ' : ''}${AF.U.esc(p.level.title)}</small></span>
-        <span class="jy-end" data-ic="${isDone ? 'check' : 'right'}"></span>`;
+        ${isDone ? '<span class="jy-end" data-ic="check"></span>' : i === firstOpen ? '<span class="jy-end jy-go" data-ic="play"></span>' : ''}`;
       b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(p.mod, p.level, p.index, 'journey'); });
       list.appendChild(b);
     });
@@ -512,6 +525,7 @@
     current = { module: null, level: null, index: -1, area: area.id };
     const mods = AF.registry.filter(m => m.area === area.id && !m.soon);
     renderHud('area', { title: area.island });
+    Audio.say(`${area.island}!`);
 
     // The friend waits by the subject last played here, else the first not finished.
     const last = AF.module(P.get().lastModule);
@@ -521,7 +535,7 @@
     AF.World.areaPath($('area-path'), area, mods.map(m => ({
       mod: m, done: stagesDone(m), of: AF.Levels.tierCount(m.levels), rec: m.id === rec,
       started: m.levels.some(l => P.stars(m.id, l.id) > 0)
-    })), (mod) => { Audio.unlock(); Audio.SFX.pop(); openMap(mod); });
+    })), (mod) => { Audio.unlock(); Audio.SFX.pop(); openMap(mod); Audio.say(`${mod.title}! Let’s go!`); });
     show('area');
   }
 
@@ -574,7 +588,7 @@
       // The open treasure chest is the door to the next stage.
       Audio.SFX.win();
       AF.FX.sparkleAt($('map-path').querySelector('.lv-chest'), 18);
-      if (tier < count - 1) showSoon(() => openMap(mod, tier + 1), 450);
+      if (tier < count - 1) { Audio.say('Treasure! Off we go to the next one!'); showSoon(() => openMap(mod, tier + 1), 1200); }
       else Audio.say('You found all the treasure!');
     }, from);
     show('map');
@@ -655,6 +669,8 @@
     let nextIdx = index + 1;
     while (mod.levels[nextIdx] && mod.levels[nextIdx].soon) nextIdx++;
     const nextLv = mod.levels[nextIdx];
+    const fromJourney = current.from === 'journey';
+    const nextPick = fromJourney ? picks.filter(p => t.done.indexOf(p.key) < 0)[0] : null;
 
     let title = 'Well done!';
     if (stars === 3) title = 'Perfect!';
@@ -673,23 +689,26 @@
     const leave = (then) => {
       if (dayDone) {
         t.cheered = true; P.save();
-        AF.FX.party('Today’s study done!', 'You finished everything for today', then, 'ui/medal');
+        AF.FX.party('Today’s study done!', 'You finished everything for today', then, 'ui/medal', 'You did all of today’s study! Hooray!');
       } else if (moduleDone) {
-        AF.FX.party('All done!', `You finished ${mod.title}`, then, 'ui/trophy');
+        AF.FX.party('All done!', `You finished ${mod.title}`, then, 'ui/trophy', 'You finished it all! You are a star!');
       } else if (tierDone) {
-        AF.FX.party(`${names[tier]} done!`, `${names[tier + 1] || 'The next stage'} is open`, then, 'world/chest-open');
+        AF.FX.party(`${names[tier]} done!`, `${names[tier + 1] || 'The next stage'} is open`, then, 'world/chest-open', 'You opened the treasure! The next one is open!');
       } else then();
     };
 
     AF.Levels.showResult({
       title: title,
       stars: stars,
-      hasNext: !!nextLv,
+      hasNext: fromJourney ? !!nextPick : !!nextLv,
+      from: current.from,
+      // a lesson ends on its whole road, every step ticked
+      steps: level.steps ? level.steps.map(st => AF.Engines.stepInfo(st, level.lang)) : null,
       // A real-life idea for the grown-up, the first time a level is finished.
       tip: res.first && mod.tip ? mod.tip : '',
       spoken: stars === 3 ? P.skin().cheer + ' Three stars!' : 'Well done!',
       onRetry: () => startLevel(mod, level, index),
-      onNext:  () => leave(() => startLevel(mod, nextLv, nextIdx)),
+      onNext:  () => leave(() => fromJourney ? startLevel(nextPick.mod, nextPick.level, nextPick.index, 'journey') : startLevel(mod, nextLv, nextIdx)),
       onMap:   () => leave(() => {
         // a stage just finished: the map opens on the new stage
         if (tierDone && current.from !== 'journey') { current.justPlayed = null; Audio.stop(); openMap(mod, tier + 1); }
@@ -760,9 +779,9 @@
   const SLIDES = [
     { pose: 'cheer', logo: true, demo: [], text: 'Meet your animal friend and play!',
       say: 'Hello! Welcome to Animal Friends. Let’s play and learn together!' },
-    { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'ABC'], ['stem', '#F2B618', 'Math'], ['life', '#E5535A', 'Habits'], ['playtime', '#3E9BF0', 'Play']],
+    { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'ABC', 'world/island-literacy'], ['stem', '#F2B618', 'Math', 'world/island-stem'], ['life', '#E5535A', 'Habits', 'world/island-life'], ['playtime', '#3E9BF0', 'Play', 'world/island-play']],
       text: 'Tap an island to play.', say: 'Tap an island to play.' },
-    { pose: 'point', title: 'Little steps', demo: [['sound', '#3E9BF0', 'Listen'], ['edit', '#F28A2E', 'Trace'], ['playtime', '#A45CE0', 'Play'], ['star', '#FFC93C', 'Quiz']],
+    { pose: 'point', title: 'Little steps', demo: [['sound', '#3E9BF0', 'Listen', 'ui/sound'], ['edit', '#F28A2E', 'Trace', 'game/trace'], ['playtime', '#A45CE0', 'Play', 'game/puzzle'], ['star', '#FFC93C', 'Quiz', 'game/coin']],
       text: 'Every lesson has little steps.', say: 'Every lesson has little steps. Listen, trace, play, and then a quiz!' },
     { pose: 'idle', title: 'Listen, then tap', demo: [['sound', '#3E9BF0', 'Listen'], ['check', '#3CCB7F', 'Tap'], ['hint', '#FFC93C', 'Help']],
       text: 'Listen to me, then tap the answer.', say: 'Listen to me, then tap the answer. I will help you!' },
@@ -778,7 +797,7 @@
       const s = SLIDES[i];
       Art.paint($('tutor-char'), null, s.pose);
       $('tutor-demo').innerHTML = s.demo.map((d, k) =>
-        `<span class="demo" style="--i:${k}">${AF.Icon.jelly(d[0], d[1])}${d[2] ? `<span class="pill">${d[2]}</span>` : ''}</span>`).join('');
+        `<span class="demo" style="--i:${k}">${d[3] ? `<img class="demo-pic" src="art/${d[3]}.webp" alt="" draggable="false">` : AF.Icon.jelly(d[0], d[1])}${d[2] ? `<span class="pill">${d[2]}</span>` : ''}</span>`).join('');
       $('tutor-title').innerHTML = s.logo ? '<span class="tutor-welcome">Welcome to</span>' + AF.UI.logo() : AF.U.esc(s.title);
       $('tutor-text').textContent = s.text;
       $('tutor-dots').innerHTML = SLIDES.map((x, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('');
@@ -833,6 +852,12 @@
 
   function askSpeech(then) {
     sheet('ask', true);
+    // the friend asks for a grown-up, out loud: the child cannot read the choices
+    const card = $('ask').querySelector('.sheet-card');
+    let who = card.querySelector('.ask-friend');
+    if (!who) { who = document.createElement('div'); who.className = 'ask-friend'; card.prepend(who); }
+    Art.paint(who, null, 'wave');
+    Audio.say('Let’s ask a grown-up!');
     $('ask').querySelectorAll('[data-speech]').forEach(btn => {
       const mode = btn.dataset.speech;
       btn.disabled = (mode === 'check' && !AF.Speech.canCheck) || (mode === 'echo' && !AF.Speech.canEcho);
@@ -887,7 +912,8 @@
 
     /* ---- the four core subjects: where the child is, stage by stage,
        and (in Math, Phonics...) which topics are sure and which need practice ---- */
-    $('grown-core').innerHTML = core.map(m => {
+    const practise = [];
+    $('grown-core').innerHTML = '<p class="topic-key"><span class="topic sure">sure</span><span class="topic going">learning</span><span class="topic help">needs practice</span><span class="topic not">not yet</span></p>' + core.map(m => {
       const L = AF.Levels, names = AF.stageNames(m), count = L.tierCount(m.levels);
       const nextLv = m.levels[L.nextIndex(m.id, m.levels)];
       const lv = m.levels.filter(l => !l.soon);
@@ -905,6 +931,7 @@
           const st = mine.map(l => P.stars(m.id, l.id));
           const played = st.filter(s => s > 0);
           const cls = !played.length ? 'not' : played.length === st.length && played.every(s => s === 3) ? 'sure' : played.some(s => s < 2) ? 'help' : 'going';
+          if (cls === 'help') practise.push(m.topics[k]);
           return `<span class="topic ${cls}">${AF.U.esc(m.topics[k])}</span>`;
         }).join('') + '</div>';
       }
@@ -913,7 +940,28 @@
         <div class="core-now">${AF.U.esc(now)}</div>
         <div class="core-segs">${segs}</div>${topics}
       </div>`;
-    }).join('') + '<p class="topic-key"><span class="topic sure">sure</span><span class="topic going">learning</span><span class="topic help">needs practice</span><span class="topic not">not yet</span></p>';
+    }).join('');
+
+    /* ---- what a busy grown-up wants first: the week, what is next, what to practise ---- */
+    const played = week.filter(d => d.min > 0).length, minutes = week.reduce((a, d) => a + d.min, 0);
+    const t = P.today(), next = todayPicks().find(p => t.done.indexOf(p.key) < 0);
+    const esc = AF.U.esc;
+    $('grown-sum').innerHTML = `
+      <p><b>This week</b>${minutes} min on ${played} ${played === 1 ? 'day' : 'days'} <small>(10–20 minutes a day is plenty)</small></p>
+      <p><b>Next</b>${next ? `${esc(next.mod.title)}${next.mod.core ? ' · ' + esc(AF.Levels.stageName(next.mod, next.level.tier || 0)) : ''} · ${esc(next.level.title)}` : 'Today’s Study is all done'}</p>
+      ${practise.length ? `<p><b>Practise</b>${practise.slice(0, 3).map(esc).join(', ')}</p>` : ''}`;
+
+    /* ---- how a lesson goes, from the lessons themselves (the road most of a subject's lessons take) ---- */
+    g.querySelectorAll('[data-how]').forEach(el => {
+      const m = AF.module(el.dataset.how), seen = {};
+      let road = [];
+      (m ? m.levels : []).filter(l => l.steps && !l.review).forEach(l => {
+        const r = l.steps.map(st => AF.Engines.stepInfo(st, l.lang || m.lang)), k = r.map(x => x.name).join('>');
+        seen[k] = (seen[k] || 0) + 1;
+        if (!road.length || seen[k] > seen[road.map(x => x.name).join('>')]) road = r;
+      });
+      el.innerHTML = road.map(s => `<span class="how-step"><img src="art/${s.pic}.webp" alt="" draggable="false">${esc(s.name)}</span>`).join('<i class="how-arrow">→</i>');
+    });
 
     /* ---- the extras: one bar per subject ---- */
     $('grown-progress').innerHTML = AF.AREAS.map(area => {
@@ -923,7 +971,7 @@
         const lv = m.levels.filter(l => !l.soon);
         const done = lv.filter(l => P.stars(m.id, l.id) > 0).length;
         return `<div class="prog-row">
-          <span class="prog-name">${m.icon} ${m.title}<small>${m.skill || ''}</small></span>
+          <span class="prog-name">${AF.Icon.jelly(m.id, m.colour, 'prog-ic', m.icon)}<span>${m.title}<small>${m.skill || ''}</small></span></span>
           <span class="prog-bar" style="--c:${m.colour}"><i style="width:${lv.length ? done / lv.length * 100 : 0}%"></i></span>
           <span class="prog-num">${done}/${lv.length}</span>
         </div>`;
@@ -940,7 +988,7 @@
     hard.sort((a, b) => b.tries - a.tries);
     $('grown-practice').innerHTML = hard.length
       ? hard.slice(0, 4).map(h => `<div class="prac">${h.m.icon} <b>${h.m.title}</b> · ${h.l.title}
-          <span>${h.tries} tries · ${'★'.repeat(h.stars)}${'☆'.repeat(3 - h.stars)}</span></div>`).join('')
+          <span>${h.tries} tries ${AF.UI.stars(h.stars, 'prac-stars')}</span></div>`).join('')
       : '<p class="grown-none">Nothing is proving tricky yet. Levels that take several tries will show up here.</p>';
 
     /* ---- a real-life idea, from what was played last ---- */

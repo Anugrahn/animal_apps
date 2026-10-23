@@ -133,7 +133,8 @@
   }
 
   const COUNTABLE = [['apple', 'apples', '🍎'], ['star', 'stars', '⭐'], ['duck', 'ducks', '🦆'], ['ball', 'balls', '⚽'],
-    ['fish', 'fish', '🐟'], ['flower', 'flowers', '🌸'], ['car', 'cars', '🚗'], ['bee', 'bees', '🐝']];
+    ['fish', 'fish', '🐟'], ['flower', 'flowers', '🌷'], ['car', 'cars', '🚗'], ['bee', 'bees', '🐝']];
+  // (a tulip, not 🌸: that one is painted as a whole bunch of flowers, which cannot be counted as one)
   AF.COUNTABLE = COUNTABLE;
 
   /** n numbers near `answer`, including it, between lo and hi. */
@@ -578,10 +579,11 @@
     /** Questions asked in a shuffled order, each once before repeating.
         list = [{ say, text?, show?, options, answer, praise? }] */
     ask(list, shuffleOptions) {
-      let bag = [];
+      let bag = [], last = null;
       return () => {
-        if (!bag.length) bag = U.shuffle(list);
-        const q = bag.pop();
+        // a fresh round of the bag never starts with the question just asked
+        if (!bag.length) { bag = U.shuffle(list); if (bag.length > 1 && bag[bag.length - 1] === last) bag.unshift(bag.pop()); }
+        const q = last = bag.pop();
         return Object.assign({}, q, { options: shuffleOptions === false ? q.options : U.shuffle(q.options) });
       };
     }

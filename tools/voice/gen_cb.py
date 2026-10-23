@@ -3,6 +3,9 @@ anywhere). Called by gen.mjs:  .venv/bin/python gen_cb.py <jobs.json> <wav dir>
 jobs.json: [{"text": ..., "f": <file id>, "ex": exaggeration, "cfg": cfg_weight, "calm": bool}]
 Writes <wav dir>/<f>.wav. A clip far longer or shorter than its text
 should take (a garbled or dragged-out take) is made again, up to 3 times.
+Every take is also heard back with Whisper (asrcheck.py): a take that does
+not say its words, or says more ("Lovely, didn't you?"), is made again, up
+to 5 times, and the take that matches best is kept.
 A calm job (gen.mjs --calm) is voiced a sentence at a time, joined with a
 short pause, and a sentence quicker than 180 words a minute is made again
 (up to 3 times, keeping the slowest good take)."""
@@ -24,6 +27,12 @@ for name in ['ve.safetensors', 't3_cfg.safetensors', 's3gen.safetensors', 'token
     ckpt = os.path.dirname(hf_hub_download(MODEL, name, revision=REVISION))
 model = ChatterboxTTS.from_local(ckpt, dev)
 torch.manual_seed(7)
+try:
+    from asrcheck import Checker
+    checker = Checker()
+except Exception as e:                      # (no Whisper: duration checks only)
+    print('no Whisper check:', e, flush=True)
+    checker = None
 
 
 def plausible(text, secs):
@@ -36,20 +45,28 @@ MAX_WPM = 180
 
 
 def take(text, j):
-    """One take of `text`, made again (up to 3 times) if garbled, or, for a
-    calm job, quicker than MAX_WPM; the slowest good one is kept."""
-    best, best_secs = None, 0
-    for attempt in range(3):
+    """One take of `text`, made again if garbled (its length is far off, or
+    Whisper hears other or extra words) or, for a calm job, quicker than
+    MAX_WPM. The best take is kept: the one Whisper hears most rightly, then
+    the slowest."""
+    best, best_key = None, None
+    # a short line is where Chatterbox goes astray ("kite" came out as "Great"): more tries
+    tries = (5 if len(text.split()) <= 4 else 3) if checker else 3
+    for attempt in range(tries):
         wav = model.generate(text, exaggeration=j['ex'], cfg_weight=j['cfg'], temperature=0.8)
         secs = wav.shape[-1] / model.sr
         ok = plausible(text, secs)
-        if ok and secs > best_secs or best is None:
-            best, best_secs = wav, secs
         words = len(text.split())
         quick = j.get('calm') and words >= 3 and words / secs * 60 > MAX_WPM
-        if ok and not quick:
+        score, extra, heard = (checker.check(text, wav.cpu().numpy(), model.sr) if checker else (1.0, 0, ''))
+        right = checker is None or Checker.good(text, score, extra)
+        key = (ok, right, score - 0.25 * extra, not quick, secs)
+        if best is None or key > best_key:
+            best, best_key = wav, key
+        if ok and right and not quick:
             break
-        print(f'  retry {attempt + 1}: {secs:.1f}s for "{text[:50]}"', flush=True)
+        why = 'length' if not ok else 'heard ' + repr(heard[:40]) if not right else 'quick'
+        print(f'  retry {attempt + 1}: {secs:.1f}s, {why}, for "{text[:50]}"', flush=True)
     return best
 
 
@@ -58,8 +75,9 @@ for n, j in enumerate(jobs, 1):
     path = os.path.join(out, j['f'] + '.wav')
     if os.path.exists(path):
         continue
-    if j.get('calm'):
-        # a sentence at a time, with a short pause between (post.py makes it the full pause)
+    if j.get('calm') and len(j['text'].split()) > 6:
+        # a sentence at a time, with a short pause between (post.py makes it the full pause);
+        # a short line is said in one go: a lone "Cool!" is what the voice garbles most
         parts = [p for p in re.split(r'(?<=[.!?])\s+', j['text'].strip()) if p]
         gap = torch.zeros(1, int(model.sr * 0.4))
         pieces = []

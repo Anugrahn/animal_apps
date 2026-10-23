@@ -145,7 +145,7 @@
     <div class="result-stars" aria-hidden="true"><i data-ic="star"></i><i data-ic="star"></i><i data-ic="star"></i></div>
     <h2 class="result-title logo-text">Well done!</h2>
     <div class="result-hero"><div class="result-char"></div><img class="stump" src="art/world/stump.webp" alt="" draggable="false"></div>
-    <p class="result-tip" hidden></p>
+    <details class="result-tip" hidden><summary>Try at home</summary><p></p></details>
     <div class="result-btns">
       <button class="big-round" data-act="map" data-ic="map" style="--h:#3E9BF0" aria-label="Back to the map"></button>
       <button class="big-round" data-act="retry" data-ic="retry" style="--h:#F5A623" aria-label="Play again"></button>
@@ -184,15 +184,15 @@
     <p class="sheet-sub">Grown-ups: how should your child practise saying words?</p>
     <div class="ask-opts">
       <button class="pick-opt" data-speech="echo">
-        <b>Echo</b>
+        <i class="ask-ic" data-ic="mic"></i><b>Echo</b>
         <span>Records for a moment and plays your child’s voice back. Nothing leaves this device.</span>
       </button>
       <button class="pick-opt" data-speech="check">
-        <b>Voice check</b>
+        <i class="ask-ic" data-ic="sound"></i><b>Voice check</b>
         <span>The browser listens and checks the word. The audio is sent to the browser’s maker to be recognised (Google in Chrome, Apple in Safari, Microsoft in Edge), and it needs the internet.</span>
       </button>
       <button class="pick-opt" data-speech="tap">
-        <b>No microphone</b>
+        <i class="ask-ic" data-ic="thumbs"></i><b>No microphone</b>
         <span>Listen, say it out loud, tap the thumbs-up.</span>
       </button>
     </div>
@@ -220,9 +220,10 @@
     <h2 class="sign">Grown-ups</h2>
 
     <div class="g-list">
-      <details class="g-row">
+      <details class="g-row" open>
         <summary><span class="g-ic" data-ic="chart" style="--h:#3E9BF0"></span>Progress report</summary>
         <div class="g-body">
+          <div class="grown-sum" id="grown-sum"></div>
           <div class="stat-row" id="grown-stats"></div>
           <h3 class="grown-h">This week (minutes a day)</h3>
           <div class="week" id="grown-week"></div>
@@ -243,13 +244,13 @@
             <b>concept → practice → problem-solving → review</b>.</p>
           <ul>
             <li><b>Phonics</b> (4 steps): letter sounds a–z, short and long vowels, blends and digraphs, silent letters and tricky sounds.
-              Each lesson: <i>Listen → Trace → Play → Quiz</i>.</li>
+              Each lesson: <span class="how-road" data-how="phonics"></span></li>
             <li><b>English</b> (4 stages): basic expressions, everyday expressions, my world, reading and grammar.
-              Each lesson: <i>Story → Words → Say it → Quiz</i>.</li>
+              Each lesson: <span class="how-road" data-how="english"></span></li>
             <li><b>Math</b> (5 levels): every level covers the six areas — numbers, calculation, shapes, measuring, patterns and data —
-              from first counting (3–4 years) to the upper primary years. Each lesson: <i>Story → Real life → Play → Quiz</i>.</li>
+              from first counting (3–4 years) to the upper primary years. Each lesson: <span class="how-road" data-how="math"></span></li>
             <li><b>Bahasa Indonesia</b> (4 tahap): huruf a–z, suku kata, suku kata lanjutan, membaca kalimat.
-              Each lesson: <i>Kenal → Tebalkan → Kuasai</i>.</li>
+              Each lesson: <span class="how-road" data-how="bahasa"></span></li>
           </ul>
           <p><b>Today’s Study</b> plans 10–15 minutes: two core subjects on each weekday, in turn (Phonics and Math, then English
             and Bahasa), plus one Fun &amp; Joy game. A lesson not finished comes back the next day. At the weekend there is nothing new:
@@ -335,6 +336,7 @@
 <script src="core/art.js"></script>
 <script src="core/profile.js"></script>
 <script src="core/ui.js"></script>
+<script src="core/fit.js"></script>     <!-- which way round the screen should be -->
 <script src="voice/index.js"></script>  <!-- the recorded voice: which line is in which file -->
 <script src="core/audio.js"></script>
 <script src="core/speech.js"></script>

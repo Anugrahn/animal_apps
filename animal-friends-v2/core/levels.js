@@ -160,7 +160,7 @@
         node.classList.add(lv.soon ? 'is-soon' : !unlocked ? 'is-locked' : stars > 0 ? 'is-done' : isNext ? 'is-next' : 'is-open');
 
         node.innerHTML = `
-          <span class="lv-disc"><img class="lv-stone" src="art/ui/stone-${isNext ? 'blue' : !unlocked || lv.soon ? 'lock' : 'gold'}.webp" alt="" draggable="false">${unlocked && !lv.soon ? `<b>${i + 1}</b>` : ''}</span>
+          <span class="lv-disc"><img class="lv-stone" src="art/ui/stone-${!unlocked || lv.soon ? 'lock' : stars > 0 ? 'gold' : 'blue'}.webp" alt="" draggable="false">${unlocked && !lv.soon ? `<b>${i + 1}</b>` : ''}</span>
           ${unlocked && !lv.soon && (!stars || lv.review) ? `<img class="lv-kind${isNext ? '' : ' small'}" src="art/${Levels.kindIcon(lv, moduleDef)}.webp" alt="" draggable="false">` : ''}
           ${stars > 0 ? AF.UI.stars(stars, 'lv-stars') : ''}
           <span class="lv-name">${lv.title}</span>`;
@@ -232,10 +232,16 @@
         chest.style.left = pos[n].x.toFixed(2) + '%'; chest.style.top = pos[n].y.toFixed(2) + '%';
         stand(start);
       };
-      // and again whenever the tabs change size (lettering and pictures load late)
+      // and again whenever the tabs or the chest change size (lettering and
+      // pictures load late: a chest whose painting has not come yet is 0px
+      // tall, and its lid would then be left under the tabs)
       const tabsEl = host.closest('.screen') && host.closest('.screen').querySelector('.tabs');
       if (host._watch) host._watch.disconnect();
-      if (tabsEl && window.ResizeObserver) (host._watch = new ResizeObserver(() => requestAnimationFrame(clear))).observe(tabsEl);
+      if (tabsEl && window.ResizeObserver) {
+        host._watch = new ResizeObserver(() => requestAnimationFrame(clear));
+        host._watch.observe(tabsEl);
+        host._watch.observe(chest);
+      }
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(clear));
     },
 
@@ -260,14 +266,25 @@
       const btns = card.querySelector('.result-btns');
       btns.classList.remove('ready');
       const tip = card.querySelector('.result-tip');
+      // (folded into a small chip: it is for the grown-up; the child's eyes go to Next)
       tip.hidden = !opts.tip;
-      tip.innerHTML = opts.tip ? '<b>Try at home</b> ' + opts.tip : '';
+      tip.open = false;
+      tip.querySelector('p').innerHTML = opts.tip || '';
 
       const starEls = card.querySelectorAll('.result-stars i');
       starEls.forEach(el => el.classList.remove('on'));
 
       const nextBtn = card.querySelector('[data-act="next"]');
       nextBtn.hidden = !opts.hasNext;
+      // back to Today's Study, when the game came from there
+      const mapBtn = card.querySelector('[data-act="map"]');
+      mapBtn.dataset.ic = opts.from === 'journey' ? 'journey' : 'map';
+      mapBtn.setAttribute('aria-label', opts.from === 'journey' ? 'Back to today’s study' : 'Back to the map');
+      // a lesson's road, every step ticked
+      let road = card.querySelector('.result-road');
+      if (!road) { road = document.createElement('ol'); road.className = 'steps result-road'; card.querySelector('.result-title').after(road); }
+      road.hidden = !opts.steps;
+      road.innerHTML = opts.steps ? AF.UI.steps(opts.steps, opts.steps.length) : '';
 
       sheet.hidden = false;
       AF.FX.confetti(opts.stars === 3 ? 60 : 30);

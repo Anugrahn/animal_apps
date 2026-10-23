@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v4.0.0';
+const VERSION = 'af-v4.2.0';
 
 const FILES = [
   './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -78,7 +78,7 @@ const FILES = [
   'art/char/fox.webp', 'art/char/frog-face.webp', 'art/char/frog.webp', 'art/char/lion-face.webp',
   'art/char/lion.webp', 'art/char/panda-face.webp', 'art/char/panda.webp', 'art/char/penguin-face.webp',
   'art/char/penguin.webp', 'art/char/puppy-face.webp', 'art/char/puppy.webp', 'art/char/rabbit-face.webp',
-  'art/char/rabbit.webp', 'art/subj/coding.webp', 'art/subj/feelings.webp', 'art/subj/habits.webp',
+  'art/char/rabbit.webp', 'art/subj/bahasa.webp', 'art/subj/coding.webp', 'art/subj/feelings.webp', 'art/subj/habits.webp',
   'art/subj/letters.webp', 'art/subj/maze.webp', 'art/subj/memory.webp', 'art/subj/numbers.webp',
   'art/subj/planet.webp', 'art/subj/sayit.webp', 'art/subj/science.webp', 'art/subj/shapes.webp',
   'art/subj/songs.webp', 'art/subj/stories.webp', 'art/subj/treasure.webp', 'art/subj/words.webp',
@@ -100,7 +100,7 @@ const FILES = [
   'art/world/island-play.webp', 'art/world/island-stem.webp', 'art/world/palm.webp', 'art/world/rock.webp',
   'art/world/signpost.webp', 'art/world/stump.webp', 'art/world/tree.webp',
   'core/ui.css', 'core/screens.css', 'engines/engines.css', 'core/motion.css',
-  'core/icons.js', 'core/world.js', 'core/art.js', 'core/profile.js', 'core/ui.js', 'core/audio.js', 'core/speech.js', 'core/fx.js', 'core/levels.js', 'core/app.js',
+  'core/icons.js', 'core/world.js', 'core/art.js', 'core/profile.js', 'core/ui.js', 'core/fit.js', 'core/audio.js', 'core/speech.js', 'core/fx.js', 'core/levels.js', 'core/app.js',
   'engines/base.js', 'engines/drag.js', 'engines/quiz.js', 'engines/maze.js', 'engines/touch.js', 'engines/trace.js', 'engines/code.js', 'engines/voice.js', 'engines/media.js', 'engines/lesson.js',
   'content/bank.js', 'content/phonics.js', 'content/english.js', 'content/bahasa.js', 'content/math.js', 'content/stem.js', 'content/life.js', 'content/play.js'
 ];

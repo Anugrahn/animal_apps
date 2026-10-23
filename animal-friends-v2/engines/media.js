@@ -58,7 +58,7 @@
             <button class="round-btn" data-say data-ic="sound" aria-label="Read it again"></button>
             <span class="story-page">${page + 1} / ${lv.pages.length}</span>
             ${last ? `<button class="pill-go story-end" data-next>${E.t(S, lv.quiz ? 'questions' : 'theEnd')} <i data-ic="right"></i></button>`
-              : '<button class="round-btn story-go" data-next data-ic="right" aria-label="Next page"></button>'}
+              : '<button class="round-btn story-go" data-next data-ic="next" style="--h:#3CC46A" aria-label="Next page"></button>'}
           </div>
         </div>`;
 

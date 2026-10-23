@@ -132,8 +132,10 @@
     },
 
     /** Full-screen "well done" moment. onDone fires exactly once,
-        whether the child taps it away or it times out. */
-    party(text, sub, onDone, pic) {
+        whether the child taps it away or it times out. `say`: what the
+        friend says (the biggest moments must not be text only: most
+        children here cannot read yet). */
+    party(text, sub, onDone, pic, say) {
       const p = document.getElementById('party');
       if (!p) { if (onDone) onDone(); return; }
       const t = p.querySelector('.party-text');
@@ -147,6 +149,7 @@
       p.classList.add('is-on');   // (not 'show': the question strip uses that class)
       FX.confetti(80);
       AF.Audio.SFX.win();
+      if (say) setTimeout(() => { if (p.classList.contains('is-on')) AF.Audio.say(say); }, 700);
 
       let closed = false;
       const close = () => {
@@ -158,7 +161,7 @@
         if (onDone) onDone();
       };
       p.addEventListener('click', close);
-      const timer = setTimeout(close, 3200);
+      const timer = setTimeout(close, say ? 4200 : 3200);
     }
   };
 

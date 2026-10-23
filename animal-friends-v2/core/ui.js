@@ -55,7 +55,7 @@
       const P = AF.Profile, stars = P.allStars(), streak = P.streak();
       return `
         <span class="pill pill-star" aria-label="${stars} stars"><i data-ic="star"></i>${stars}</span>
-        <span class="pill pill-streak" aria-label="${streak} day streak"><i data-ic="flame"></i>${streak}</span>`;
+        ${streak ? `<span class="pill pill-streak" aria-label="${streak} day streak"><i data-ic="flame"></i>${streak}</span>` : ''}`;
     },
 
     /** `of` stars in a row (3 unless a subject has more stages), n of them gold. */

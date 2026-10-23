@@ -25,15 +25,15 @@
 
   const SPECIES = {
     dino:    { label: 'Dino',    emoji: '🦖', colour: '#86D24C', cheer: 'Roar!' },
-    bear:    { label: 'Bear',    emoji: '🐻', colour: '#C98A55', cheer: 'Lovely!' },
-    rabbit:  { label: 'Rabbit',  emoji: '🐰', colour: '#F4EEE6', cheer: 'Yay!' },
+    bear:    { label: 'Bear',    emoji: '🐻', colour: '#C98A55', cheer: 'Lovely work!' },
+    rabbit:  { label: 'Rabbit',  emoji: '🐰', colour: '#F4EEE6', cheer: 'Yay, you did it!' },
     cat:     { label: 'Cat',     emoji: '🐱', colour: '#FFB45E', cheer: 'Purr-fect!' },
-    puppy:   { label: 'Puppy',   emoji: '🐶', colour: '#E9C79A', cheer: 'Woof woof!' },
-    panda:   { label: 'Panda',   emoji: '🐼', colour: '#FFFFFF', cheer: 'Hooray!' },
-    fox:     { label: 'Fox',     emoji: '🦊', colour: '#FF8A4C', cheer: 'Fantastic!' },
+    puppy:   { label: 'Puppy',   emoji: '🐶', colour: '#E9C79A', cheer: 'Woof! Good job!' },
+    panda:   { label: 'Panda',   emoji: '🐼', colour: '#FFFFFF', cheer: 'Hip hip hooray!' },
+    fox:     { label: 'Fox',     emoji: '🦊', colour: '#FF8A4C', cheer: 'You are fantastic!' },
     lion:    { label: 'Lion',    emoji: '🦁', colour: '#FFC75A', cheer: 'Roar!' },
-    frog:    { label: 'Frog',    emoji: '🐸', colour: '#8EDB5A', cheer: 'Ribbit!' },
-    penguin: { label: 'Penguin', emoji: '🐧', colour: '#4A5A86', cheer: 'Cool!' },
+    frog:    { label: 'Frog',    emoji: '🐸', colour: '#8EDB5A', cheer: 'Ribbit! Well done!' },
+    penguin: { label: 'Penguin', emoji: '🐧', colour: '#4A5A86', cheer: 'Super cool!' },
     chick:   { label: 'Chick',   emoji: '🐥', colour: '#FFD84A', cheer: 'Cheep cheep!' }
   };
 

@@ -404,8 +404,8 @@
               </span>
             </button>`).join('')}
         </div>
-      </div>
-      <div class="stage-cap">${E.t(S, 'pairsCap')}</div>`;
+      </div>`;
+    // (no caption under the tray: the bubble already says what to do)
 
     const btns = Array.from(stage.querySelectorAll('.mem'));
     // A card is called by its number while face down, by what is on it once seen.

@@ -161,6 +161,64 @@ A review of every engine for 3–5-year-olds, and tracing written again.
   so every line can be recorded with the natural voice: random sums and story
   problems had made about 9,000 different sentences.
 
+### v4.2: every screen, and a design review
+
+**Fits every screen.** One fluid scale of text and control sizes (`--fs-xs` …
+`--fs-3xl`, `--btn`, `--big` in `core/ui.css`) grows with the screen's shorter
+side, from a 320px phone to a 12.9" tablet, so nothing is tiny on a phone or
+lost on a tablet. `core/fit.js` asks a tablet to play sideways, and a phone
+only for the maze and coding (a polite request: browsers allow it only in
+fullscreen or installed, iOS never, and every layout works both ways). Phones
+on their side, tablets and laptops get their own arrangements of the result,
+the tutorial, Today's Study, the maker and the maps. Animation is lighter
+(only transform and opacity move; glows fade a halo drawn once instead of
+repainting a shadow; idle movement stops behind a full-screen sheet), checked
+frame by frame against the old look so nothing got plainer.
+
+**Design review** (Laws of UX, hands-on at 390×844, 1024×768, 1280×720 and 844×390):
+
+- **Counting comes first**: in Math the things to count are now the biggest
+  thing on screen (56px on a phone, not 35px under 170px answer cards); their
+  size follows how many there are, so twenty still fit (`engines.css`).
+- **Today's Study is a road**: numbered stops joined by a path that fills in
+  gold, one big green play button on the next stop, finished stops gold with a
+  tick; on a tablet the friend and the chest stand beside the list.
+- **The lesson road** (the steps above a lesson) ticks finished steps, fills
+  its links in gold, greys the steps to come, and on a phone held sideways sits
+  at the foot of the left column instead of disappearing.
+- **The result**: stars not won are small and faint; the grown-up's "Try at
+  home" is a small chip that opens, not a paragraph between the friend and Next.
+- **One look per meaning**: every "go on" is green (the Next pill, the story's
+  page arrow, the maker's Done); stage tabs are one blue, the one on show ringed
+  in white, a locked one cream with its padlock (they were four colours).
+- **The maker's tray keeps one height**, so the category buttons above it and
+  the friend never move when a category has fewer choices.
+- **Bigger controls**: maze arrows 70px and coding arrows 66px on a 390px
+  phone, coding's Go the biggest button, story words about 44px tall to tap, the
+  "?" on Home 58px; the maze no longer repeats its instruction in a caption.
+- **Home**: the island to try next has a stronger glow and a bigger marker; the
+  Today's Study pill is a deeper teal (white on it reads 3.3:1, not 1.8:1) and
+  turns gold when the day is done. Island landmarks show unwon stages as grey
+  stars, not white on white. The painted props on wide screens wiggle when
+  tapped and stand clear of Home.
+- **Grown-ups**: the report opens first, with a summary (this week's minutes,
+  what is next, what to practise), the colour key first and with symbols
+  (✓ • ! –), a lighter week chart with a "15 min" line, larger and darker text
+  (WCAG AA), one flat set of row icons; "How the lessons work" shows each
+  subject's lesson road as the child sees it, built from the lessons themselves
+  (so Bahasa reads Kenal → Tebalkan → Kuasai → Kuis).
+- **The speech question** has the friend at the top (it asks for a grown-up
+  out loud) and a picture on each choice; on a phone on its side the three
+  choices stand side by side.
+- **Small fixes**: clock and letter matching places are solid cream with a
+  dashed edge, clocks fill their cards; the Bahasa flag landmark is a little
+  smaller; a map's treasure chest no longer hides its lid under the stage tabs
+  on 320–375px phones (the map now waits for the chest's picture to load before
+  making room for it).
+
+Not done yet: colours in the maker barely show on the pale animals (rabbit,
+penguin, chick); that needs a tint layer in `core/art.js`.
+
 ## How it moves
 
 The first v2 looked soft and moved stiffly. `core/motion.css` is the fix, in
@@ -484,7 +542,8 @@ core/
   fx.js         sparkles, confetti, celebration, touch ripple, glide-to-place
   levels.js     star rules, unlocking, stages, help level, island level map, result sheet
   app.js        router, maker, island home, daily picks, grown-up area, tutorial
-  ui.js         shared pieces: frame, pills, sign, logo, stars, stage tabs
+  ui.js         shared pieces: frame, pills, sign, logo, stars, stage tabs, lesson road
+  fit.js        which way round the screen should be (tablets sideways; phones for maze and coding)
   ui.css        tokens and shared component styles
   screens.css   one section per screen
   motion.css    how everything moves: the spring, screen changes, presses, idling

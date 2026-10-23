@@ -98,26 +98,11 @@
     letters: 'subj/letters', words: 'subj/words', sayit: 'subj/sayit', stories: 'subj/stories', numbers: 'subj/numbers',
     shapes: 'subj/shapes', science: 'subj/science', coding: 'subj/coding', feelings: 'subj/feelings', habits: 'subj/habits',
     planet: 'subj/planet', maze: 'subj/maze', memory: 'subj/memory', songs: 'subj/songs',
-    phonics: 'subj/letters', english: 'subj/words', math: 'subj/numbers',
+    phonics: 'subj/letters', english: 'subj/words', math: 'subj/numbers', bahasa: 'subj/bahasa',
     literacy: 'subj/letters', stem: 'subj/numbers', life: 'subj/feelings', playtime: 'subj/maze',
     right: 'ui/pad-right', down: 'ui/pad-down', up: 'ui/pad-up', map: 'ui/map', next: 'ui/next',
     pause: 'ui/pause', trophy: 'ui/trophy', thumbs: 'ui/thumbs', drum: 'prop/play-drum', heart: 'ui/heart'
   };
-  /* Subjects with no painting yet get a drawn "sticker" in the same
-     style (no jelly behind it, the same soft shadow). Bahasa Indonesia:
-     the red and white flag, with "ba" on it. */
-  const STICKER = {
-    bahasa: `<svg class="pic" viewBox="0 0 100 100" aria-hidden="true">
-      <ellipse cx="52" cy="92" rx="30" ry="5" fill="rgba(40,30,10,.18)"/>
-      <rect x="18" y="8" width="8" height="84" rx="4" fill="#9A6236" stroke="#5E3A1C" stroke-width="2.500"/>
-      <circle cx="22" cy="8" r="6" fill="#FFC93C" stroke="#B9851A" stroke-width="2"/>
-      <path d="M26 16 C42 8 58 22 88 14 V44 C58 52 42 38 26 46 Z" fill="#E8333B" stroke="#8E1B22" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M26 46 C42 38 58 52 88 44 V74 C58 82 42 68 26 76 Z" fill="#FFFDF6" stroke="#8E1B22" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M32 20 C44 14 56 24 80 19" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
-      <text x="57" y="70" text-anchor="middle" font-family="Fredoka, 'Arial Rounded MT Bold', sans-serif" font-size="25" font-weight="700" fill="#C9252D">ba</text>
-    </svg>`
-  };
-
   /* the four arrow pads and the light bulb in the maze and coding games */
   const PAD = { up: 'ui/pad-up', down: 'ui/pad-down', back: 'ui/pad-left', right: 'ui/pad-right', hint: 'ui/pad-hint', retry: 'ui/retry' };
   /* If a painting cannot be loaded, the drawn glyph comes back, so a
@@ -251,7 +236,6 @@
     /** A glossy squircle. Falls back to showing `alt` (an emoji) if
         there is no glyph by that name. */
     jelly(name, hue, cls, alt) {
-      if (STICKER[name]) return `<span class="jelly painted ${cls || ''}" data-n="${name}" style="--h:${hue || '#3DA5F4'}">${STICKER[name]}</span>`;
       if (PAINT[name]) return `<span class="jelly painted ${cls || ''}" data-n="${name}" style="--h:${hue || '#3DA5F4'}">${pic(PAINT[name])}</span>`;
       return `<span class="jelly ${cls || ''}" style="--h:${hue || '#3DA5F4'}">${svg(name) || `<span class="jelly-alt">${alt || ''}</span>`}</span>`;
     },
@@ -266,8 +250,9 @@
         const old = el.querySelector(':scope > svg.ic, :scope > img.pic');
         if (old) old.remove();
         const isPad = el.classList.contains('pad') || el.classList.contains('pad-hint');
-        // a small arrow inside a text button stays a plain glyph
-        const inText = el.closest('.pill-go, .btn') && !el.classList.contains('painted-ok');
+        // a small arrow inside a text button stays a plain glyph, and so do
+        // the grown-up area's row icons (one calm, flat set there)
+        const inText = (el.closest('.pill-go, .btn') && !el.classList.contains('painted-ok')) || el.classList.contains('g-ic');
         const p = isPad ? PAD[el.dataset.ic] : inText ? null : PAINT[el.dataset.ic];
         el.classList.toggle('painted', !!p);
         el.insertAdjacentHTML('afterbegin', p ? pic(p) : svg(el.dataset.ic));

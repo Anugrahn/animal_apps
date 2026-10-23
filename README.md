@@ -125,7 +125,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v4.0.0`.
+  `af-v4.2.0`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
@@ -149,6 +149,8 @@ animal-friends-v2/
 | v3.3 | Review fixes: fairer stars, microphone and voice bugs, unlocking, offline on slow networks, content corrections |
 | v3.4 | A natural recorded voice (Chatterbox, made on this Mac), paced for 3-year-olds; device voice only as a fallback. See `tools/voice/` |
 | v4.0 | Curriculum modelled on Danbi Education's Wink: Phonics, English, Math (5 levels × 6 areas) and Bahasa Indonesia as multi-step lessons, Today's Study with carry-over and weekend review, review lessons, a Wink-style grown-up report. Letters, My Words, Say It!, Numbers and Shapes retired (their stars kept) |
+| v4.1 | Smoother engines for small hands: tracing rewritten (the friend writes it first, the ink glides after the finger), forgiving taps, no talking over praise, the same help after two misses everywhere |
+| v4.2 | Fits every screen (one fluid size scale, tablets sideways, lighter animation) and a design review: counting pictures first, Today's Study as a road, one green "go on", single-colour stage tabs, bigger game controls, a clearer grown-up report. Every recorded take is checked with Whisper and garbled ones recorded again |
 
 The details for each version are in the
 [v2 README](animal-friends-v2/README.md#the-mock-up-redesign-v25).

@@ -7,3 +7,6 @@ gen.log
 .wav-final/
 .post.json
 too-fast.txt
+__pycache__/
+redo.txt
+qa.json

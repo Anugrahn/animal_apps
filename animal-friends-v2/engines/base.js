@@ -39,6 +39,9 @@
 
   /** Modules call this to join the home screen. */
   AF.register = function (mod) {
+    // a subject's language belongs to each of its levels too (a Bahasa
+    // lesson's step cards and engine lines are then in Indonesian)
+    if (mod.lang) (mod.levels || []).forEach(l => { if (!l.lang) l.lang = mod.lang; });
     if (!mod.play) {
       mod.play = function (host, level, api) { AF.Engines.run(host, level, api); };
       mod.stop = function () { AF.Engines.stop(); };
@@ -100,7 +103,7 @@
       traceNum: (n) => `Trace number ${AF.NUM[n] || n}.`, traceNumText: (n) => `Trace number <b>${n}</b>`,
       traceLetter: 'Trace the letter that says', start: 'Start at the green dot', startSay: 'Start at the green dot.',
       watch: 'Watch me first!', yourTurn: 'Your turn!',
-      pairs: 'Find the pairs!', pairsText: 'Find the <b>pairs</b>!', pairsCap: 'Match the pairs!',
+      pairs: 'Find the pairs!', pairsText: 'Find the <b>pairs</b>!',
       questions: 'Questions', theEnd: 'The end',
       look: 'Look and listen', lookText: 'Look and <b>listen</b>',
       stepOf: (i, n) => `Step ${i} of ${n}`
@@ -111,7 +114,7 @@
       traceNum: (n) => `Tebalkan angka ${n}.`, traceNumText: (n) => `Tebalkan angka <b>${n}</b>`,
       traceLetter: 'Tebalkan hurufnya', start: 'Mulai dari titik hijau', startSay: 'Mulai dari titik hijau, ya.',
       watch: 'Lihat aku dulu!', yourTurn: 'Sekarang giliranmu!',
-      pairs: 'Cari pasangannya!', pairsText: 'Cari <b>pasangannya</b>!', pairsCap: 'Cocokkan pasangannya!',
+      pairs: 'Cari pasangannya!', pairsText: 'Cari <b>pasangannya</b>!',
       questions: 'Pertanyaan', theEnd: 'Selesai',
       look: 'Lihat dan dengarkan', lookText: 'Lihat dan <b>dengarkan</b>',
       stepOf: (i, n) => `Langkah ${i} dari ${n}`

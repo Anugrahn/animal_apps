@@ -4,6 +4,8 @@
 //   node gen.mjs --engine kokoro [--voice af_heart] [--speed 1]   quicker to make, flatter
 //   node gen.mjs --calm [--dry-run] [--limit 5]   records again, calmly, the lines still too quick
 //                                                 and any line not recorded yet (see calm.json)
+//   node gen.mjs --calm --redo redo.txt           records again, calmly, the lines listed (one a line):
+//                                                 takes qa.py found garbled
 // Chatterbox needs the Python set-up in .venv (see README.md here).
 // Writes voice/<id>.mp3, voice/index.js (line -> file, for the app) and
 // voice/files.js (the list sw.js stores for offline use). Only new lines
@@ -92,6 +94,10 @@ function voiced(line, text, speed, more) {
   fallback[co] = o;
   return Object.assign({ line, text, speed, f: cf, o: co, calm: true }, more);
 }
+// --redo: lines whose take is garbled (qa.py) are made again, calmly
+const REDO = arg('redo', '');
+const redo = new Set(REDO ? fs.readFileSync(REDO, 'utf8').split('\n').map(l => l.trim()).filter(Boolean) : []);
+redo.forEach(l => calm.add(l));
 if (CALM_RUN) {
   // the lines post.py still finds too quick, and the lines with no take yet
   const rates = fs.existsSync(new URL('rates.json', FINAL)) ? JSON.parse(fs.readFileSync(new URL('rates.json', FINAL), 'utf8')) : {};
@@ -122,6 +128,14 @@ for (const [line, kind] of Object.entries(phrases)) {
   }
 }
 jobs.sort((a, b) => a.rank - b.rank);
+if (redo.size && !DRY) {
+  let gone = 0;
+  for (const j of jobs) if (redo.has(j.line)) {
+    for (const u of [new URL(j.f + '.wav', WAVS), new URL(j.o + '.wav', FINAL), new URL(j.o + '.mp3', OUT)]) if (fs.existsSync(u)) { fs.unlinkSync(u); gone++; }
+  }
+  fs.writeFileSync(calmFile, JSON.stringify([...calm].sort(), null, 1));
+  console.log(`redo: ${redo.size} lines, ${gone} old files removed`);
+}
 
 const have = (f) => fs.existsSync(new URL(f + '.mp3', OUT));
 // the clip a line plays now: its own, or the take a calm one replaces until that is made

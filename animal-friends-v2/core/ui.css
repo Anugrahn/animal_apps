@@ -36,7 +36,32 @@
 
   --tap-min: 72px;            /* hit area of any child control */
   --tap-primary: 88px;        /* hit area of the main action */
-  --btn: clamp(48px, 12vmin, 60px);   /* visible size of a round jelly button */
+
+  /* ---------- the fluid scale (v4.2) ----------
+     One set of sizes for every screen, from a 320px phone to a 12.9"
+     tablet and a desktop window. Each step grows with the screen's
+     shorter side (vmin) from a floor a small phone can still hold and a
+     child can still read, up to a ceiling that still looks intended on a
+     big screen. Text and controls everywhere take their size from here;
+     a phone on its side is sized by its height, so nothing outgrows it. */
+  /* Past a 768px shorter side (a 12.9" tablet, a big desktop window) the
+     game keeps growing with the screen instead of stopping at its tablet
+     size and leaving empty space: every ceiling below and in the game
+     pieces is written in --big, which is 100px up to there. */
+  --big: max(100px, 13.021vmin);
+
+  --fs-xs:  clamp(13px, 1vmin + 9.5px, calc(var(--big) * .17));     /* crumbs, captions under pictures, step names */
+  --fs-sm:  clamp(14px, 1.4vmin + 9.5px, calc(var(--big) * .2));    /* pills, tabs, labels on things */
+  --fs-md:  clamp(16px, 2vmin + 9px, calc(var(--big) * .24));       /* the friend's words, buttons with words */
+  --fs-lg:  clamp(19px, 2.8vmin + 9px, calc(var(--big) * .3));      /* a game's caption, card titles, a story's words */
+  --fs-xl:  clamp(22px, 4vmin + 9px, calc(var(--big) * .42));       /* a wooden sign, a card's big word */
+  --fs-2xl: clamp(30px, 6vmin + 10px, calc(var(--big) * .6));       /* page titles, the logo */
+  --fs-3xl: clamp(38px, 8vmin + 12px, calc(var(--big) * .76));      /* Well done!, Hooray! */
+
+  --gutter: clamp(12px, 1.4vmin + 8px, 28px);    /* the edge of every screen (the safe area wins if bigger) */
+  --btn: clamp(56px, 5vmin + 38px, 68px);        /* visible size of a round jelly button: about 1.5 cm on a phone */
+  --btn-sm: calc(var(--btn) * .84);              /* the "?" beside the cog */
+  --face: clamp(50px, 4vmin + 34px, 64px);       /* the friend's face in the frame */
 
   --radius-pill: 999px;
   --radius-card: 28px;
@@ -105,7 +130,9 @@ body[data-scene="maker"] .sc-hills, body[data-scene="maker"] .sc-tree { filter: 
 body[data-scene="maker"] .bub { background: radial-gradient(circle, rgba(255,236,150,.75), rgba(255,236,150,0) 70%); box-shadow: none; }
 body[data-scene="maker"] .fly { display: none; }
 
-.scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background: #8FD0F2 center / cover no-repeat; transition: filter .5s; }
+/* (the blur behind the island and the map switches at once, under the new
+   screen growing in: animating a full-screen blur stuttered on tablets) */
+.scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background: #8FD0F2 center / cover no-repeat; }
 /* The painted backgrounds (art/, made from interface/DESIGN_PROMPTS.md).
    One per place; the drawn hills underneath stay only as a fallback. */
 .scenery { background-image: url(../art/bg-meadow.jpg); }
@@ -155,10 +182,10 @@ body.still .bub { bottom: var(--rest, 30vh); }
 .screen {
   position: fixed; inset: 0; z-index: 1; display: none; flex-direction: column;
   padding:
-    max(14px, env(safe-area-inset-top))
-    max(14px, env(safe-area-inset-right))
-    max(14px, env(safe-area-inset-bottom))
-    max(14px, env(safe-area-inset-left));
+    max(var(--gutter), env(safe-area-inset-top))
+    max(var(--gutter), env(safe-area-inset-right))
+    max(var(--gutter), env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
 }
 .screen.active { display: flex; animation: screen-in .35s ease-out; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
@@ -251,8 +278,8 @@ svg.ic .a { fill: var(--ia, #fff); }
     0 .2em 0 rgba(20,70,150,.35);
 }
 .bar-mid { flex: 1; min-width: 0; text-align: center; padding: 0 4px; }
-.bar-title { font-size: clamp(20px, 5.4vmin, 36px); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .12em .1em .22em; }
-.bar-note { font-size: clamp(11px, 2.7vmin, 15px); font-weight: 700; color: #fff; display: block; margin-top: -.3em; text-shadow: 0 1px 0 rgba(20,60,120,.7), 0 0 8px rgba(20,60,120,.5); }
+.bar-title { font-size: var(--fs-xl); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .12em .1em .22em; }
+.bar-note { font-size: var(--fs-xs); font-weight: 700; color: #fff; display: block; margin-top: -.3em; text-shadow: 0 1px 0 rgba(20,60,120,.7), 0 0 8px rgba(20,60,120,.5); }
 body[data-area="literacy"] .bar-title { --ol: #D9701A; }
 body[data-area="stem"] .bar-title     { --ol: #1E8FA0; }
 body[data-area="life"] .bar-title     { --ol: #D8436A; }
@@ -261,7 +288,7 @@ body[data-area="life"] .bar-title     { --ol: #D8436A; }
 .starcount {
   display: inline-flex; align-items: center; gap: .35em; flex: none;
   background: linear-gradient(#62AEF5, #3B86E0); color: #fff; border-radius: 999px;
-  padding: .22em .85em .26em .3em; font-weight: 700; font-size: clamp(14px, 3.4vmin, 21px);
+  padding: .22em .85em .26em .3em; font-weight: 700; font-size: var(--fs-sm);
   box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #2A63B8; text-shadow: 0 1px 0 #2A63B8;
 }
 .starcount.streak { background: linear-gradient(#FFA954, #F07E2A); box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #C25A12; text-shadow: 0 1px 0 #C25A12; padding-left: .5em; }
@@ -276,7 +303,7 @@ body[data-area="life"] .bar-title     { --ol: #D8436A; }
 /* ---------- speech bubble ---------- */
 .speech {
   position: relative; background: #fff; border-radius: 22px; padding: .5em .9em;
-  font-size: clamp(15px, 3.6vmin, 24px); font-weight: 600; line-height: 1.25;
+  font-size: var(--fs-md); font-weight: 600; line-height: 1.25;
   box-shadow: 0 5px 0 var(--white-edge); text-align: left; text-wrap: pretty;
   animation: pop-in .4s cubic-bezier(.3,1.5,.5,1) both;
 }
@@ -291,7 +318,8 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 /* ---------- sheets ---------- */
 .sheet {
   position: fixed; inset: 0; z-index: 12; display: grid; place-items: center;
-  padding: 18px; background: rgba(12,62,66,.6); animation: screen-in .22s ease-out;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  background: rgba(12,62,66,.6); animation: screen-in .22s ease-out;
 }
 #gate { z-index: 14; }
 .sheet-card {
@@ -300,15 +328,15 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
   padding: 22px 20px 24px; text-align: center;
   animation: pop-in .38s cubic-bezier(.3,1.5,.5,1);
 }
-.sheet-card h2 { font-size: clamp(21px, 5.5vmin, 30px); margin-bottom: 4px; }
-.sheet-sub { font-size: clamp(15px, 3.6vmin, 18px); color: var(--ink-soft); margin: 4px 0 14px; }
-.sheet-foot { font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; }
-.sheet-close { position: absolute; top: 10px; right: 10px; width: 40px; z-index: 2; }
+.sheet-card h2 { font-size: var(--fs-lg); margin-bottom: 4px; }
+.sheet-sub { font-size: var(--fs-sm); color: var(--ink-soft); margin: 4px 0 14px; }
+.sheet-foot { font-size: var(--fs-xs); color: var(--ink-soft); margin-top: 14px; }
+.sheet-close { position: absolute; top: 10px; right: 10px; width: 44px; z-index: 2; }
 
 .btn {
   min-height: 54px; padding: 0 24px; border-radius: 999px;
   background: #E6F6F1; box-shadow: 0 5px 0 var(--white-edge);
-  font-size: clamp(16px, 4vmin, 20px); font-weight: 700;
+  font-size: var(--fs-md); font-weight: 700;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   transition: transform .1s, box-shadow .1s;
 }
@@ -343,13 +371,13 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 .party.is-on { display: grid; }
 .party-char { width: min(46vmin, 250px); margin: 0 auto; }
 .party-text {
-  font-size: clamp(38px, 11vmin, 92px); font-weight: 700; color: #FFC93C;
+  font-size: var(--fs-3xl); font-weight: 700; color: #FFC93C;
   text-shadow: 0 .05em 0 #fff, .05em 0 0 #fff, -.05em 0 0 #fff, 0 -.05em 0 #fff, 0 .13em 0 var(--violet-deep);
   animation: pop-in .5s cubic-bezier(.3,1.6,.5,1) .2s both;
 }
-.party-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.4); font-size: clamp(15px, 3.6vmin, 22px); font-weight: 600; margin-top: 6px; }
+.party-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.4); font-size: var(--fs-sm); font-weight: 600; margin-top: 6px; }
 
-.empty { color: #fff; text-align: center; margin: auto; font-size: 20px; }
+.empty { color: #fff; text-align: center; margin: auto; font-size: var(--fs-md); }
 
 /* ---------- keyframes ---------- */
 @keyframes screen-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
@@ -411,7 +439,7 @@ body.still .mk-done { animation: none; }
 .pill {
   display: inline-flex; align-items: center; gap: .3em; white-space: nowrap;
   padding: .16em .7em .2em .35em; border-radius: var(--radius-pill);
-  font-weight: 700; font-size: clamp(14px, 3.6vmin, 20px); line-height: 1.2; color: #fff;
+  font-weight: 700; font-size: var(--fs-sm); line-height: 1.2; color: #fff;
   background: linear-gradient(#2F6CC9, var(--navy)); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), 0 3px 0 rgba(10,30,70,.35);
 }
 .pill > i { width: 1.25em; height: 1.25em; display: inline-grid; flex: none; }
@@ -423,11 +451,11 @@ body.still .mk-done { animation: none; }
 /* the friend's face and counters sit together on a white card */
 .hud-right { padding: 5px 8px 5px 5px; border-radius: 22px; background: rgba(255,255,255,.88); box-shadow: 0 4px 0 rgba(30,70,120,.18), var(--shadow-soft); }
 .hud-pills { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
-.hud-pills .pill { justify-content: flex-start; font-size: clamp(13px, 3.3vmin, 18px); }
+.hud-pills .pill { justify-content: flex-start; font-size: var(--fs-sm); }
 
 /* the friend's face in a round frame */
 .me-face {
-  width: clamp(44px, 11vmin, 58px); aspect-ratio: 1; border-radius: 50%; position: relative; flex: none;
+  width: var(--face); aspect-ratio: 1; border-radius: 50%; position: relative; flex: none;
   background: radial-gradient(circle at 40% 30%, #FFFDF6, #CFEFC5);
   box-shadow: 0 0 0 3px #fff, 0 4px 10px rgba(10,52,58,.25);
 }
@@ -443,7 +471,7 @@ body.still .mk-done { animation: none; }
 .sign {
   position: relative; margin: 0 14px; max-width: calc(100% - 28px); white-space: nowrap;
   padding: .14em .95em .22em; border-radius: .42em;
-  font-size: clamp(24px, 6.6vmin, 44px); font-weight: 700; line-height: 1.12; color: #FFD84A;
+  font-size: var(--fs-xl); font-weight: 700; line-height: 1.12; color: #FFD84A;
   -webkit-text-stroke: .16em #6A3A16; paint-order: stroke; text-shadow: 0 .07em 0 #4A2408;
   background:
     radial-gradient(circle at .5em .55em, #8A5A2E 0 .09em, #D9B27C .1em .14em, transparent .15em),
@@ -461,7 +489,7 @@ body.still .mk-done { animation: none; }
 .sign::after { right: -.5em; rotate: -20deg; }
 
 /* the title: "Animal" over "Friends" on the sign */
-.logo.sign { display: flex; flex-direction: column; align-items: center; padding: .1em .55em .14em; line-height: .9; font-size: clamp(34px, 9.6vmin, 64px); -webkit-text-stroke: 0; text-shadow: none; }
+.logo.sign { display: flex; flex-direction: column; align-items: center; padding: .1em .55em .14em; line-height: .9; font-size: var(--fs-2xl); -webkit-text-stroke: 0; text-shadow: none; }
 .logo span { position: relative; display: block; color: #5A2E0E; -webkit-text-stroke: .17em #5A2E0E; paint-order: stroke; filter: drop-shadow(0 .05em 0 rgba(40,20,5,.5)); }
 .logo span::after {
   content: attr(data-t); position: absolute; left: 0; top: 0; -webkit-text-stroke: 0;
@@ -470,7 +498,7 @@ body.still .mk-done { animation: none; }
 .logo span + span::after { background-image: linear-gradient(#C8F27A, #7FD64A 55%, #4DB43A); }
 
 .crumb {
-  padding: .1em .9em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: clamp(12px, 3.1vmin, 16px);
+  padding: .1em .9em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: var(--fs-xs);
   color: var(--ink-brown); background: var(--cream); box-shadow: 0 2px 0 var(--cream-edge);
 }
 
@@ -502,22 +530,22 @@ body.still .mk-done { animation: none; }
 /* ---------- big round action (result, journey) ---------- */
 .big-round {
   --h: var(--go);
-  position: relative; display: grid; place-items: center; width: clamp(64px, 17vmin, 92px); aspect-ratio: 1; border-radius: 50%; color: #fff;
+  position: relative; display: grid; place-items: center; width: clamp(64px, 9vmin + 34px, calc(var(--big) * .96)); aspect-ratio: 1; border-radius: 50%; color: #fff;
   background: radial-gradient(120% 100% at 30% 14%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 60%);
   box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), inset 0 -6px 0 color-mix(in srgb, var(--h) 70%, #0B2A3A), 0 6px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A), 0 12px 20px rgba(10,40,60,.25);
 }
 .big-round > svg.ic { width: 52%; height: 52%; filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
 .big-round:active { transform: scale(.9); }
 
-/* ---------- blue pill button (Next) ---------- */
+/* ---------- green pill button (Next): green always means "go on" ---------- */
 .pill-go {
   display: inline-flex; align-items: center; justify-content: center; gap: .4em; min-height: var(--tap-min); min-width: min(320px, 80vw);
-  padding: 0 1.4em; border-radius: var(--radius-pill); color: #fff; font-weight: 700; font-size: clamp(20px, 5vmin, 28px);
-  background: linear-gradient(#5AA8FF, var(--nav)); box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 0 6px 0 var(--nav-dark), 0 12px 18px rgba(20,60,140,.25);
-  text-shadow: 0 2px 0 var(--nav-dark);
+  padding: 0 1.4em; border-radius: var(--radius-pill); color: #fff; font-weight: 700; font-size: var(--fs-lg);
+  background: linear-gradient(#6EDB8C, var(--go)); box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 0 6px 0 var(--go-dark), 0 12px 18px rgba(20,110,60,.25);
+  text-shadow: 0 2px 0 var(--go-dark);
 }
 .pill-go i { width: 1em; height: 1em; display: inline-grid; } .pill-go i svg { width: 100%; height: 100%; }
-.pill-go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--nav-dark); }
+.pill-go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--go-dark); }
 
 /* ---------- toggle switch (grown-ups) ---------- */
 .toggle { position: relative; flex: none; width: 58px; height: 34px; border-radius: var(--radius-pill); background: #CBD3DC; box-shadow: inset 0 2px 4px rgba(0,0,0,.15); transition: background var(--dur-medium); margin-left: auto; }
@@ -530,8 +558,8 @@ body.still .mk-done { animation: none; }
 .tabs { display: inline-flex; gap: var(--space-2); }
 .tab {
   --h: #3CC46A;
-  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 56px; min-width: clamp(92px, 27vmin, 140px);
-  padding: 4px 12px 6px; border-radius: 20px; color: #fff; font-weight: 700; font-size: clamp(13px, 3.4vmin, 18px); line-height: 1.1; white-space: nowrap;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: var(--btn); min-width: clamp(92px, 27vmin, 140px);
+  padding: 4px 12px 6px; border-radius: 20px; color: #fff; font-weight: 700; font-size: var(--fs-sm); line-height: 1.1; white-space: nowrap;
   background: linear-gradient(color-mix(in srgb, var(--h) 70%, #fff), var(--h));
   box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A);
   text-shadow: 0 1px 0 color-mix(in srgb, var(--h) 55%, #0B2A3A);
@@ -557,10 +585,12 @@ body[data-screen="game"] .sc-cloud { animation-play-state: paused; }
    ============================================================ */
 .painted { background: none !important; box-shadow: none !important; }
 .painted::before { display: none !important; }
-.painted > img.pic, .painted > svg.pic { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(20,40,60,.22)); }
+.painted > img.pic { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(20,40,60,.22)); }
 .round-btn.painted, .pad.painted, .pad-hint.painted, .big-round.painted { border-radius: 50%; }
 .jelly.painted { border-radius: 0; overflow: visible; }
 .jelly.painted > img.pic { width: 118%; height: 118%; margin: -9%; filter: drop-shadow(0 4px 3px rgba(20,40,60,.25)); }
+/* (the Bahasa flag fills its whole painting, the others have room round them: so it stands a little smaller) */
+.jelly.painted[data-n="bahasa"] > img.pic { width: 100%; height: 100%; margin: 0; }
 /* small painted stars and locks in counters and rows */
 .pill > i.painted > img.pic, .stars-row i.painted > img.pic, .tab-stars i.painted > img.pic { filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
 .stars-row i:not(.on) > img.pic, .result-stars i:not(.on) > img.pic, .pop-need i:not(.on) > img.pic { filter: grayscale(1) brightness(1.6) opacity(.55); }
@@ -589,3 +619,22 @@ img.stump::before { display: none; }
 
 /* painted chests and houses wherever they stand */
 .chest-art, .house-art, .isl-art { display: block; width: 100%; height: auto; }
+
+/* ---------- the "turn me sideways" tip (core/fit.js) ----------
+   Only on a tablet held upright that could not be turned for it, only
+   on Home, for a few seconds, over the title (the one thing at the top
+   that is not a button). Never in the way: small, one line, and a tap
+   puts it away for good. */
+.fit-hint {
+  position: fixed; z-index: 11; left: 50%; top: calc(max(var(--gutter), env(safe-area-inset-top)) + var(--space-2));
+  display: flex; align-items: center; gap: var(--space-2); width: max-content;
+  max-width: min(300px, 100vw - 2 * (var(--gutter) + 140px));   /* (clear of the cog and the friend's card) */
+  padding: 6px 6px 6px 12px; border-radius: var(--radius-pill);
+  background: rgba(255,251,241,.94); box-shadow: 0 4px 0 var(--cream-edge), var(--shadow-soft);
+  color: var(--ink-brown); font-size: var(--fs-sm); font-weight: 700; line-height: 1.2; cursor: pointer;
+  opacity: 0; translate: -50% -12px; pointer-events: none; transition: opacity var(--dur-medium), translate var(--dur-medium) var(--spring);
+}
+.fit-hint.on { opacity: 1; translate: -50% 0; pointer-events: auto; }
+.fit-hint-ic { flex: none; width: 1.9em; height: 1.9em; color: var(--nav); fill: var(--nav); }
+.fit-hint-ic .a { fill: color-mix(in srgb, var(--nav) 35%, #fff); }
+.fit-hint-x { flex: none; width: 2em; height: 2em; border-radius: 50%; background: var(--cream-2); color: var(--ink-brown); font-size: 1.1em; line-height: 1; }

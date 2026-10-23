@@ -83,7 +83,7 @@
       el.className = 'step-card';
       el.setAttribute('aria-label', list[at].name);
       el.innerHTML = `
-        ${at === 0 ? `<b class="step-title">${U.esc(lv.title)}</b>` : `<span class="step-of">${U.esc(E.t(S, 'stepOf', at + 1, list.length))}</span>`}
+        <b class="step-title">${U.esc(lv.title)}</b>
         <span class="step-road">${list.map((s, k) => `
           <span class="step-chip${k < at ? ' done' : k === at ? ' now' : ''}" style="--i:${k}">
             <img src="art/${s.pic}.webp" alt="" draggable="false"><i>${U.esc(s.name)}</i>

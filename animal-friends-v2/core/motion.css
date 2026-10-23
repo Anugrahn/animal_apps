@@ -79,7 +79,8 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
 
 /* ---------- picking things up ---------- */
 .draggable { touch-action: none; cursor: grab; transition: transform .45s var(--spring); }
-.dragging { position: relative; z-index: 30; cursor: grabbing; filter: drop-shadow(0 16px 14px rgba(10,40,50,.28)); }
+/* (its own layer while it is carried: the shadow is drawn once, not on every move of the finger) */
+.dragging { position: relative; z-index: 30; cursor: grabbing; filter: drop-shadow(0 16px 14px rgba(10,40,50,.28)); will-change: transform; }
 .flying { position: relative; z-index: 30; pointer-events: none; }
 .opt.dragging, .opt.flying { animation: none; }
 
@@ -89,6 +90,8 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
   border: 3px solid rgba(255,255,255,.95); box-shadow: 0 0 10px rgba(255,255,255,.7);
   animation: ripple .5s ease-out forwards;
 }
+/* The ring thins as it grows. (Scaling alone made its edge grow from 3 to
+   13px, a heavy blot; thinning one small floating ring costs next to nothing.) */
 @keyframes ripple { to { transform: scale(4.5); opacity: 0; border-width: 1px; } }
 .puff {
   position: absolute; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
@@ -105,3 +108,23 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
     transition: none !important;               /* (not a 1 ms one: every change would then lag a frame) */
   }
 }
+
+/* ---------- v4.2: smooth on a cheap tablet too ----------
+   Only transform and opacity animate; anything that would have to be
+   laid out or repainted on every frame is drawn once and faded instead. */
+/* the bubbles in the pop game each get their own layer, so rising costs nothing */
+.pop-b { will-change: translate, transform; }
+/* the maker's Done glows by fading a ready-drawn halo, not by repainting a big shadow */
+.mk-done { animation: none; }
+/* (it starts outside the dark 3px ring, so the glow never paints over it) */
+.mk-done::after {
+  content: ""; position: absolute; inset: -3px; border-radius: 31px; pointer-events: none;
+  box-shadow: 0 0 38px 8px rgba(255,236,160,1); opacity: 0; animation: halo 1.8s ease-in-out infinite;
+}
+@keyframes halo { 50% { opacity: 1; } }
+body.still .mk-done::after { animation: none; opacity: .5; }
+/* behind a full-screen sheet (result, how to play, grown-ups) the screen is
+   blurred, so its idle movement stops: otherwise the blur is redrawn every frame */
+body:has(> .sheet.full:not([hidden])) .screen.active *,
+body:has(> .sheet.full:not([hidden])) .scenery *,
+body:has(> .party.is-on) .screen.active * { animation-play-state: paused !important; }

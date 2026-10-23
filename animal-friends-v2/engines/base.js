@@ -4,7 +4,9 @@
    v1 had one module with its own game code. v2 splits that in two:
 
      ENGINES  know HOW to play   (choose, order, build, memory,
-                                  maze, speak, story, song, breathe)
+                                  maze, speak, story, song, breathe,
+                                  and lesson / intro: a lesson is a
+                                  few of the others in a row)
      CONTENT  knows WHAT to teach (content/*.js — plain data)
 
    A level is data: { id, title, icon, type: 'choose', ...config }.
@@ -23,12 +25,16 @@
 
   let session = null;
 
-  /* The four areas of the curriculum, in home-screen order. */
+  /* The four areas of the curriculum, in home-screen order.
+     Since v4 the curriculum follows Danbi Education's Wink: four core
+     subjects taught as short lessons (Phonics, English and Bahasa
+     Indonesia on ABC Island, Math on STEM Island), and the "Fun & Joy"
+     extras (habits, feelings, science, games, stories, songs). */
   AF.AREAS = [
-    { id: 'literacy', title: 'Words & Letters',   island: 'ABC Island',   colour: '#F28A2E', glyph: 'literacy', icon: '📚' },
-    { id: 'stem',     title: 'Numbers & Science', island: 'STEM Island',  colour: '#F2B618', glyph: 'stem',     icon: '🔬' },
-    { id: 'life',     title: 'Me & My World',     island: 'Heart Island', colour: '#E5535A', glyph: 'life',     icon: '💛' },
-    { id: 'play',     title: 'Play Time',         island: 'Play Island',  colour: '#3E9BF0', glyph: 'playtime', icon: '🎈' }
+    { id: 'literacy', title: 'Phonics, English & Bahasa', island: 'ABC Island',   colour: '#F28A2E', glyph: 'literacy', icon: '📚' },
+    { id: 'stem',     title: 'Math & Discover',           island: 'STEM Island',  colour: '#F2B618', glyph: 'stem',     icon: '🔬' },
+    { id: 'life',     title: 'Good Habits & Feelings',    island: 'Heart Island', colour: '#E5535A', glyph: 'life',     icon: '💛' },
+    { id: 'play',     title: 'Games, Stories & Songs',    island: 'Play Island',  colour: '#3E9BF0', glyph: 'playtime', icon: '🎈' }
   ];
 
   /** Modules call this to join the home screen. */
@@ -41,12 +47,14 @@
     return mod;
   };
 
-  /* Every subject has three stages. Content files write
-       levels: AF.tiers([basic...], [intermediate...], [advanced...])
+  /* Every subject has stages. Content files write
+       levels: AF.tiers([stage 1...], [stage 2...], ...)
      and get back one flat list with a `tier` on each level, so
      saved stars, the daily picks and the progress screen all keep
-     working on a plain list. */
+     working on a plain list. A subject names its own stages
+     (`stages: ['Step 1', ...]`); the rest use these three. */
   AF.TIERS = ['Basic', 'Intermediate', 'Advanced'];
+  AF.stageNames = (mod) => mod.stages || AF.TIERS;
   AF.tiers = function () {
     const out = [];
     Array.prototype.forEach.call(arguments, (list, t) => list.forEach(lv => { lv.tier = t; out.push(lv); }));
@@ -80,13 +88,74 @@
     a(word) { return (/^[aeiou]/i.test(word) ? 'an ' : 'a ') + word; }
   };
 
+  /* ---------- the words the games say themselves ----------
+     Content brings its own questions in its own language. These are
+     the few lines an engine says on its own ("Find the pairs!"), in
+     English and in Bahasa Indonesia; a level with lang: 'id' gets the
+     Indonesian ones. */
+  AF.STR = {
+    en: {
+      build: (w) => `Build the word, ${w}.`, buildText: (w) => `Build the word <b>${U.esc(w)}</b>`,
+      write: (w) => `Write the word, ${w}.`, writeText: (w) => `Write <b>${U.esc(w)}</b>`,
+      traceNum: (n) => `Trace number ${AF.NUM[n] || n}.`, traceNumText: (n) => `Trace number <b>${n}</b>`,
+      traceLetter: 'Trace the letter that says', start: 'Start at the green dot',
+      pairs: 'Find the pairs!', pairsText: 'Find the <b>pairs</b>!', pairsCap: 'Match the pairs!',
+      questions: 'Questions', theEnd: 'The end',
+      look: 'Look and listen', lookText: 'Look and <b>listen</b>',
+      stepOf: (i, n) => `Step ${i} of ${n}`
+    },
+    id: {
+      build: (w) => `Susun kata, ${w}.`, buildText: (w) => `Susun kata <b>${U.esc(w)}</b>`,
+      write: (w) => `Tebalkan, ${w}.`, writeText: (w) => `Tebalkan <b>${U.esc(w)}</b>`,
+      traceNum: (n) => `Tebalkan angka ${n}.`, traceNumText: (n) => `Tebalkan angka <b>${n}</b>`,
+      traceLetter: 'Tebalkan hurufnya', start: 'Mulai dari titik hijau',
+      pairs: 'Cari pasangannya!', pairsText: 'Cari <b>pasangannya</b>!', pairsCap: 'Cocokkan pasangannya!',
+      questions: 'Pertanyaan', theEnd: 'Selesai',
+      look: 'Lihat dan dengarkan', lookText: 'Lihat dan <b>dengarkan</b>',
+      stepOf: (i, n) => `Langkah ${i} dari ${n}`
+    }
+  };
+  /** A line in the level's language: E.t(S, 'build', 'cat'). */
+  AF.Engines.t = function (S, key) {
+    const lang = (S && S.level && S.level.lang) || 'en';
+    const v = (AF.STR[lang] && AF.STR[lang][key]) != null ? AF.STR[lang][key] : AF.STR.en[key];
+    return typeof v === 'function' ? v.apply(null, Array.prototype.slice.call(arguments, 2)) : v;
+  };
+
   /* ---------- running a level ---------- */
 
   AF.Engines.run = function (host, level, api) {
     AF.Engines.stop();
-    const engine = AF.Engines[level.type];
+    session = makeSession(host, level, api);
+    start(session);
+  };
+
+  function start(S) {
+    const engine = AF.Engines[S.level.type];
+    if (!engine) {
+      S.host.innerHTML = '<p class="empty">This game is not ready yet.</p>';
+      return;
+    }
+    engine(S);
+  }
+
+  /**
+   * A game inside a game: one step of a lesson. It gets its own timers
+   * and listeners, which all die when the step ends (or the lesson is
+   * left), and reports back through onFinish(mistakes, avgMs) instead of
+   * ending the level.
+   */
+  AF.Engines.child = function (S, level, onFinish) {
+    const api = Object.assign({}, S.api, { finish: onFinish });
+    const C = makeSession(S.host, level, api);
+    S.cleanup.push(() => C.end());
+    start(C);
+    return C;
+  };
+
+  function makeSession(host, level, api) {
     const timers = [];
-    const S = session = {
+    const S = {
       host: host, level: level, api: api, alive: true,
       mistakes: 0, round: 0, times: [], t0: 0,
       cleanup: [],
@@ -123,18 +192,14 @@
         api.finish(S.mistakes, avg);
       },
       end() {
+        if (!S.alive) return;
         S.alive = false;
         timers.forEach(clearTimeout);
         S.cleanup.forEach(fn => { try { fn(); } catch (e) {} });
       }
     };
-
-    if (!engine) {
-      host.innerHTML = '<p class="empty">This game is not ready yet.</p>';
-      return;
-    }
-    engine(S);
-  };
+    return S;
+  }
 
   AF.Engines.stop = function () {
     if (session) { session.end(); session = null; }
@@ -167,6 +232,9 @@
       d.hidden = !dots;
       d.innerHTML = dots;
       S.host.querySelectorAll('.stage').forEach(el => el.remove());
+      // (a lesson's next step reuses the frame: it now answers to that step)
+      S.charEl = top.querySelector('[data-char]');
+      top.querySelector('[data-replay]').onclick = () => { AF.Audio.SFX.tap(); if (S.replay) S.replay(); };
     } else {
       S.host.innerHTML = `
         <div class="play-top">

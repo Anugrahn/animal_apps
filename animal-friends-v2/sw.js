@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v3.5.9';
+const VERSION = 'af-v4.0.0';
 
 const FILES = [
   './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
@@ -101,8 +101,8 @@ const FILES = [
   'art/world/signpost.webp', 'art/world/stump.webp', 'art/world/tree.webp',
   'core/ui.css', 'core/screens.css', 'engines/engines.css', 'core/motion.css',
   'core/icons.js', 'core/world.js', 'core/art.js', 'core/profile.js', 'core/ui.js', 'core/audio.js', 'core/speech.js', 'core/fx.js', 'core/levels.js', 'core/app.js',
-  'engines/base.js', 'engines/drag.js', 'engines/quiz.js', 'engines/maze.js', 'engines/touch.js', 'engines/code.js', 'engines/voice.js', 'engines/media.js',
-  'content/bank.js', 'content/literacy.js', 'content/stem.js', 'content/life.js', 'content/play.js'
+  'engines/base.js', 'engines/drag.js', 'engines/quiz.js', 'engines/maze.js', 'engines/touch.js', 'engines/code.js', 'engines/voice.js', 'engines/media.js', 'engines/lesson.js',
+  'content/bank.js', 'content/phonics.js', 'content/english.js', 'content/bahasa.js', 'content/math.js', 'content/stem.js', 'content/life.js', 'content/play.js'
 ];
 
 /* The recorded voice (made by tools/voice): voice/files.js lists the

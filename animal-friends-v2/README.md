@@ -1,5 +1,10 @@
 # Animal Friends — v2 first look
 
+**v4 (October 2026): the curriculum is now modelled on Danbi Education's Wink**
+(Phonics, English, Bahasa Indonesia and Math as short daily lessons). See
+[The curriculum (v4)](#the-curriculum-v4-modelled-on-wink). The rest of this
+file describes how the app grew to here.
+
 v1 proved the plumbing with one game. v2 turns it into a small learning
 platform shaped like `lingokids_content_architecture.md`: real 3D characters the
 child designs, 14 subjects, 192 playable levels in three stages (Basic,
@@ -41,38 +46,74 @@ levels 1–5 carry over.
 
 ---
 
-## Three stages per subject
+## The curriculum (v4): modelled on Wink
 
-Every subject's levels are split into **Basic**, **Intermediate** and
-**Advanced**. Each stage has its own island map and its own treasure chest; the
-chest at the end of one stage opens the next. Three pills above the map switch
-between stages.
+Since v4 (October 2026) the curriculum is modelled on the one Danbi Education
+describes for **Wink**, its Korean home-learning programme for ages 3–9 (sold
+in Indonesia since 2024). Animal Friends is not affiliated with Wink; nothing of
+Wink's is used, only the public outline of its curriculum (sources at the end).
 
-| Subject | Basic | Intermediate | Advanced |
-|---|---|---|---|
-| Letters (23) | s a t p i n: hear, trace, pop | first sounds, m d g o c k, build 3-letter words, letter-and-picture match | e u r h b f l, blending, rhymes, sight words, 4-letter words, write a word |
-| My Words (20) | animals, food, colours, body, shadows | vehicles, home, outside, clothes, toys, animal-or-food sort | reading, opposites, odd one out, jobs |
-| Say It! (12) | animals, food, colours | numbers, body, vehicles, home, kind words | feelings, long words, sentences, questions |
-| Stories (6) | 2 short stories | 2 medium | 2 long, up to 9 pages and 5 questions |
-| Numbers (23) | to 5: count, trace, match, pop | to 10, more/fewer, order, before/after, add and take away to 5 | sums to 10, missing number, bigger number, counting in 2s, 5s and 10s |
-| Shapes (17) | 4 shapes, lines, size, AB patterns | 8 shapes, shape hunt, colour sort, ABB/ABC | sides, long patterns, ordering by size, pentagon and hexagon |
-| Discover (15) | animal homes, senses, food chains, living or not, day or night | life cycles, weather, float/sink, hot/cold | space, hard/soft, seasons, water cycle, what plants need |
-| Coding (15) | straight lines, one turn, with footprints | rocks to walk round, stars to collect | 5×5 and 6×5 boards, three stars, 16-step plans |
-| Feelings (12) | faces, breathing | reading situations, kind choices, kind/unkind sort | bigger feelings, what helps, being a good friend |
-| Healthy Me (9) | washing, brushing, everyday food | the day, tidying up, staying safe | sneezes and germs, food groups, healthy body |
-| Our Planet (9) | recycling, help or hurt | wild homes, growing a garden, saving water and power | four bins, reusing things, what living things need |
-| Maze (13) | 4×4 to 5×5, Forest | 6×6 to 7×7, letters and counting in order, Beach | 8×8 to 9×9, spelling a word in order, Snow and Night |
-| Memory (12) | 3 to 5 pairs, with a first look | 6 pairs; word, number and sound pairs | 8 and 10 pairs; rhyme and opposite pairs |
-| Songs (6) | ABC, Tidy up | Count to ten, Wash your hands | Rainbow song, Days of the week |
+**Four core subjects**, taught as short lessons. Every lesson walks the same
+road, Wink's "concept → practice → problem-solving → review", in about five
+minutes, and every stage ends with a **Review** lesson before its treasure chest.
 
-Later stages also run longer: about 5–6 questions per level in Basic, 7–8 in
-Intermediate, 8–10 in Advanced.
+| Island | Subject | Stages (tabs) | Lessons | Each lesson |
+|---|---|---|---|---|
+| ABC | **Phonics** (`phonics`) | Step 1 letter sounds a–z · Step 2 short and long vowels · Step 3 blends and digraphs · Step 4 silent letters and tricky words | 28 | Listen → Trace → Play → Quiz |
+| ABC | **English** (`english`) | Stage 1 hello, colours, animals · Stage 2 food, body, my day · Stage 3 my world · Stage 4 reading and grammar | 21 | Story → Words → Say it → Quiz |
+| ABC | **Bahasa Indonesia** (`bahasa`) | Tahap 1 huruf a–z · Tahap 2 suku kata · Tahap 3 suku kata lanjutan (ng, ny, ai, au…) · Tahap 4 membaca kalimat | 26 | Kenal → Tebalkan → Kuasai |
+| STEM | **Math** (`math`) | Level 1 first ideas (3–4) · Level 2 ready for school (4–5) · Level 3 sums with numbers (5–6) · Level 4 solving problems (6–7) · Level 5 bigger sums (7+) | 46 | Story → Real life → Play → Quiz |
 
-A level unlocks when the one before it has any star, so the stages open in
-order. **Open every level** in the grown-up area removes the locks, for an older
-child who should start further on.
+Math levels each cover the same **six areas**, further each time: numbers,
+calculation, shapes and space, measuring and time, patterns, sorting and data
+(Danbi does not name its six; these are the areas of the Korean primary
+curriculum, with number and calculation apart). Each lesson is tagged with its
+area (`topic`), so the grown-up report can show which areas are sure and which
+need practice. Phonics, English and Bahasa are tagged the same way.
 
----
+**Fun & Joy extras** (Wink's bonus corner: habits, stories, animals), kept from
+v3 with their stars: Discover and Coding (STEM Island), Feelings, Healthy Me
+and Our Planet (Heart Island), Maze, Memory, Songs and Story Time (Play Island;
+Story Time moved here from ABC Island). These keep Basic / Intermediate /
+Advanced and one game per level.
+
+**Today's Study** (was the Daily Journey) plans the day the way Wink does:
+
+- Monday to Friday, two core subjects a day, in turn: Phonics and Math, then
+  English and Bahasa Indonesia.
+- A lesson not finished yesterday comes back first (up to four in all).
+- At the weekend nothing new: two lessons already played come back for review,
+  the least sure first.
+- One Fun & Joy game to finish, from a different area each day.
+
+About 10–15 minutes a day. The grown-up report shows this week's minutes
+against a 15-minute line.
+
+**Retired in v4:** Letters, My Words, Say It!, Numbers and Shapes (their
+content lives on inside the core subjects). A child's stars from them are kept
+in `legacyStars` and still count in the total, so nobody's star count drops;
+their per-level records are kept in `legacy` in the profile.
+
+**Bahasa Indonesia is spoken by the device's own Indonesian voice**, not the
+recorded one (which is English): `lang: 'id'` on the subject sets
+`AF.Audio.setLang('id')` while it plays, and the engines' own lines come from
+`AF.STR.id`. Android has an Indonesian voice in Google's text-to-speech; on a
+Mac it is "Damayanti". The grown-up area shows which one is in use.
+
+### How a lesson is built
+
+`AF.lesson(id, title, steps, { topic, review })` in a content file;
+`engines/lesson.js` runs the steps in order. Each step is an ordinary level of
+any engine with a `step` name (`listen`, `story`, `words`, `life`, `trace`,
+`say`, `play`, `master`, `quiz`, `review`). Each runs as a child session
+(`AF.Engines.child`), so its timers die with it; its mistakes add up, and a
+lesson's stars allow a little more than one game's (0–1 slips: 3 stars, 2–4: 2,
+5+: 1). Between steps a card shows the lesson's road with the next step lit
+up; the same road is drawn small under the game's sign.
+
+A new engine, `intro`, opens most lessons: one big card at a time (a letter,
+a number, a picture, a word), said by the friend; tap it to hear it again,
+the green arrow goes on. Nothing can be got wrong there.
 
 ## How it moves
 
@@ -130,10 +171,11 @@ How each part of `lingokids_content_architecture.md` is covered.
 
 | Curriculum | Module | Levels |
 |---|---|---|
-| Phonetics & pre-reading | **Letters** | Letter sounds in Phase 2 order (s a t p · i n m d · g o c k · e u r · h b f l), tracing, first sounds, blending, building words, rhymes, sight words |
-| Vocabulary acquisition | **My Words** | Animals, food, colours, body, vehicles, home, outside, reading words |
-| Speech practice | **Say It!** | Animals, food, colours, numbers, kind words, body |
-| Pre-numeracy | **Numbers**, **Shapes** | Counting to 10, numerals, more/fewer, ordering, adding, taking away; shapes, size, patterns, real-life shape hunt |
+| Phonetics & pre-reading | **Phonics** (v4) | Letter sounds a–z, short and long vowels, magic e, blends, digraphs, silent letters, tricky words; tracing every letter |
+| Vocabulary acquisition | **English** (v4) | Story-based: greetings, colours, animals, numbers, food, body, routines, feelings, places, jobs, weather, prepositions, plurals |
+| Speech practice | **English** (v4) | A "Say it" step in every English lesson |
+| Pre-numeracy | **Math** (v4) | Five levels × six areas: counting to 100, sums, number bonds, groups and sharing, shapes and solids, halves and quarters, length, time, patterns, graphs and tallies |
+| (Home language) | **Bahasa Indonesia** (v4) | Huruf a–z, suku kata, ng / ny / diftong, membaca kalimat, a Kancil folk tale |
 | Scientific inquiry | **Discover**, **Coding** | Animal homes, senses, living/non-living, life cycles, weather, float or sink, seasons, space; first coding (planning steps in order) |
 | Emotional intelligence | **Feelings** | Naming faces, reading situations, calm breathing, kind choices |
 | Hygiene & routines | **Healthy Me** | Hand washing, tooth brushing, everyday vs sometimes food, morning and bedtime |
@@ -401,7 +443,8 @@ core/
   screens.css   one section per screen
   motion.css    how everything moves: the spring, screen changes, presses, idling
 engines/        HOW to play
-  base.js       registry, stages, session (auto-cancelled timers), shared frame
+  base.js       registry, stages, sessions (auto-cancelled timers, child sessions), shared frame, AF.STR (en / id lines)
+  lesson.js     a lesson's steps in a row · intro cards
   drag.js       pick a thing up and put it somewhere
   quiz.js       choose · order · build · memory
   maze.js       the hedge maze
@@ -410,8 +453,9 @@ engines/        HOW to play
   voice.js   media.js (story · song · breathe)
   engines.css
 content/        WHAT to teach — plain data
-  bank.js       phonics, word bank, question generators, ready-made pairs
-  literacy.js   stem.js   life.js   play.js
+  bank.js       phonics a–z, word bank, question generators, ready-made pairs, AF.lesson
+  phonics.js  english.js  bahasa.js  math.js     the four core subjects (v4)
+  stem.js (Discover, Coding)   life.js (Feelings, Healthy Me, Our Planet)   play.js (Maze, Memory, Songs, Story Time)
 ```
 
 **Rule:** content never contains game code and engines never contain subject
@@ -421,17 +465,31 @@ matter. Engines talk only to `core/`.
 
 ## Adding content
 
-A level is data. To add a vocabulary level:
+A level is data. To add a lesson to a core subject:
 
 ```js
-// content/literacy.js, inside the 'words' module
+// content/english.js, in a stage of the 'english' module
+AF.lesson('en3-5', 'At the zoo', [
+  { step: 'story', type: 'story', pages: [{ art: '{me} 🦁', text: '{name} sees a lion.', bg: '#FFF1CF' }, ...] },
+  { step: 'words', type: 'intro', cards: [{ pic: '🦁', word: 'lion', say: 'A lion. Roar!' }, ...] },
+  { step: 'say', type: 'speak', rounds: 3, words: [{ w: 'lion', e: '🦁' }, ...] },
+  { step: 'quiz', type: 'choose', rounds: 4, gen: AF.Gen.find([{ w: 'lion', e: '🦁' }, ...], 3) }
+], { topic: 'world' })
+```
+
+and to an extra, one game:
+
+```js
 { id: 'w9', title: 'Jobs', icon: '👩‍🚒', type: 'choose', rounds: 6,
   gen: AF.Gen.find([{ w: 'doctor', e: '🧑‍⚕️' }, { w: 'farmer', e: '🧑‍🌾' }, { w: 'cook', e: '🧑‍🍳' }], 3) }
 ```
 
 A whole new subject is one `AF.register({ id, area, title, icon, colour, blurb,
 skill, tip, levels: [...] })` in a content file, plus a `<script>` tag and a
-line in `sw.js`. No screen code changes.
+line in `sw.js`. No screen code changes. A core subject adds `core: <place in
+the daily rotation>`, `stages`, `stageCrumbs` and `topics`; an Indonesian one
+`lang: 'id'`. Check it with `node tools/test/validate.mjs <id>` and
+`node tools/test/play.mjs <id>` (see `tools/test/README.md`).
 
 Level `type` picks the engine. Each engine's header comment documents its
 config. Mark a level `soon: true` to show it locked.
@@ -481,7 +539,7 @@ Deep links jump to any screen:
 
 ```
 index.html?go=home          ?go=maker         ?go=parents      ?go=tutorial
-index.html?go=area:stem     ?go=map:letters   ?go=map:letters:2 (Advanced)   ?go=play:maze:m3
+index.html?go=area:stem     ?go=map:math   ?go=map:math:4 (Level 5)   ?go=play:phonics:ph1-1   ?go=play:maze:m3
            &friend=4  (use the fifth ready-made friend; only before a friend is made)
 ```
 

@@ -13,11 +13,21 @@ Treat `UI_REDESIGN_SPEC.md` as the source of truth for interface presentation an
 
 ## Non-negotiables
 
-- Preserve existing curriculum content.
-- Preserve level IDs and deep-link formats.
+- The curriculum (v4, decided 2026-10-23 by the owner) is modelled on Danbi
+  Education's Wink: four core subjects taught as short lessons (Phonics 4 steps,
+  English 4 stages, Math 5 levels × 6 areas, Bahasa Indonesia 4 tahap), each
+  lesson a fixed road of steps (`engines/lesson.js`), plus the Fun & Joy extras
+  (Discover, Coding, Feelings, Healthy Me, Our Planet, Maze, Memory, Songs,
+  Story Time). Keep that shape; change content inside it.
+- Preserve level IDs and deep-link formats. A lesson's id never changes once
+  shipped (saved stars are keyed by it). Retired subjects' stars live on in
+  `legacyStars` (`core/profile.js`), so a child's total never drops.
 - Preserve star scoring, unlocking, profile migration and saved progress.
   (Decided 2026-10-13: a misheard word never costs a star, and a level that
   already has stars is never locked. Keep both.)
+- Bahasa Indonesia is spoken by the device's Indonesian voice (`lang: 'id'`,
+  `AF.Audio.setLang`); never record it with the English voice, and never give
+  it a speaking (`speak`) step.
 - Preserve the current no-build-step approach.
 - Do not introduce a framework or package dependency.
 - Keep the app functional offline.
@@ -43,8 +53,8 @@ Existing responsibilities should remain separated:
 - `core/ui.css`: design tokens and shared components.
 - `core/screens.css`: screen-specific layout.
 - `core/motion.css`: shared motion language.
-- `engines/*`: gameplay mechanics.
-- `content/*`: curriculum and level data.
+- `engines/*`: gameplay mechanics (`engines/lesson.js` runs a lesson's steps as child sessions).
+- `content/*`: curriculum and level data (`phonics.js`, `english.js`, `math.js`, `bahasa.js` are the core subjects).
 
 Do not move curriculum logic into UI code.
 Do not move screen/navigation logic into content files.
@@ -119,7 +129,9 @@ Replace dashboard-like subject grids with a world/path composition where practic
 
 ### Subject map
 
-- Basic / Intermediate / Advanced stage tabs at top
+- stage tabs at top: Basic / Intermediate / Advanced, or the subject's own
+  stage names (`stages`: Step 1–4, Level 1–5, Tahap 1–4); each stage ends with
+  a Review lesson and its treasure chest
 - one map visible at a time
 - next recommended level is dominant
 - friend stands at next level

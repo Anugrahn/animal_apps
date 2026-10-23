@@ -2,13 +2,19 @@
 
 A learning app for children aged about 3 to 7, built as a single offline web app
 (PWA) that installs on Android phones and desktops. A child designs their own
-animal friend, then plays short learning games across four "islands": letters
-and words, numbers and science, feelings and healthy habits, and play (mazes,
-memory, songs).
+animal friend, then learns across four "islands": Phonics, English and Bahasa
+Indonesia; Math and science; feelings and healthy habits; and play (mazes,
+memory, songs, stories).
 
-The curriculum is shaped by the Lingokids content model
-(`animal-friends-v2/interface/lingokids_content_architecture.md`). All content and art are
-original; Lingokids' characters and licensed content are not used.
+Since v4 (October 2026) the four core subjects — Phonics, English, Math and
+Bahasa Indonesia — are modelled on the curriculum Danbi Education describes
+for its Wink home-learning programme: short daily lessons that each walk from
+a new idea to using it (concept → practice → problem-solving → review), a
+"Today's Study" plan of two subjects a day, and a review at the end of every
+stage. The extras keep the earlier Lingokids-shaped content model
+(`animal-friends-v2/interface/lingokids_content_architecture.md`). All content
+and art are original; nothing of Wink's or Lingokids' is used, and the app is
+not affiliated with either.
 
 - **No build step and no dependencies.** Plain HTML, CSS and JavaScript. Open
   `index.html` or run the bundled launcher.
@@ -25,12 +31,13 @@ project_apps/
 ├── animal-friends-v2/     the current app (all active work happens here)
 │   ├── docs/research/     the research behind decisions (kids-audio.md: the voice)
 │   └── interface/         design references, mock-ups, AI art prompts and raw art sheets
-└── tools/voice/           makes the recorded voice, on this computer
+├── tools/voice/           makes the recorded voice, on this computer
+└── tools/test/            headless checks: content validator, a bot that plays every level, Today's Study, migration
 ```
 
 | Folder | What it is | Start with |
 |---|---|---|
-| [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 14 subjects, 192 levels, 14 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/TUTORIAL.md) |
+| [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 4 core subjects (121 lessons) and 9 extras (97 levels), 16 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/TUTORIAL.md) |
 | [`animal-friends-v2/interface/`](animal-friends-v2/interface/) | Reference images, UI mock-ups, ChatGPT prompts used to make the art, and the original art sheets before they were cut up | see [Design and art pipeline](#design-and-art-pipeline) |
 
 ---
@@ -58,38 +65,47 @@ Full setup steps for grown-ups, including USB port-forwarding to a phone, are in
 
 ```
 index.html?go=home   ?go=maker   ?go=parents   ?go=tutorial
-index.html?go=area:stem   ?go=map:letters   ?go=map:letters:2   ?go=play:maze:m3
+index.html?go=area:stem   ?go=map:math   ?go=map:math:4   ?go=play:phonics:ph1-1   ?go=play:maze:m3
            &friend=4      (start as the fifth ready-made friend, before one is made)
 ```
 
 ---
 
-## The app at a glance (v2)
+## The app at a glance (v4)
 
-**How a child moves through it:** Home World → Island → Subject Map (Basic /
-Intermediate / Advanced) → Game → Result. Alongside that are the Character
+**How a child moves through it:** Home World → Island → Subject Map (stage
+tabs: Step 1–4, Level 1–5, Tahap 1–4, or Basic / Intermediate / Advanced) →
+Lesson or Game → Result. Alongside that are Today's Study, the Character
 Maker, Tutorial, Grown-up Area and Settings.
 
 | Island (`area`) | Subjects |
 |---|---|
-| ABC (`literacy`) | Letters, My Words, Say It!, Stories |
-| STEM (`stem`) | Numbers, Shapes, Discover, Coding |
+| ABC (`literacy`) | **Phonics**, **English**, **Bahasa Indonesia** (core) |
+| STEM (`stem`) | **Math** (core), Discover, Coding |
 | Heart (`life`) | Feelings, Healthy Me, Our Planet |
-| Play (`play`) | Maze, Memory, Songs |
+| Play (`play`) | Maze, Memory, Songs, Story Time |
+
+A core lesson is three or four short games in a row (for example Listen →
+Trace → Play → Quiz), about five minutes; see
+[the curriculum section](animal-friends-v2/README.md#the-curriculum-v4-modelled-on-wink).
 
 - **Friends:** 11 painted animals with 8 poses each, 16 colours (a hue shift of
   the same painting), plus hats, glasses, scarves, things to hold and 3 voices.
   A three.js 3D builder is kept as a fallback.
 - **Game engines:** choose, order, build, memory, maze, sort, match, trace, pop,
-  code, speak, story, song, breathe.
+  code, speak, story, song, breathe, plus `lesson` (a lesson's steps in a row)
+  and `intro` (meet-it cards).
 - **Scoring:** stars count mistakes, never time (0 mistakes = 3 stars, 1–2 =
-  2 stars, 3 or more = 1 star). A child can't fail, and stars never go down. A
-  level unlocks once the one before it has any star.
+  2 stars, 3 or more = 1 star; a lesson allows a little more). A child can't
+  fail, and stars never go down. A level unlocks once the one before it has any
+  star.
 - **Adaptive help (rule-based):** after 2 attempts at a level, a wrong answer
   fades out. After 4, the prompt also repeats by itself. At 3 stars, a replay
   adds one more choice ("stretch").
-- **Grown-up area:** progress report, play limit, speech privacy mode, "try at
-  home" tips, and **Open every level**.
+- **Grown-up area:** progress report (this week's minutes, where the child is in
+  each core subject, which topics are sure and which need practice), how the
+  lessons work, play limit, speech privacy mode, "try at home" tips, and
+  **Open every level**.
 
 ### Code layout and rules
 
@@ -98,7 +114,7 @@ animal-friends-v2/
   index.html  manifest.webmanifest  sw.js  serve.py  start.command  start.bat
   core/       router, UI shell, profile/progress, audio, speech, fx, levels, world, art, icons, CSS
   engines/    HOW to play: one file per family of game mechanics
-  content/    WHAT to teach: plain data, one file per island, plus bank.js
+  content/    WHAT to teach: plain data — phonics, english, bahasa, math (core), stem, life, play, plus bank.js
   art/        painted WebP/JPG assets cut from the sheets in animal-friends-v2/interface/assets/
   vendor/     three.min.js (MIT), fredoka.woff2 (OFL)
 ```
@@ -109,7 +125,7 @@ animal-friends-v2/
   plus a `<script>` tag and a line in `sw.js`.
 - **Bump `VERSION` in `animal-friends-v2/sw.js` whenever any file changes**, or
   installed copies keep serving the old files. The current value is
-  `af-v3.5.9`.
+  `af-v4.0.0`.
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
@@ -132,6 +148,7 @@ animal-friends-v2/
 | v3.1 | Game-needs batch (feelings faces, body, clothes, jobs, routines). Game icons on the map, and Daily Journey flow fixes |
 | v3.3 | Review fixes: fairer stars, microphone and voice bugs, unlocking, offline on slow networks, content corrections |
 | v3.4 | A natural recorded voice (Chatterbox, made on this Mac), paced for 3-year-olds; device voice only as a fallback. See `tools/voice/` |
+| v4.0 | Curriculum modelled on Danbi Education's Wink: Phonics, English, Math (5 levels × 6 areas) and Bahasa Indonesia as multi-step lessons, Today's Study with carry-over and weekend review, review lessons, a Wink-style grown-up report. Letters, My Words, Say It!, Numbers and Shapes retired (their stars kept) |
 
 The details for each version are in the
 [v2 README](animal-friends-v2/README.md#the-mock-up-redesign-v25).

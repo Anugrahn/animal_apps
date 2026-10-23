@@ -14,18 +14,27 @@
        log:      { moduleId: { levelId: { n, mistakes, ms } } },   // for the parent report
        days:     { 'YYYY-MM-DD': msPlayed },
        settings: { sound, motion, speech, limit },
-       seenTutorial, extra: { date, min }
+       seenTutorial, extra: { date, min },
+       today:    { date, picks, done, cheered },   lastPlan: the day before's
+       curriculum: 2,  legacyStars: n,  legacy: { moduleId: { stars, attempts, log } }
      }
+
+   Curriculum 2 (v4, October 2026) follows Danbi Education's Wink.
+   The subjects it replaced (Letters, My Words, Say It!, Numbers,
+   Shapes) are kept aside in `legacy`, and their stars still count
+   in the child's total, so nobody's star count ever goes down.
    ============================================================ */
 (function (AF) {
   'use strict';
 
   const KEY = 'af.profile.v2';
   const KEY_V1 = 'af.profile.v1';
+  const RETIRED = ['letters', 'words', 'sayit', 'numbers', 'shapes'];
 
   function blank() {
     return {
       v: 2,
+      curriculum: 2, legacyStars: 0, legacy: {},
       character: null,
       stars: {}, attempts: {}, log: {}, days: {},
       /* speech: 'ask' until a grown-up chooses 'check' (uses the
@@ -52,6 +61,7 @@
     if (isObj(saved)) {
       // Saved progress is used only in the shape this file writes it.
       Object.assign(state, saved);
+      state.curriculum = saved.curriculum || 1;          // (saved before v4: the first curriculum)
       state.settings = Object.assign(blank().settings, isObj(saved.settings) ? saved.settings : {});
       state.character = saved.character ? AF.Art.normalise(saved.character) : null;
     } else {
@@ -62,10 +72,30 @@
         state.stars = old.stars || {};
         state.attempts = old.attempts || {};
         state.createdAt = old.createdAt || null;
+        state.curriculum = 1;
       }
     }
-    ['stars', 'attempts', 'log', 'days'].forEach(k => { if (!isObj(state[k])) state[k] = {}; });
+    ['stars', 'attempts', 'log', 'days', 'legacy'].forEach(k => { if (!isObj(state[k])) state[k] = {}; });
+    if ((state.curriculum || 1) < 2) retire();
     return state;
+  }
+
+  /* From the first curriculum to the Wink one: the subjects that were
+     replaced move aside, their stars kept in the total. */
+  function retire() {
+    let kept = 0;
+    RETIRED.forEach(m => {
+      const s = state.stars[m];
+      if (!s && !state.attempts[m] && !state.log[m]) return;
+      state.legacy[m] = { stars: s || {}, attempts: state.attempts[m] || {}, log: state.log[m] || {} };
+      Object.keys(s || {}).forEach(k => { kept += s[k] || 0; });
+      delete state.stars[m]; delete state.attempts[m]; delete state.log[m];
+    });
+    state.legacyStars = (state.legacyStars || 0) + kept;
+    if (RETIRED.indexOf(state.lastModule) >= 0) state.lastModule = null;
+    state.today = null;                     // today's picks were made from the old subjects
+    state.curriculum = 2;
+    save();
   }
 
   function save() {
@@ -124,9 +154,10 @@
       return Object.keys(m).reduce((sum, k) => sum + (m[k] || 0), 0);
     },
 
+    /** Every star the child has, the retired subjects' too. */
     allStars() {
-      const all = Profile.get().stars;
-      return Object.keys(all).reduce((sum, mid) => sum + Profile.totalStars(mid), 0);
+      const p = Profile.get(), all = p.stars;
+      return Object.keys(all).reduce((sum, mid) => sum + Profile.totalStars(mid), 0) + (p.legacyStars || 0);
     },
 
     clearedCount(moduleId) {
@@ -217,11 +248,27 @@
 
     /* ---------- today's adventure ---------- */
 
-    /** { date, picks: [{ m, l }], done: ['module:level'], cheered } — reset each morning. */
+    /** { date, picks: [{ m, l, kind }], done: ['module:level'], cheered } — a new one each
+        morning; the day before's is kept as `lastPlan`, so what was not done can carry over. */
     today() {
       const p = Profile.get(), k = dayKey();
-      if (!p.today || p.today.date !== k) p.today = { date: k, picks: null, done: [], cheered: false };
+      if (!p.today || p.today.date !== k) {
+        if (p.today && p.today.picks) p.lastPlan = p.today;
+        p.today = { date: k, picks: null, done: [], cheered: false };
+      }
       return p.today;
+    },
+
+    /** Minutes played on each of the last `n` days, oldest first: [{ key, day, min }]. */
+    week(n) {
+      const days = Profile.get().days, out = [];
+      for (let i = (n || 7) - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const k = dayKey(d);
+        out.push({ key: k, day: d.getDay(), min: Math.round((days[k] || 0) / 60000) });
+      }
+      return out;
     },
 
     save: save,

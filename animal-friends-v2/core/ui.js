@@ -9,7 +9,8 @@
      logo()        the "Animal Friends" title
      sign(text)    a wooden sign: the name of the screen
      stars(n)      a row of three stars, n of them gold
-     tabs(...)     the Basic / Intermediate / Advanced selector
+     tabs(...)     the stage selector (Basic... or Step 1, Level 1...)
+     steps(...)    a lesson's steps, above the game
      stump         the tree stump the friend stands on
 
    These only return markup or fill an element; what a tap does
@@ -57,9 +58,11 @@
         <span class="pill pill-streak" aria-label="${streak} day streak"><i data-ic="flame"></i>${streak}</span>`;
     },
 
-    stars(n, cls) {
-      return `<span class="stars-row ${cls || ''}" aria-label="${n} of 3 stars">${[1, 2, 3].map(k =>
-        `<i class="${k <= n ? 'on' : ''}" data-ic="star"></i>`).join('')}</span>`;
+    /** `of` stars in a row (3 unless a subject has more stages), n of them gold. */
+    stars(n, cls, of) {
+      of = of || 3;
+      return `<span class="stars-row ${cls || ''}" aria-label="${n} of ${of} stars">${Array.from({ length: of }, (_, i) =>
+        `<i class="${i < n ? 'on' : ''}" data-ic="star"></i>`).join('')}</span>`;
     },
 
     /**
@@ -85,16 +88,32 @@
       if (face) AF.Art.face(face.firstElementChild);
     },
 
-    /** Basic / Intermediate / Advanced. states[t] = { open, done, total } */
+    /** The stages of a subject: Basic / Intermediate / Advanced, or
+        "Step 1" ... "Level 5". A stage finished shows a gold star, a
+        locked one a padlock. states[t] = { open, done, total }
+        (With more than three, the tabs show the stage's number big:
+        "Level 4" is drawn as a small "Level" over a big 4.) */
     tabs(names, current, states) {
+      const many = names.length > 3;
       return names.map((name, t) => {
         const st = states[t];
-        return `<button class="tab${t === current ? ' on' : ''}${st.open ? '' : ' locked'}" data-t="${t}" role="tab"
-            aria-selected="${t === current}" aria-label="${name}${st.open ? `, ${st.done} of ${st.total} done` : ', locked'}">
-          <span class="tab-name">${name}</span>
-          <span class="tab-stars">${'<i data-ic="star"></i>'.repeat(t + 1)}${st.open ? '' : '<i class="tab-lock" data-ic="lock"></i>'}</span>
+        const m = many && /^(.*\S)\s+(\d+)$/.exec(name);
+        const full = st.open && st.total > 0 && st.done >= st.total;
+        return `<button class="tab${t === current ? ' on' : ''}${st.open ? '' : ' locked'}${full ? ' full' : ''}" data-t="${t}" role="tab"
+            aria-selected="${t === current}" aria-label="${esc(name)}${st.open ? `, ${st.done} of ${st.total} done` : ', locked'}">
+          <span class="tab-name">${m ? `<small>${esc(m[1])}</small><b>${m[2]}</b>` : esc(name)}</span>
+          <span class="tab-stars">${many ? (full ? '<i data-ic="star"></i>' : '') : '<i data-ic="star"></i>'.repeat(t + 1)}${st.open ? '' : '<i class="tab-lock" data-ic="lock"></i>'}</span>
         </button>`;
       }).join('');
+    },
+
+    /** A lesson's steps in a row: done ones ticked, the one being
+        played lit up. list = [{ name, pic }] (engines/lesson.js) */
+    steps(list, at) {
+      return list.map((s, i) => `
+        <li class="step${i < at ? ' done' : i === at ? ' now' : ''}" aria-current="${i === at ? 'step' : 'false'}">
+          <img src="art/${s.pic}.webp" alt="" draggable="false"><span>${esc(s.name)}</span>
+        </li>`).join('');
     }
   };
 

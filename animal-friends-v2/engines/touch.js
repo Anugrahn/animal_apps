@@ -270,6 +270,13 @@
     b: ['M38 16 L38 90', 'M38 58 C46 42 68 44 68 67 C68 90 46 92 38 78'],
     f: ['M66 22 C56 12 46 18 46 32 L46 90', 'M34 46 L62 46'],
     l: ['M50 16 L50 90'],
+    j: ['M56 48 L56 104 C56 120 36 120 30 108', 'M56 26 L56 31'],
+    q: ['M64 58 C56 42 34 44 34 67 C34 90 56 92 64 76', 'M64 46 L64 118'],
+    v: ['M32 46 L50 90 L68 46'],
+    w: ['M20 46 L33 90 L50 56 L67 90 L80 46'],
+    x: ['M34 46 L66 90', 'M66 46 L34 90'],
+    y: ['M34 46 L51 86', 'M67 46 L42 118'],
+    z: ['M34 46 L66 46 L34 90 L68 90'],
     0: ['M50 16 C25 16 25 90 50 90 C75 90 75 16 50 16'],
     1: ['M36 32 L52 16 L52 90'],
     2: ['M32 34 C34 10 70 12 68 36 C66 52 44 66 32 90 L70 90'],
@@ -302,17 +309,23 @@
     const NS = 'http://www.w3.org/2000/svg';
     const TOL = 17, STEP = 2;
 
-    /* What one round asks for: a list of glyphs to trace in turn. */
+    /* What one round asks for: a list of glyphs to trace in turn.
+       A word can bring its own lines ({ w, e, say, text, praise }),
+       which is how Bahasa Indonesia names its letters and syllables. */
     function job(x) {
-      if (lv.kind === 'word') return { glyphs: x.w.split(''), say: `Write the word, ${x.w}.`, text: `Write <b>${U.esc(x.w)}</b>`, pic: x.e, word: x.w, praise: x.w };
+      if (lv.kind === 'word') {
+        const glyphs = x.w.replace(/\s+/g, '').split('');
+        return { glyphs: glyphs, say: x.say || E.t(S, 'write', x.w), text: x.text || E.t(S, 'writeText', x.w),
+          pic: x.e || '', word: glyphs.length > 1 ? x.w : '', praise: x.praise || x.w, sound: x.sound };
+      }
       if (lv.kind === 'number') {
         const n = +x;
-        return { glyphs: String(x).split(''), say: `Trace number ${AF.NUM[n]}.`, text: `Trace number <b>${x}</b>`,
-          pic: AF.Gen.row('⭐', n), praise: AF.NUM[n] };
+        return { glyphs: String(x).split(''), say: E.t(S, 'traceNum', n), text: E.t(S, 'traceNumText', x),
+          pic: n <= 10 ? AF.Gen.row('⭐', n) : '', praise: lv.lang === 'id' ? String(n) : (AF.NUM[n] || String(n)) };
       }
       if (lv.kind === 'line') return { glyphs: [x], say: `Draw ${LINE_NAMES[x]}.`, text: `Draw <b>${LINE_NAMES[x]}</b>`, pic: '', praise: 'Lovely!' };
       const ph = AF.PHONICS[x];
-      return { glyphs: [x], say: 'Trace the letter that says', sound: ph.say, text: `Trace <b>${x}</b>`,
+      return { glyphs: [x], say: E.t(S, 'traceLetter'), sound: ph.say, text: `Trace <b>${x}</b>`,
         pic: `<span class="big-e">${ph.e}</span>`, praise: `${ph.say} … ${ph.word}` };
     }
 
@@ -321,9 +334,9 @@
       let g = 0;                                     // which glyph of the word
       const stage = E.frame(S, { text: j.text, rounds: rounds, cls: 'stage-trace' });
       stage.innerHTML = `
-        <div class="tr-cue">${j.word ? j.glyphs.map((c, i) => `<i data-l="${i}">${c}</i>`).join('') + `<span class="tr-pic">${j.pic}</span>` : j.pic}</div>
+        <div class="tr-cue">${j.word ? j.glyphs.map((c, i) => `<i data-l="${i}">${c}</i>`).join('') + `<span class="tr-pic">${j.pic}</span>` : !j.pic || /^</.test(j.pic) ? j.pic : `<span class="big-e">${j.pic}</span>`}</div>
         <div class="tray-wrap"><div class="tray tr-tray"><svg class="tr-svg" viewBox="0 0 100 124" aria-label="Trace here"></svg></div></div>
-        <div class="stage-cap">Start at the green dot</div>`;
+        <div class="stage-cap">${E.t(S, 'start')}</div>`;
       const svg = stage.querySelector('.tr-svg');
       S.replay = () => E.talk(S, j.say, j.sound ? { onEnd: () => { if (S.alive) AF.Audio.sound(j.sound); } } : null);
 

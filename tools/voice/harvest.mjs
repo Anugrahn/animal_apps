@@ -5,11 +5,14 @@
 // Three sources: each level's question generator sampled many times, the
 // data of sort / match / order levels, and a muted bot that plays every
 // level, the tutorial and the maker while recording what is said.
+// A lesson (v4) is several levels in a row: each of its steps is sampled.
+// Bahasa Indonesia is left out: the device's Indonesian voice says it
+// (the recorded voice is English).
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 
 const BASE = process.argv[2] || 'http://localhost:8765/';
-const WORKERS = 8, LEVEL_MS = 75000;
+const WORKERS = 8, LEVEL_MS = 75000, LESSON_MS = 200000;
 const found = {};          // text -> 'say' | 'sound'
 
 function add(list) {
@@ -26,8 +29,9 @@ const SPY = () => {
   const tpl = (t) => String(t).split(name()).join('{name}');
   const say = AF.Audio.say, sound = AF.Audio.sound;
   let inSound = false;
-  AF.Audio.sound = function (p) { window.__said.push([tpl(p), 'sound']); inSound = true; try { return sound.apply(this, arguments); } finally { inSound = false; } };
-  AF.Audio.say = function (t) { if (!inSound) window.__said.push([tpl(t), 'say']); return say.apply(this, arguments); };
+  const foreign = (o) => ((o && o.lang) || AF.Audio.lang) !== 'en';
+  AF.Audio.sound = function (p, o) { if (!foreign(o)) window.__said.push([tpl(p), 'sound']); inSound = true; try { return sound.apply(this, arguments); } finally { inSound = false; } };
+  AF.Audio.say = function (t, o) { if (!inSound && !foreign(o)) window.__said.push([tpl(t), 'say']); return say.apply(this, arguments); };
 };
 
 async function page(browser) {
@@ -51,7 +55,19 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
     const S = (t, k) => out.push([t, k || 'say']);
     const name = AF.Profile.character.name;
     const tpl = (t) => String(t).split(name).join('{name}');
-    for (const m of AF.registry) for (const lv of m.levels) {
+    // a lesson's steps are levels of their own; Indonesian ones are skipped
+    const each = [];
+    for (const m of AF.registry) for (const top of m.levels) {
+      if ((top.lang || m.lang) === 'id') continue;
+      if (top.type !== 'lesson') { each.push(top); continue; }
+      if (top.say) S(top.say);
+      top.steps.forEach(st => {
+        const info = AF.Engines.stepInfo(st, 'en');
+        S(info.go);
+        each.push(Object.assign({ tier: top.tier }, st));
+      });
+    }
+    for (const lv of each) {
       const take = (r) => { if (!r) return; S(tpl(r.say)); if (r.praise) S(tpl(r.praise)); if (r.sound) S(r.sound, 'sound'); };
       if (lv.gen) for (let i = 0; i < 600; i++) { try { take(lv.gen({ round: i % 10, last: null, stretch: i % 2 === 1 })); } catch (e) { break; } }
       (lv.fixed || []).forEach(take);
@@ -81,13 +97,18 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       // a story: each page, every word a child can tap, and its questions
       (lv.pages || []).forEach(pg => { S(pg.text); String(pg.text).split(/\s+/).forEach(w => { w = w.replace(/[^A-Za-z']/g, ''); if (w && w !== 'name') S(w); }); });
       (lv.quiz || []).forEach(q => { S(q.say); if (q.praise) S(q.praise); });
+      // the cards that open a lesson ("a … aaah … apple")
+      (lv.cards || []).forEach(c => { S(tpl(c.say)); if (c.sound) S(c.sound, 'sound'); });
     }
+    // what each subject calls its stages: "Finish Step 1 first."
+    AF.registry.forEach(m => AF.stageNames(m).forEach(n => S(`Finish ${n} first.`)));
     // the friend's own words, for every kind of animal
     Object.keys(AF.Art.SPECIES || {}).forEach(k => { S(AF.Art.SPECIES[k].cheer); S(AF.Art.SPECIES[k].cheer + ' Three stars!'); });
     // fixed lines in core/app.js and core/levels.js
     ['Hi! I am {name}. Let\'s play!', 'Hello! I am {name}.', 'Coming soon!', 'Finish the one before first.',
       'Finish Basic first.', 'Finish Intermediate first.', 'You found all the treasure!',
-      'Time for a break! See you tomorrow.', 'Well done!'].forEach(t => S(t));
+      'Time for a break! See you tomorrow.', 'Well done!',
+      'You did it all today! Well done!', 'It is review day! Let’s play what we learned.', 'Here is today’s study. Let’s start!'].forEach(t => S(t));
     return out;
   }));
   await ctx.close();
@@ -110,7 +131,7 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
 // 3. play every level, recording what is said
 {
   const { ctx: c0, p: p0 } = await page(browser);
-  const jobs = await p0.evaluate(() => AF.registry.flatMap(m => m.levels.map((l, i) => ({ m: m.id, i, soon: !!l.soon })))).then(j => j.filter(x => !x.soon));
+  const jobs = await p0.evaluate(() => AF.registry.flatMap(m => m.levels.map((l, i) => ({ m: m.id, i, soon: !!l.soon || (l.lang || m.lang) === 'id', lesson: l.type === 'lesson' })))).then(j => j.filter(x => !x.soon));
   await c0.close();
   let next = 0, done = 0;
   await Promise.all(Array.from({ length: WORKERS }, async () => {
@@ -121,9 +142,11 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
         await p.evaluate(([m, i]) => { window.__res = 0; const o = AF.Levels.showResult; if (!o.__spy) { AF.Levels.showResult = function () { window.__res++; return o.apply(this, arguments); }; AF.Levels.showResult.__spy = 1; }
           document.getElementById('result').hidden = true; const mod = AF.module(m); AF.App.startLevel(mod, mod.levels[i], i); }, [j.m, j.i]);
         const t0 = Date.now();
-        while (Date.now() - t0 < LEVEL_MS) {
+        while (Date.now() - t0 < (j.lesson ? LESSON_MS : LEVEL_MS)) {
           if (await p.evaluate(() => window.__res > 0)) break;
           const r = Math.random();
+          const intro = await p.evaluate(() => { const g = document.querySelector('#play-host .intro-go, #play-host .step-card, #play-host .story [data-next]'); return !!g; });
+          if (intro && r < 0.5) { await p.evaluate(() => { const g = document.querySelector('#play-host .step-card, #play-host .intro-go, #play-host .story [data-next]'); if (g) g.click(); }); await p.waitForTimeout(300); continue; }
           if (r < 0.12) await p.keyboard.press('Space');
           else if (r < 0.24) await p.keyboard.press(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'][Math.floor(Math.random() * 4)]);
           else {

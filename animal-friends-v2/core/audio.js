@@ -18,6 +18,11 @@
   'use strict';
 
   let voice = null;
+  /* Bahasa Indonesia lessons are spoken by the device's own Indonesian
+     voice (the recordings in voice/ are English). `lang` is the language
+     of the level being played; app.js sets it. */
+  let voiceId = null;
+  let lang = 'en';
   let unlocked = false;
   let ctx = null;
   let saying = 0;           // counts utterances, so a cut-off one knows it was
@@ -54,6 +59,16 @@
     return s;
   }
 
+  /* Indonesian: "id-ID", or "in-ID" on older Android. */
+  function scoreVoiceId(v) {
+    const l = (v.lang || '').toLowerCase().replace('_', '-');
+    if (!/^(id|in)(-|$)/.test(l)) return -1;
+    let s = 40;
+    if (/google|damayanti|gadis|ardi|andika|indonesia/i.test(v.name)) s += 30;
+    if (/compact/i.test(v.name)) s -= 20;
+    return s;
+  }
+
   function pickVoice() {
     if (!('speechSynthesis' in window)) return null;
     const all = window.speechSynthesis.getVoices() || [];
@@ -63,12 +78,13 @@
     // the network one scores: a network voice sends what it reads (the
     // name the child typed, too) to Google or Microsoft. It is used only
     // when the device has no English voice of its own.
-    const best = (list) => {
+    const best = (list, score) => {
       let top = null, topScore = 0;
-      list.forEach(v => { const s = scoreVoice(v); if (s > topScore) { topScore = s; top = v; } });
+      list.forEach(v => { const s = score(v); if (s > topScore) { topScore = s; top = v; } });
       return top;
     };
-    voice = best(all.filter(v => v.localService)) || best(all);
+    voice = best(all.filter(v => v.localService), scoreVoice) || best(all, scoreVoice);
+    voiceId = best(all.filter(v => v.localService), scoreVoiceId) || best(all, scoreVoiceId);
     return voice;
   }
 
@@ -259,8 +275,12 @@
       if (on) ambLoop();
     },
 
-    hasVoice() { return !!voice; },
-    voiceName() { return voice ? voice.name : 'none'; },
+    hasVoice(l) { return !!(l === 'id' ? voiceId : voice); },
+    voiceName(l) { const v = l === 'id' ? voiceId : voice; return v ? v.name : 'none'; },
+
+    /** The language of what is said from now on: 'en' or 'id'. */
+    setLang(l) { lang = l === 'id' ? 'id' : 'en'; },
+    get lang() { return lang; },
 
     /** Speaks text in the chosen character's pitch and pace.
         opts: { pitch, rate, onEnd }
@@ -283,6 +303,7 @@
       if (!AF.Profile.setting('sound')) { timer = setTimeout(end, 300); return; }
       const skin = AF.Profile.skin();
       const pitch = opts.pitch != null ? opts.pitch : (skin.pitch || 1);
+      const id = (opts.lang || lang) === 'id';
 
       // The device's own voice: for a line with no recording.
       const speak = () => {
@@ -291,8 +312,9 @@
         try {
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
-          if (voice) u.voice = voice;
-          u.lang = (voice && voice.lang) || 'en-US';
+          const v = id ? voiceId : voice;
+          if (v) u.voice = v;
+          u.lang = (v && v.lang) || (id ? 'id-ID' : 'en-US');
           u.pitch = pitch;
           u.rate = opts.rate != null ? opts.rate : (skin.rate || 0.85);
           u.volume = 1;
@@ -307,7 +329,7 @@
 
       const start = () => {
         if (mine !== saying) return;           // newer speech has taken over
-        const file = clipFor(text);
+        const file = id ? null : clipFor(text);
         if (file && playClip(file, pitch, end, speak)) {
           // (a safety net in case the player never reports the end)
           timer = setTimeout(end, 2500 + text.length * 120);

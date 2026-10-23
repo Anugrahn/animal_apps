@@ -557,7 +557,7 @@ body[data-screen="game"] .sc-cloud { animation-play-state: paused; }
    ============================================================ */
 .painted { background: none !important; box-shadow: none !important; }
 .painted::before { display: none !important; }
-.painted > img.pic { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(20,40,60,.22)); }
+.painted > img.pic, .painted > svg.pic { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(20,40,60,.22)); }
 .round-btn.painted, .pad.painted, .pad-hint.painted, .big-round.painted { border-radius: 50%; }
 .jelly.painted { border-radius: 0; overflow: visible; }
 .jelly.painted > img.pic { width: 118%; height: 118%; margin: -9%; filter: drop-shadow(0 4px 3px rgba(20,40,60,.25)); }

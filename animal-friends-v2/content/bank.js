@@ -37,8 +37,23 @@
     h: { say: 'huh',  word: 'hat',      e: '🎩' },
     b: { say: 'buh',  word: 'bee',      e: '🐝' },
     f: { say: 'ffff', word: 'fish',     e: '🐟' },
-    l: { say: 'llll', word: 'lion',     e: '🦁' }
+    l: { say: 'llll', word: 'lion',     e: '🦁' },
+    // the rest of the alphabet (Wink Phonics, Step 1, teaches a to z)
+    j: { say: 'juh',  word: 'jam',      e: '🍯' },
+    q: { say: 'kwuh', word: 'queen',    e: '👸' },
+    v: { say: 'vvvv', word: 'van',      e: '🚐' },
+    w: { say: 'wuh',  word: 'web',      e: '🕸️' },
+    x: { say: 'ks',   word: 'fox',      e: '🦊', end: true },   // x is heard at the end: fox, box
+    y: { say: 'yuh',  word: 'yawn',     e: '🥱' },
+    z: { say: 'zzzz', word: 'zebra',    e: '🦓' }
   };
+  AF.ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+  /** A lesson: a few short games in a row (engines/lesson.js).
+        AF.lesson('ph1', 'a b c d', [steps], { topic, review, say, icon })
+      Each step is a level of its own with a `step` name:
+        { step: 'listen', type: 'intro', cards: [...] } */
+  AF.lesson = (id, title, steps, extra) => Object.assign({ id: id, title: title, type: 'lesson', steps: steps }, extra || {});
 
   /** The sound a letter makes, as AF.PHONICS spells it. */
   AF.phonic = (ch) => (AF.PHONICS[ch] && AF.PHONICS[ch].say) || ch;
@@ -85,8 +100,11 @@
   ];
 
   const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-    'eleven', 'twelve'];
+    'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
   AF.NUM = NUM;
+  const TENS = ['', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'one hundred'];
+  /** A number as it is said, up to a hundred: 47 -> "forty seven". */
+  AF.numWord = (n) => n <= 20 ? NUM[n] : n % 10 === 0 ? TENS[n / 10] : `${TENS[Math.floor(n / 10)]} ${NUM[n % 10]}`;
 
   /* Inline shapes, so they look the same on every device. */
   const SHAPE_PATH = {
@@ -116,6 +134,7 @@
 
   const COUNTABLE = [['apple', 'apples', '🍎'], ['star', 'stars', '⭐'], ['duck', 'ducks', '🦆'], ['ball', 'balls', '⚽'],
     ['fish', 'fish', '🐟'], ['flower', 'flowers', '🌸'], ['car', 'cars', '🚗'], ['bee', 'bees', '🐝']];
+  AF.COUNTABLE = COUNTABLE;
 
   /** n numbers near `answer`, including it, between lo and hi. */
   function numberOptions(answer, n, lo, hi) {
@@ -168,29 +187,33 @@
 
   const Gen = AF.Gen = {
     shape: shape, swatch: swatch, row: row,
+    /** n number cards near `answer` (always including it), between lo and hi */
+    options: numberOptions,
 
-    /** "Find the cat" — hear a word, tap its picture. */
-    find(words, n) {
+    /** "Find the cat" — hear a word, tap its picture.
+        `ask` changes the words: { say(w), text(w), praise?(w), label? }
+        (Bahasa Indonesia: { say: w => `Mana ${w}?`, text: w => `Mana <b>${w}</b>?` }). */
+    find(words, n, ask) {
       return (ctx) => {
         const t = U.one(words.filter(x => x.w !== ctx.last));
         const others = U.pick(words, n - 1 + (ctx.stretch ? 1 : 0), [t]);
         return {
-          say: `Find the ${t.w}.`, text: `Find the <b>${t.w}</b>`,
-          options: U.shuffle([t].concat(others)).map(o => ({ key: o.w, emoji: o.e })),
-          answer: t.w, praise: t.w
+          say: ask ? ask.say(t.w, t) : `Find the ${t.w}.`, text: ask ? ask.text(t.w, t) : `Find the <b>${t.w}</b>`,
+          options: U.shuffle([t].concat(others)).map(o => ({ key: o.w, emoji: o.e, label: ask && ask.label ? o.w : undefined })),
+          answer: t.w, praise: ask && ask.praise ? ask.praise(t.w, t) : (t.say || t.w)
         };
       };
     },
 
-    /** See a picture, tap the written word. */
-    read(words, n) {
+    /** See a picture, tap the written word. (`ask` as in find) */
+    read(words, n, ask) {
       return (ctx) => {
         const t = U.one(words.filter(x => x.w !== ctx.last));
         return {
-          say: 'What is this? Find the word.', text: 'What is this? Find the <b>word</b>',
+          say: ask ? ask.say(t.w, t) : 'What is this? Find the word.', text: ask ? ask.text(t.w, t) : 'What is this? Find the <b>word</b>',
           show: `<span class="big-e">${t.e}</span>`,
-          options: U.shuffle([t].concat(U.pick(words, n - 1, [t]))).map(o => ({ key: o.w, glyph: o.w })),
-          answer: t.w, praise: t.w
+          options: U.shuffle([t].concat(U.pick(words, n - 1 + (ctx.stretch ? 1 : 0), [t]))).map(o => ({ key: o.w, glyph: o.w })),
+          answer: t.w, praise: ask && ask.praise ? ask.praise(t.w, t) : t.w
         };
       };
     },
@@ -248,14 +271,15 @@
       };
     },
 
-    /** "Find the word: the" */
-    sight(words, n) {
+    /** "Find the word: the" — hear it, tap it written. Also syllables
+        and letter names, with `ask`: { say(t), text(t), praise?(t) }. */
+    sight(words, n, ask) {
       return (ctx) => {
         const t = U.one(words.filter(x => x !== ctx.last));
         return {
-          say: `Find the word, ${t}.`, text: 'Find the word you <b>hear</b>',
-          options: U.shuffle([t].concat(U.pick(words, n - 1, [t]))).map(x => ({ key: x, glyph: x })),
-          answer: t, praise: t
+          say: ask ? ask.say(t) : `Find the word, ${t}.`, text: ask ? ask.text(t) : 'Find the word you <b>hear</b>',
+          options: U.shuffle([t].concat(U.pick(words, n - 1 + (ctx.stretch ? 1 : 0), [t]))).map(x => ({ key: x, glyph: x })),
+          answer: t, praise: ask && ask.praise ? ask.praise(t) : t
         };
       };
     },

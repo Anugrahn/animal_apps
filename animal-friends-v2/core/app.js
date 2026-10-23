@@ -304,23 +304,66 @@
     return lv && !lv.soon ? { mod: mod, level: lv, index: i } : null;
   }
 
-  /** Three picks, one each from three areas, fixed for the day.
-      The areas rotate, so over a week every part of the curriculum
-      comes up even if the child always taps the same tile. */
+  /* Today's Study, the way Wink plans a child's day (Danbi FAQ):
+       * Monday to Friday, two of the four core subjects each day, in
+         turn, so every subject comes round every other day;
+       * a lesson left over from the day before comes back first, up
+         to four lessons in all;
+       * at the weekend nothing new: two lessons already played come
+         back for review, the least sure first;
+       * and one game from the extras (habits, feelings, science,
+         games, stories, songs) to finish, a different area each day.
+     Fixed for the day once made. */
   function todayPicks() {
     const t = P.today();
     if (!t.picks) {
-      // counted in local days, like the day itself, so the areas move on one a day
+      // counted in local days, like the day itself
       const d = new Date();
       const day = Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+      const weekend = d.getDay() === 0 || d.getDay() === 6;
+      // (`core` is each subject's place in the rotation: Phonics and Math one day, English and Bahasa the next)
+      const core = AF.registry.filter(m => m.core && !m.soon).sort((a, b) => a.core - b.core);
       const picks = [];
-      for (let k = 0; k < AF.AREAS.length && picks.length < 3; k++) {
-        const area = AF.AREAS[(day + k) % AF.AREAS.length];
-        const mods = AF.registry.filter(m => m.area === area.id && !m.soon);
-        for (let j = 0; j < mods.length; j++) {
-          const n = nextIn(mods[(day + k + j) % mods.length]);
-          if (n) { picks.push({ m: n.mod.id, l: n.level.id }); break; }
+      const has = (m) => picks.some(p => p.m === m.id);
+      const add = (n, kind) => { if (n && !has(n.mod)) picks.push({ m: n.mod.id, l: n.level.id, kind: kind }); };
+
+      if (!weekend) {
+        // yesterday's lesson not done yet comes first (still the next one in its subject)
+        const last = P.get().lastPlan;
+        ((last && last.picks) || []).forEach(p => {
+          const mod = AF.module(p.m);
+          if (mod && mod.core && p.kind !== 'review' && P.stars(p.m, p.l) === 0 && picks.length < 2) add(nextIn(mod), 'new');
+        });
+        // two subjects a day, in turn
+        const pair = day % 2;
+        const order = core.slice(pair * 2).concat(core.slice(0, pair * 2));
+        // (a subject carried over that is also today's counts as today's)
+        let fresh = 0;
+        for (const m of order) {
+          if (fresh >= 2 || picks.length >= 4) break;
+          if (has(m)) { fresh++; continue; }
+          const n = nextIn(m);
+          if (n) { add(n, 'new'); fresh++; }
         }
+      } else {
+        // the weekend: review what is least sure (fewest stars, then most slips)
+        const played = [];
+        core.forEach(m => m.levels.forEach((l, i) => {
+          const s = P.stars(m.id, l.id);
+          const r = P.result(m.id, l.id);
+          if (s > 0 && !l.review) played.push({ mod: m, level: l, index: i, s: s, miss: r && r.n ? r.mistakes / r.n : 0 });
+        }));
+        played.sort((a, b) => a.s - b.s || b.miss - a.miss);
+        played.forEach(x => { if (picks.length < 2 && !has(x.mod)) add(x, 'review'); });
+        // nothing played yet: the first lessons, so the weekend is not empty
+        core.forEach(m => { if (picks.length < 2) add(nextIn(m), 'new'); });
+      }
+
+      // one extra, from a different area each day
+      const extras = AF.registry.filter(m => !m.core && !m.soon);
+      for (let k = 0; k < extras.length; k++) {
+        const n = nextIn(extras[(day + k) % extras.length]);
+        if (n) { add(n, 'fun'); break; }
       }
       t.picks = picks;
       P.save();
@@ -328,7 +371,7 @@
     return t.picks.map(p => {
       const mod = AF.module(p.m);
       const index = mod ? mod.levels.findIndex(l => l.id === p.l) : -1;
-      return index < 0 ? null : { mod: mod, level: mod.levels[index], index: index, key: p.m + ':' + p.l };
+      return index < 0 ? null : { mod: mod, level: mod.levels[index], index: index, key: p.m + ':' + p.l, kind: p.kind || 'new' };
     }).filter(Boolean);
   }
 
@@ -378,8 +421,8 @@
     const hello = hour < 12 ? 'Good morning!' : hour < 18 ? 'Hello!' : 'Good evening!';
     $('home-hello').innerHTML = `${hello} I’m <b>${AF.U.esc(skin.name)}</b>.<br>Where shall we go?`;
 
-    /* ---- Daily Journey: one pill that plays the next of today's three
-       games; its stars show how many are done (all done: the list, to replay) ---- */
+    /* ---- Today's Study: one pill that opens today's plan; its stars
+       show how many of today's lessons are done ---- */
     const t = P.today();
     const picks = todayPicks();
     const isDone = (p) => t.done.indexOf(p.key) >= 0;
@@ -388,11 +431,8 @@
     const pill = $('jr-open');
     pill.hidden = !picks.length;
     $('today-row').innerHTML = picks.map(p => `<span class="${isDone(p) ? 'on' : ''}" data-ic="star"></span>`).join('');
-    pill.setAttribute('aria-label', `Daily Journey: ${done} of ${picks.length} done` + (next ? `. Play ${next.level.title}` : ''));
-    pill.onclick = () => {
-      Audio.unlock(); Audio.SFX.pop();
-      if (next) startLevel(next.mod, next.level, next.index, 'journey'); else openJourney();
-    };
+    pill.setAttribute('aria-label', `Today’s Study: ${done} of ${picks.length} done` + (next ? `. Next: ${next.mod.title}, ${next.level.title}` : ''));
+    pill.onclick = () => { Audio.unlock(); Audio.SFX.pop(); openJourney(); };
 
     /* ---- one floating island per area of the curriculum ---- */
     const world = $('world');
@@ -420,23 +460,26 @@
      2b. Daily Journey: today's three games
      ============================================================ */
 
-  function openJourney() {
+  function openJourney(back) {
     current = { module: null, level: null, index: -1, area: null };
-    renderHud('journey', { title: 'Daily Journey' });
+    const d = new Date(), weekend = d.getDay() === 0 || d.getDay() === 6;
+    renderHud('journey', { title: 'Today’s Study', crumb: weekend ? 'Review day' : ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][d.getDay()] });
     const t = P.today();
     const picks = todayPicks();
     const firstOpen = picks.findIndex(p => t.done.indexOf(p.key) < 0);
     const list = $('journey-list');
     list.innerHTML = '';
+    const TAG = { review: 'Review', fun: 'Fun & Joy' };
     picks.forEach((p, i) => {
       const isDone = t.done.indexOf(p.key) >= 0;
       const b = document.createElement('button');
-      b.className = 'card jy-card' + (isDone ? ' is-done' : '') + (i === firstOpen ? ' is-next' : '');
+      b.className = 'card jy-card' + (isDone ? ' is-done' : '') + (i === firstOpen ? ' is-next' : '') + (p.kind === 'fun' ? ' is-fun' : '');
       b.style.setProperty('--i', i);
-      b.setAttribute('aria-label', `${p.mod.title}${p.level.title !== p.mod.title ? ', ' + p.level.title : ''}${isDone ? ', done' : ''}`);
+      const stage = p.mod.core ? AF.Levels.stageName(p.mod, p.level.tier || 0) : '';
+      b.setAttribute('aria-label', `${p.mod.title}, ${p.level.title}${stage ? ', ' + stage : ''}${isDone ? ', done' : ''}`);
       b.innerHTML = `
         ${AF.Icon.jelly(p.mod.id, p.mod.colour, '', p.mod.icon)}
-        <span class="jy-text"><b>${AF.U.esc(p.mod.title)}</b>${p.level.title !== p.mod.title ? `<small>${AF.U.esc(p.level.title)}</small>` : ''}</span>
+        <span class="jy-text"><b>${AF.U.esc(p.mod.title)}${TAG[p.kind] ? `<em class="jy-tag">${TAG[p.kind]}</em>` : ''}</b><small>${stage ? AF.U.esc(stage) + ' · ' : ''}${AF.U.esc(p.level.title)}</small></span>
         <span class="jy-end" data-ic="${isDone ? 'check' : 'right'}"></span>`;
       b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(p.mod, p.level, p.index, 'journey'); });
       list.appendChild(b);
@@ -445,6 +488,8 @@
     Art.paint($('journey-char'), null, all ? 'cheer' : 'idle');
     $('journey-chest').innerHTML = AF.World.chest(all);
     show('journey');
+    // (said on the way in, not each time a lesson comes back here)
+    if (!back || all) Audio.say(all ? 'You did it all today! Well done!' : weekend ? 'It is review day! Let’s play what we learned.' : 'Here is today’s study. Let’s start!');
   }
 
   /* ============================================================
@@ -499,11 +544,13 @@
     current.area = mod.area;
     current.tier = tier;
     const area = AF.AREAS.filter(a => a.id === mod.area)[0];
-    renderHud('map', { title: mod.title, crumb: area ? area.island : '' });
+    renderHud('map', { title: mod.title, crumb: mod.stageCrumbs ? mod.stageCrumbs[tier] : area ? area.island : '' });
 
     const tabs = $('map-tiers');
+    const names = AF.stageNames(mod);
     tabs.hidden = count < 2;
-    tabs.innerHTML = AF.UI.tabs(AF.TIERS.slice(0, count), tier, Array.from({ length: count }, (_, t) => {
+    tabs.classList.toggle('many', count > 3);
+    tabs.innerHTML = AF.UI.tabs(names.slice(0, count), tier, Array.from({ length: count }, (_, t) => {
       const mine = levels.filter(l => (l.tier || 0) === t && !l.soon);
       return { open: L.tierOpen(mod.id, levels, t), total: mine.length, done: mine.filter(l => P.stars(mod.id, l.id) > 0).length };
     }));
@@ -513,7 +560,7 @@
         Audio.SFX.wrong();
         b.classList.add('shake');
         setTimeout(() => b.classList.remove('shake'), 500);
-        Audio.say(`Finish ${AF.TIERS[t - 1]} first.`);
+        Audio.say(`Finish ${names[t - 1]} first.`);
         return;
       }
       Audio.SFX.pop();
@@ -537,10 +584,13 @@
      4. play
      ============================================================ */
 
+  /** A speaking game, or a lesson with a speaking step in it. */
+  const speaks = (level) => level.type === 'speak' || (level.steps || []).some(s => s.type === 'speak');
+
   function startLevel(mod, level, index, from) {
     if (P.overLimit()) { openLimit(); return; }
     // The first speaking game stops to let a grown-up choose how it listens.
-    if (level.type === 'speak' && P.setting('speech') === 'ask') {
+    if (speaks(level) && P.setting('speech') === 'ask') {
       askSpeech(() => startLevel(mod, level, index, from));
       return;
     }
@@ -550,14 +600,18 @@
     current = { module: mod, level: level, index: index, area: mod.area, tier: level.tier || 0, from: from || 'map' };
     P.noteAttempt(mod.id, level.id);
     P.get().lastModule = mod.id;
+    // a Bahasa Indonesia lesson is spoken in Indonesian
+    Audio.setLang(level.lang || mod.lang);
 
     // the game's own painted icon beside its name, and a short "ready"
-    // card so every game opens the same way (tap it, or it goes by itself)
+    // card so every game opens the same way (tap it, or it goes by itself);
+    // a lesson opens on the road of its steps instead (engines/lesson.js)
     const kind = AF.Levels.kindIcon(level, mod);
     $('play-title').innerHTML = `<img class="sign-ic" src="art/${kind}.webp" alt="" draggable="false">${AF.U.esc(level.title)}`;
     const host = $('play-host');
     host.innerHTML = '';
-    readyCard(mod, level, kind);
+    drawSteps(null);
+    if (level.type !== 'lesson') readyCard(mod, level, kind);
 
     const api = {
       character: P.character,
@@ -565,6 +619,7 @@
       stretch: AF.Levels.stretch(mod.id, level.id),
       say: (t) => Audio.say(t),
       exit: () => backToMap(),
+      steps: drawSteps,
       finish: (mistakes, avgMs) => finishLevel(mistakes, avgMs)
     };
 
@@ -572,9 +627,18 @@
     mod.play(host, level, api);
   }
 
+  /* A lesson's steps above the game, the one being played lit up. */
+  function drawSteps(list, at) {
+    const el = $('play-steps');
+    el.hidden = !list;
+    el.innerHTML = list ? AF.UI.steps(list, at) : '';
+  }
+
   function finishLevel(mistakes, avgMs) {
     const mod = current.module, level = current.level, index = current.index;
-    const stars = AF.Levels.starsFor(mistakes || 0);
+    Audio.setLang('en');
+    drawSteps(null);
+    const stars = AF.Levels.starsFor(mistakes || 0, level);
     const res = P.setStars(mod.id, level.id, stars);
     P.noteResult(mod.id, level.id, mistakes || 0, avgMs || 0);
     if (mod.stop) mod.stop();
@@ -603,14 +667,15 @@
     const tierDone = res.first && !moduleDone &&
       playable.filter(l => (l.tier || 0) === tier).every(l => P.stars(mod.id, l.id) > 0);
 
+    const names = AF.stageNames(mod);
     const leave = (then) => {
       if (dayDone) {
         t.cheered = true; P.save();
-        AF.FX.party('Adventure done!', 'You finished today’s three games', then, 'ui/medal');
+        AF.FX.party('Today’s study done!', 'You finished everything for today', then, 'ui/medal');
       } else if (moduleDone) {
         AF.FX.party('All done!', `You finished ${mod.title}`, then, 'ui/trophy');
       } else if (tierDone) {
-        AF.FX.party(`${AF.TIERS[tier]} done!`, `${AF.TIERS[tier + 1] || 'The next stage'} is open`, then, 'world/chest-open');
+        AF.FX.party(`${names[tier]} done!`, `${names[tier + 1] || 'The next stage'} is open`, then, 'world/chest-open');
       } else then();
     };
 
@@ -638,7 +703,8 @@
     current.justPlayed = current.level ? current.level.id : null;
     if (mod && mod.stop) mod.stop();
     Audio.stop();
-    if (current.from === 'journey') { openJourney(); return; }
+    Audio.setLang('en');
+    if (current.from === 'journey') { openJourney(true); return; }
     if (mod) openMap(mod, current.level ? current.level.tier || 0 : null);
     else goHome();
   }
@@ -647,7 +713,7 @@
      moment, over the game while it sets up. */
   const KIND_NAME = { trace: 'Trace', pop: 'Pop!', code: 'Coding', speak: 'Say it', story: 'Story', memory: 'Memory',
     maze: 'Maze', match: 'Match', sort: 'Sort', song: 'Sing', puzzle: 'Build', path: 'In order', treasure: 'Breathe',
-    numbers: 'Numbers', shapes: 'Shapes', coin: 'Quiz' };
+    numbers: 'Numbers', shapes: 'Shapes', coin: 'Quiz', intro: 'Listen' };
   function readyCard(mod, level, kind) {
     const old = $('ready'); if (old) old.remove();
     if (!AF.FX.motionOK()) return;
@@ -666,6 +732,7 @@
     const mod = current.module;
     if (mod && mod.stop) mod.stop();
     Audio.stop();
+    Audio.setLang('en');
     current = { module: null, level: null, index: -1, area: null };
     renderHome();
     show('home');
@@ -682,8 +749,10 @@
   const SLIDES = [
     { pose: 'cheer', logo: true, demo: [], text: 'Meet your animal friend and play!',
       say: 'Hello! Welcome to Animal Friends. Let’s play and learn together!' },
-    { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'Letters'], ['stem', '#F2B618', 'Numbers'], ['life', '#E5535A', 'Feelings'], ['playtime', '#3E9BF0', 'Play']],
+    { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'ABC'], ['stem', '#F2B618', 'Math'], ['life', '#E5535A', 'Habits'], ['playtime', '#3E9BF0', 'Play']],
       text: 'Tap an island to play.', say: 'Tap an island to play.' },
+    { pose: 'point', title: 'Little steps', demo: [['sound', '#3E9BF0', 'Listen'], ['edit', '#F28A2E', 'Trace'], ['playtime', '#A45CE0', 'Play'], ['star', '#FFC93C', 'Quiz']],
+      text: 'Every lesson has little steps.', say: 'Every lesson has little steps. Listen, trace, play, and then a quiz!' },
     { pose: 'idle', title: 'Listen, then tap', demo: [['sound', '#3E9BF0', 'Listen'], ['check', '#3CCB7F', 'Tap'], ['hint', '#FFC93C', 'Help']],
       text: 'Listen to me, then tap the answer.', say: 'Listen to me, then tap the answer. I will help you!' },
     { pose: 'cheer', title: 'Win stars', demo: [['star', '#FFC93C', ''], ['star', '#FFC93C', ''], ['star', '#FFC93C', '']],
@@ -782,8 +851,9 @@
     Art.paint($('grown-char'), null, 'idle');
 
     /* ---- headline numbers ---- */
+    const core = AF.registry.filter(m => m.core && !m.soon).sort((a, b) => a.core - b.core);
     let total = 0, cleared = 0;
-    AF.registry.forEach(m => m.levels.forEach(l => {
+    core.forEach(m => m.levels.forEach(l => {
       if (l.soon) return;
       total++;
       if (P.stars(m.id, l.id) > 0) cleared++;
@@ -791,15 +861,54 @@
     const limit = P.setting('limit');
     $('grown-stats').innerHTML = [
       ['⭐', P.allStars(), 'stars'],
-      ['✅', `${cleared}/${total}`, 'levels'],
+      ['✅', `${cleared}/${total}`, 'lessons'],
       ['🔥', P.streak(), 'day streak'],
       ['⏱️', P.minutesToday() + (limit ? '/' + limit : ''), 'min today']
     ].map(s => `<div class="stat"><em>${s[0]}</em><b>${s[1]}</b><span>${s[2]}</span></div>`).join('');
 
-    /* ---- progress per area and subject ---- */
+    /* ---- this week: minutes a day (Wink suggests 10 to 20) ---- */
+    const week = P.week(7), most = Math.max(20, ...week.map(d => d.min));
+    const DAY = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    $('grown-week').innerHTML = week.map((d, i) => `
+      <span class="wk-day${i === 6 ? ' today' : ''}" aria-label="${DAY[d.day]}: ${d.min} minutes">
+        <span class="wk-bar"><i style="height:${Math.round(d.min / most * 100)}%"></i></span><b>${d.min || ''}</b><small>${DAY[d.day]}</small>
+      </span>`).join('') + `<span class="wk-goal" style="--g:${(15 / most).toFixed(3)}" title="15 minutes"></span>`;
+
+    /* ---- the four core subjects: where the child is, stage by stage,
+       and (in Math, Phonics...) which topics are sure and which need practice ---- */
+    $('grown-core').innerHTML = core.map(m => {
+      const L = AF.Levels, names = AF.stageNames(m), count = L.tierCount(m.levels);
+      const nextLv = m.levels[L.nextIndex(m.id, m.levels)];
+      const lv = m.levels.filter(l => !l.soon);
+      const done = lv.filter(l => P.stars(m.id, l.id) > 0).length;
+      const now = done === lv.length ? 'All done!' : `Now: ${names[nextLv.tier || 0]}${m.stageCrumbs ? ' · ' + m.stageCrumbs[nextLv.tier || 0] : ''} · ${nextLv.title}`;
+      const segs = Array.from({ length: count }, (_, t) => {
+        const mine = lv.filter(l => (l.tier || 0) === t), got = mine.filter(l => P.stars(m.id, l.id) > 0).length;
+        return `<span class="seg-bar" title="${names[t]}: ${got}/${mine.length}"><i style="width:${mine.length ? got / mine.length * 100 : 0}%"></i><small>${t + 1}</small></span>`;
+      }).join('');
+      let topics = '';
+      if (m.topics) {
+        topics = '<div class="topics">' + Object.keys(m.topics).map(k => {
+          const mine = lv.filter(l => l.topic === k && !l.review);
+          if (!mine.length) return '';
+          const st = mine.map(l => P.stars(m.id, l.id));
+          const played = st.filter(s => s > 0);
+          const cls = !played.length ? 'not' : played.length === st.length && played.every(s => s === 3) ? 'sure' : played.some(s => s < 2) ? 'help' : 'going';
+          return `<span class="topic ${cls}">${AF.U.esc(m.topics[k])}</span>`;
+        }).join('') + '</div>';
+      }
+      return `<div class="core-row" style="--c:${m.colour}">
+        <div class="core-head">${AF.Icon.jelly(m.id, m.colour, 'core-ic', m.icon)}<b>${AF.U.esc(m.title)}</b><span class="prog-num">${done}/${lv.length}</span></div>
+        <div class="core-now">${AF.U.esc(now)}</div>
+        <div class="core-segs">${segs}</div>${topics}
+      </div>`;
+    }).join('') + '<p class="topic-key"><span class="topic sure">sure</span><span class="topic going">learning</span><span class="topic help">needs practice</span><span class="topic not">not yet</span></p>';
+
+    /* ---- the extras: one bar per subject ---- */
     $('grown-progress').innerHTML = AF.AREAS.map(area => {
-      const mods = AF.registry.filter(m => m.area === area.id && !m.soon);
-      return `<div class="prog-area"><div class="prog-head">${area.icon} ${area.title}</div>${mods.map(m => {
+      const mods = AF.registry.filter(m => m.area === area.id && !m.soon && !m.core);
+      if (!mods.length) return '';
+      return `<div class="prog-area"><div class="prog-head">${area.icon} ${area.island}</div>${mods.map(m => {
         const lv = m.levels.filter(l => !l.soon);
         const done = lv.filter(l => P.stars(m.id, l.id) > 0).length;
         return `<div class="prog-row">
@@ -859,6 +968,8 @@
     }[P.setting('speech')] || 'Not chosen yet — you will be asked the first time Say It! is played.';
 
     $('voice-name').textContent = Audio.hasVoice() ? Audio.voiceName() : 'No English voice found on this device';
+    $('voice-id').textContent = Audio.hasVoice('id') ? Audio.voiceName('id')
+      : 'None found. Add the Indonesian voice in the device’s text-to-speech settings for Bahasa Indonesia.';
     $('stat-char').textContent = P.skin().name + ' the ' + P.skin().species;
     $('stat-3d').textContent = Art.has3D ? 'On' : 'Not supported here — using flat pictures';
     $('stat-offline').textContent = navigator.serviceWorker && navigator.serviceWorker.controller ? 'Yes'
@@ -885,8 +996,8 @@
     const E = AF.Engines || {};
     return !!(AF.Icon && AF.World && AF.Art && AF.Profile && AF.Audio && AF.Speech && AF.FX && AF.Levels && AF.Gen &&
       E.choose && E.order && E.build && E.memory && E.maze && E.speak && E.story && E.song && E.breathe &&
-      E.sort && E.match && E.trace && E.pop && E.code && AF.Drag &&
-      AF.registry && AF.registry.length >= 14);
+      E.sort && E.match && E.trace && E.pop && E.code && E.lesson && E.intro && AF.Drag &&
+      ['phonics', 'english', 'bahasa', 'math'].every(id => AF.module(id)) && AF.registry && AF.registry.length >= 13);
   }
 
   function boot() {
@@ -999,7 +1110,7 @@
   }
 
   /* A way to jump straight to a screen, for testing and demos:
-       ?go=home | maker | parents | tutorial | journey | area:stem | map:letters | map:letters:2 | play:maze:m3
+       ?go=home | maker | parents | tutorial | journey | area:stem | map:math | map:math:4 | play:phonics:ph1-1 | play:maze:m3
      Add &friend=4 to start as the fifth ready-made friend (only before a friend is made).
      A link can't get past the grown-up check: ?go=parents and &speech=check still ask the sum. */
   function deepLink() {

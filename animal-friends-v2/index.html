@@ -97,12 +97,12 @@
   </div>
   <footer class="journey">
     <button class="btn go jr-pill" id="jr-open">
-      <span class="jr-text">Daily Journey</span><span class="jr-stars" id="today-row"></span><span class="jr-play" data-ic="play"></span>
+      <span class="jr-text">Today’s Study</span><span class="jr-stars" id="today-row"></span><span class="jr-play" data-ic="play"></span>
     </button>
   </footer>
 </main>
 
-<!-- ============ 2b. DAILY JOURNEY ============ -->
+<!-- ============ 2b. TODAY'S STUDY (was the Daily Journey) ============ -->
 <main id="journey" class="screen">
   <div class="hud"></div>
   <div class="jy-list" id="journey-list"></div>
@@ -135,6 +135,7 @@
     <h2 class="sign" id="play-title"></h2>
     <button class="round-btn" data-home data-ic="home" aria-label="Home"></button>
   </header>
+  <ol class="steps" id="play-steps" aria-label="Lesson steps" hidden></ol>
   <div class="play-stage" id="play-host"></div>
 </main>
 
@@ -223,9 +224,38 @@
         <summary><span class="g-ic" data-ic="chart" style="--h:#3E9BF0"></span>Progress report</summary>
         <div class="g-body">
           <div class="stat-row" id="grown-stats"></div>
-          <div class="grown-progress" id="grown-progress"></div>
+          <h3 class="grown-h">This week (minutes a day)</h3>
+          <div class="week" id="grown-week"></div>
+          <h3 class="grown-h">The four core subjects</h3>
+          <div class="grown-core" id="grown-core"></div>
           <h3 class="grown-h">Worth another go</h3>
           <div class="grown-list" id="grown-practice"></div>
+          <h3 class="grown-h">Fun &amp; Joy extras</h3>
+          <div class="grown-progress" id="grown-progress"></div>
+        </div>
+      </details>
+
+      <details class="g-row">
+        <summary><span class="g-ic" data-ic="journey" style="--h:#A45CE0"></span>How the lessons work</summary>
+        <div class="g-body grown-how">
+          <p>The four core subjects are modelled on the curriculum Danbi Education describes for its <b>Wink</b> home-learning
+            programme (Korea; Animal Friends is not affiliated with it): short daily lessons, each one a small road from a new idea to using it:
+            <b>concept → practice → problem-solving → review</b>.</p>
+          <ul>
+            <li><b>Phonics</b> (4 steps): letter sounds a–z, short and long vowels, blends and digraphs, silent letters and tricky sounds.
+              Each lesson: <i>Listen → Trace → Play → Quiz</i>.</li>
+            <li><b>English</b> (4 stages): basic expressions, everyday expressions, my world, reading and grammar.
+              Each lesson: <i>Story → Words → Say it → Quiz</i>.</li>
+            <li><b>Math</b> (5 levels): every level covers the six areas — numbers, calculation, shapes, measuring, patterns and data —
+              from first counting (3–4 years) to the upper primary years. Each lesson: <i>Story → Real life → Play → Quiz</i>.</li>
+            <li><b>Bahasa Indonesia</b> (4 tahap): huruf a–z, suku kata, suku kata lanjutan, membaca kalimat.
+              Each lesson: <i>Kenal → Tebalkan → Kuasai</i>.</li>
+          </ul>
+          <p><b>Today’s Study</b> plans 10–15 minutes: two core subjects on each weekday, in turn (Phonics and Math, then English
+            and Bahasa), plus one Fun &amp; Joy game. A lesson not finished comes back the next day. At the weekend there is nothing new:
+            two lessons already played come back for review. Every stage ends with a review lesson before its treasure chest.</p>
+          <p>Ages: the first levels suit children from about 3; later levels reach early primary school. Use <b>Open every level</b>
+            below to let an older child start further on.</p>
         </div>
       </details>
 
@@ -267,6 +297,7 @@
           <div class="grown-meta">
             Friend: <b id="stat-char">—</b><br>
             Voice in use: <b id="voice-name">—</b><br>
+            Indonesian voice: <b id="voice-id">—</b><br>
             3D characters: <b id="stat-3d">—</b><br>
             Works offline: <b id="stat-offline">—</b>
           </div>
@@ -318,9 +349,13 @@
 <script src="engines/code.js"></script>
 <script src="engines/voice.js"></script>
 <script src="engines/media.js"></script>
+<script src="engines/lesson.js"></script>
 <!-- content: WHAT to teach -->
 <script src="content/bank.js"></script>
-<script src="content/literacy.js"></script>
+<script src="content/phonics.js"></script>
+<script src="content/english.js"></script>
+<script src="content/bahasa.js"></script>
+<script src="content/math.js"></script>
 <script src="content/stem.js"></script>
 <script src="content/life.js"></script>
 <script src="content/play.js"></script>

@@ -50,7 +50,7 @@
             <button class="round-btn" data-prev data-ic="back" aria-label="Back" ${page === 0 ? 'disabled' : ''}></button>
             <button class="round-btn" data-say data-ic="sound" aria-label="Read it again"></button>
             <span class="story-page">${page + 1} / ${lv.pages.length}</span>
-            ${last ? `<button class="pill-go story-end" data-next>${lv.quiz ? 'Questions' : 'The end'} <i data-ic="right"></i></button>`
+            ${last ? `<button class="pill-go story-end" data-next>${E.t(S, lv.quiz ? 'questions' : 'theEnd')} <i data-ic="right"></i></button>`
               : '<button class="round-btn story-go" data-next data-ic="right" aria-label="Next page"></button>'}
           </div>
         </div>`;
@@ -64,7 +64,7 @@
         AF.Audio.stop();
         if (!lv.quiz) { S.done(); return; }
         // Hand over to the choose engine for the questions.
-        S.level = { type: 'choose', fixed: lv.quiz.map(q => Object.assign({}, q, {
+        S.level = { type: 'choose', lang: lv.lang, fixed: lv.quiz.map(q => Object.assign({}, q, {
           say: fill(q.say), text: q.text ? fill(q.text) : null, praise: q.praise ? fill(q.praise) : null
         })) };
         S.round = 0;

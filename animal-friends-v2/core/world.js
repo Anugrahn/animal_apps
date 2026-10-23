@@ -143,7 +143,7 @@
           aria-label="${m.title}, ${it.done} of ${it.of} stages done">
         ${AF.Icon.jelly(m.id, m.colour, 'lm-ic', m.icon)}
         <span class="lm-name">${m.title}</span>
-        ${it.started || it.done ? AF.UI.stars(it.done, 'lm-stars') : ''}
+        ${it.started || it.done ? AF.UI.stars(it.done, 'lm-stars', it.of) : ''}
         ${all ? `<span class="lm-chest">${chest(true)}</span>` : ''}
       </button>`;
     }).join('') + '<span class="lm-me"></span>';

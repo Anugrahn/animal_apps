@@ -225,36 +225,43 @@
 
   /* ============================================================
      BUILD
-     level: { words: [{ w, e }], rounds, extra: n, pool: 'satpin' }
+     level: { words: [{ w, e, parts? }], rounds, extra: n, pool: 'satpin' | [...] }
+     A word is built from its letters, or, given `parts`, from its
+     syllables ("bo" + "la"): Bahasa Indonesia is read syllable by
+     syllable. `pool` is where the spare tiles come from.
      ============================================================ */
   E.build = function (S) {
     const lv = S.level;
     const words = U.shuffle(lv.words).slice(0, lv.rounds);
-    let word, pos, wrong, locked;
+    const id = lv.lang === 'id';
+    let word, parts, pos, wrong, locked;
 
+    /* a tile's sound: a letter's own sound, or the syllable said */
+    const sound = (part) => !part ? null : id || part.length > 1 ? AF.Audio.say(part, { rate: 0.7 }) : AF.Audio.sound(AF.phonic(part));
 
     function next() {
       word = words[S.round];
+      parts = word.parts || word.w.split('');
       pos = 0; wrong = 0; locked = false;
 
-      const letters = word.w.split('');
       // c and k make the same sound, so a word with one never offers the other
-      const avoid = /[ck]/.test(word.w) ? letters.concat(['c', 'k']) : letters;
-      const spare = U.pick((lv.pool || 'satpinmdgock').split(''), lv.extra + (S.api.stretch ? 1 : 0), avoid);
-      const tiles = U.shuffle(letters.concat(spare));
+      const avoid = !word.parts && /[ck]/.test(word.w) ? parts.concat(['c', 'k']) : parts;
+      const pool = Array.isArray(lv.pool) ? lv.pool : (lv.pool || 'satpinmdgock').split('');
+      const spare = U.pick(pool, (lv.extra || 0) + (S.api.stretch ? 1 : 0), avoid);
+      const tiles = U.shuffle(parts.concat(spare));
 
       const stage = E.frame(S, {
-        text: `Build the word <b>${U.esc(word.w)}</b>`, rounds: words.length, cls: 'stage-build'
+        text: E.t(S, 'buildText', word.w), rounds: words.length, cls: 'stage-build' + (word.parts ? ' syll' : '')
       });
       stage.innerHTML = `
         <div class="build-top">
           <div class="build-pic">${word.e}</div>
-          <div class="build-slots">${letters.map((c, i) => `<span class="bslot" data-b="${i}"></span>`).join('')}</div>
+          <div class="build-slots">${parts.map((c, i) => `<span class="bslot" data-b="${i}"></span>`).join('')}</div>
         </div>
-        <div class="tiles">${tiles.map(c => `<button class="tile-l" data-c="${c}">${c}</button>`).join('')}</div>`;
+        <div class="tiles">${tiles.map(c => `<button class="tile-l" data-c="${U.esc(c)}">${U.esc(c)}</button>`).join('')}</div>`;
 
-      S.replay = () => E.talk(S, `Build the word, ${word.w}.`, {
-        onEnd: () => { if (S.alive && !locked) AF.Audio.sound(AF.phonic(word.w[pos])); }
+      S.replay = () => E.talk(S, E.t(S, 'build', word.w), {
+        onEnd: () => { if (S.alive && !locked) sound(parts[pos]); }
       });
 
       const btns = Array.from(stage.querySelectorAll('.tile-l'));
@@ -273,15 +280,15 @@
     }
 
     function tap(btn, btns, stage) {
-      if (btn.dataset.c !== word.w[pos]) {
+      if (btn.dataset.c !== parts[pos]) {
         if (shaking(btn)) { AF.Drag.home(btn); return false; }
         wrong++;
         nope(S, btn);
         AF.Drag.home(btn);
         if (wrong >= 2) {
-          const hint = btns.filter(b => b.dataset.c === word.w[pos] && !b.classList.contains('used'))[0];
+          const hint = btns.filter(b => b.dataset.c === parts[pos] && !b.classList.contains('used'))[0];
           if (hint) hint.classList.add('hint');
-          S.later(() => AF.Audio.sound(AF.phonic(word.w[pos])), 450);
+          S.later(() => sound(parts[pos]), 450);
         }
         return false;
       }
@@ -289,7 +296,7 @@
       wrong = 0;
       btn.classList.remove('hint');
       const slot = stage.querySelector(`[data-b="${pos}"]`);
-      const ch = word.w[pos];
+      const ch = parts[pos];
       slot.classList.remove('want');
       AF.FX.send(btn, slot, () => {
         if (!S.alive) return;
@@ -302,7 +309,7 @@
       const nextSlot = stage.querySelector(`[data-b="${pos}"]`);
       if (nextSlot) nextSlot.classList.add('want');
 
-      if (pos < word.w.length) { AF.Audio.sound(AF.phonic(btn.dataset.c)); return true; }
+      if (pos < parts.length) { sound(btn.dataset.c); return true; }
 
       locked = true;
       S.lap();
@@ -318,9 +325,9 @@
         S.round++;
         if (S.round >= words.length) S.done(); else E.swap(S, next);
       };
-      AF.Audio.sound(AF.blend(word.w), {
-        onEnd: () => S.later(() => AF.Audio.say(word.w, { onEnd: () => S.later(move, 900) }), 600)
-      });
+      const whole = () => S.later(() => AF.Audio.say(word.w, { onEnd: () => S.later(move, 900) }), 600);
+      if (word.parts || id) AF.Audio.say(parts.join(' … '), { rate: 0.75, onEnd: whole });
+      else AF.Audio.sound(AF.blend(word.w), { onEnd: whole });
       S.later(move, 12000);         // in case something cut the blend off
       return true;
     }
@@ -378,7 +385,7 @@
       : `<span class="mem-w" style="--len:${String(f.t).length}">${U.esc(f.t)}</span>`;
 
     // pairs found show as the progress dots every game has
-    const stage = E.frame(S, { text: 'Find the <b>pairs</b>!', cls: 'stage-memory', rounds: n });
+    const stage = E.frame(S, { text: E.t(S, 'pairsText'), cls: 'stage-memory', rounds: n });
     const total = cards.length;
     // upright phone: as few columns as keep the cards big (2 for six cards, 3 for up to twelve)
     const cols = total <= 6 ? 2 : total <= 12 ? 3 : 4;
@@ -397,13 +404,13 @@
             </button>`).join('')}
         </div>
       </div>
-      <div class="stage-cap">Match the pairs!</div>`;
+      <div class="stage-cap">${E.t(S, 'pairsCap')}</div>`;
 
     const btns = Array.from(stage.querySelectorAll('.mem'));
     // A card is called by its number while face down, by what is on it once seen.
     const name = (b) => b.setAttribute('aria-label', b.classList.contains('up') || b.classList.contains('matched')
       ? cards[b.dataset.i].w + (b.classList.contains('matched') ? ', found' : '') : `Card ${+b.dataset.i + 1}`);
-    S.replay = () => E.talk(S, 'Find the pairs!');
+    S.replay = () => E.talk(S, E.t(S, 'pairs'));
     S.later(() => { S.replay(); S.mark(); }, 320);
 
     /* A first look: the cards lie face up for a moment, then turn

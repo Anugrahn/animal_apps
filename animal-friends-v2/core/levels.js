@@ -7,6 +7,8 @@
          0 mistakes  -> 3 stars
          1-2         -> 2 stars
          3+          -> 1 star
+     A lesson (four short games in a row) asks four times as much, so
+     it allows a little more: 0-1 -> 3, 2-4 -> 2, 5+ -> 1.
      Finishing always earns at least one star. There is no fail state.
 
    * A level unlocks when the one before it has any star at all.
@@ -25,9 +27,10 @@
 
   const Levels = {
 
-    starsFor(mistakes) {
-      if (mistakes <= 0) return 3;
-      if (mistakes <= 2) return 2;
+    starsFor(mistakes, level) {
+      const lesson = level && level.type === 'lesson';
+      if (mistakes <= (lesson ? 1 : 0)) return 3;
+      if (mistakes <= (lesson ? 4 : 2)) return 2;
       return 1;
     },
 
@@ -66,11 +69,17 @@
     /** The painted icon for the kind of game a level is (a path under art/). */
     kindIcon(lv, mod) {
       const T = { trace: 'trace', pop: 'pop', code: 'code', speak: 'speak', story: 'story', memory: 'memory', maze: 'maze',
-        match: 'match', sort: 'sort', song: 'song', build: 'puzzle', order: 'path', breathe: 'treasure' };
+        match: 'match', sort: 'sort', song: 'song', build: 'puzzle', order: 'path', breathe: 'treasure', intro: 'story' };
+      // a review lesson is the treasure hunt before the chest
+      if (lv.type === 'lesson' && lv.review) return 'game/treasure';
       if (T[lv.type]) return 'game/' + T[lv.type];
-      // a question game wears its subject's own icon (a heart for Feelings, a flask for Discover...)
-      return AF.Icon.painted(mod.id) ? 'subj/' + mod.id : 'game/coin';
+      // a lesson and a question game wear their subject's own icon (a heart for Feelings, a flask for Discover...)
+      const own = AF.Icon.painted(mod.id);
+      return own ? own.replace(/^art\/|\.webp$/g, '') : 'game/coin';
     },
+
+    /** What a subject calls its stages ("Step 1", "Level 1", "Tahap 1"...). */
+    stageName(mod, t) { return AF.stageNames(mod)[t] || ''; },
 
     /** 0 = none, 1 = dim wrong answers, 2 = also replay the prompt. */
     helpLevel(moduleId, levelId) {
@@ -152,7 +161,7 @@
 
         node.innerHTML = `
           <span class="lv-disc"><img class="lv-stone" src="art/ui/stone-${isNext ? 'blue' : !unlocked || lv.soon ? 'lock' : 'gold'}.webp" alt="" draggable="false">${unlocked && !lv.soon ? `<b>${i + 1}</b>` : ''}</span>
-          ${unlocked && !lv.soon && !stars ? `<img class="lv-kind${isNext ? '' : ' small'}" src="art/${Levels.kindIcon(lv, moduleDef)}.webp" alt="" draggable="false">` : ''}
+          ${unlocked && !lv.soon && (!stars || lv.review) ? `<img class="lv-kind${isNext ? '' : ' small'}" src="art/${Levels.kindIcon(lv, moduleDef)}.webp" alt="" draggable="false">` : ''}
           ${stars > 0 ? AF.UI.stars(stars, 'lv-stars') : ''}
           <span class="lv-name">${lv.title}</span>`;
 

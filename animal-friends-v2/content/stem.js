@@ -2,13 +2,13 @@
    content/stem.js — Science, Technology, Engineering, Maths
    ------------------------------------------------------------
    Curriculum map (lingokids_content_architecture.md, section 3):
-     Pre-numeracy       -> Numbers   (cardinality, counting, + and −)
-                        -> Shapes    (geometry, colour, patterns, size)
      Scientific inquiry -> Discover  (biology, earth science, space,
-                                      simple physics)
+                                      simple physics, animals)
+     First coding       -> Coding    (planning steps in order)
 
-   Maths follows concrete -> pictorial -> symbolic: the child counts
-   real pictures long before a bare "2 + 1" appears.
+   Maths moved to content/math.js in v4 (the Wink curriculum: five
+   levels, each covering six areas). Numbers and Shapes were folded
+   into it.
    ============================================================ */
 (function (AF) {
   'use strict';
@@ -19,131 +19,6 @@
   const step = (e, label) => ({ e: e, label: label });
   /* 'goes' or 'go': plural words (stars) take the plural verb */
   const pl = (word, one, many) => /[^su]s$/.test(word) ? many : one;   // (not bus, glass)
-
-  /* ---------------- Numbers ---------------- */
-
-  AF.register({
-    id: 'numbers', area: 'stem',
-    title: 'Numbers', icon: '🔢', colour: '#36D6B5',
-    blurb: 'Count & add',
-    note: 'Count the pictures, tap the number',
-    skill: 'Counting and early sums',
-    tip: 'Count real things together: stairs, spoons, socks. Touch each one as you say the number.',
-    levels: AF.tiers([
-      /* ---- Basic: numbers to five ---- */
-      { id: 'n1', title: 'Count to 3', icon: '3', type: 'choose', rounds: 5, gen: G.count(1, 3, 3) },
-      { id: 'nt1', title: 'Trace 1 2 3', icon: '✏️', type: 'trace', kind: 'number', set: [1, 2, 3], ordered: true },
-      { id: 'n2', title: 'Count to 5', icon: '5', type: 'choose', rounds: 6, gen: G.count(1, 5, 3) },
-      { id: 'nm1', title: 'Number & stars', icon: '⭐', type: 'match', rounds: 3, n: 3, pairs: PR.count(1, 5),
-        say: 'Match each number to the stars.', text: 'Match each <b>number</b> to the stars' },
-      { id: 'np1', title: 'Pop the number', icon: '🎈', type: 'pop', rounds: 4, gen: G.numeral(1, 5, 3) },
-      { id: 'n3', title: 'Find the number', icon: '👂', type: 'choose', rounds: 6, gen: G.numeral(1, 10, 3) },
-      { id: 'nt2', title: 'Trace 4 5 6', icon: '✏️', type: 'trace', kind: 'number', set: [4, 5, 6], ordered: true }
-    ], [
-      /* ---- Intermediate: numbers to ten, order, first sums ---- */
-      { id: 'n4', title: 'Count to 10', icon: '10', type: 'choose', rounds: 7, gen: G.count(4, 10, 4) },
-      { id: 'n5', title: 'More or fewer', icon: '⚖️', type: 'choose', rounds: 7, gen: G.compare(6) },
-      { id: 'nt3', title: 'Trace 7 8 9 0', icon: '✏️', type: 'trace', kind: 'number', set: [7, 8, 9, 0], ordered: true },
-      { id: 'n6', title: 'In order', icon: '🔢', type: 'order', pick: 3, sets: [
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([1, 2, 3, 4]), praise: 'One, two, three, four!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([2, 3, 4, 5]), praise: 'Two, three, four, five!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([4, 5, 6, 7]), praise: 'Four, five, six, seven!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([6, 7, 8, 9, 10]), praise: 'Six, seven, eight, nine, ten!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([1, 3, 5, 7]), praise: 'One, three, five, seven!' }
-      ] },
-      { id: 'n10', title: 'Before & after', icon: '↔️', type: 'choose', rounds: 7, gen: G.neighbour(2, 9, 3) },
-      { id: 'nm2', title: 'Match to 10', icon: '🔟', type: 'match', rounds: 3, n: 4, pairs: PR.count(3, 10, '🔵'),
-        say: 'Match each number to the dots.', text: 'Match each <b>number</b> to the dots' },
-      { id: 'n7', title: 'Add to 5', icon: '➕', type: 'choose', rounds: 7, gen: G.add(5, 3) },
-      { id: 'n8', title: 'Take away', icon: '➖', type: 'choose', rounds: 7, gen: G.takeAway(5, 3) }
-    ], [
-      /* ---- Advanced: sums to ten, missing numbers, counting in steps ---- */
-      { id: 'n9', title: 'Add to 10', icon: '🔟', type: 'choose', rounds: 8, gen: G.add(10, 4) },
-      { id: 'n11', title: 'Take away to 10', icon: '➖', type: 'choose', rounds: 8, gen: G.takeAway(10, 4) },
-      { id: 'n12', title: 'Bigger number', icon: '🐘', type: 'choose', rounds: 8, gen: G.bigger(1, 20) },
-      { id: 'n13', title: 'How many more?', icon: '❓', type: 'choose', rounds: 8, gen: G.missing(8, 4) },
-      { id: 'n14', title: 'Count in twos', icon: '2', type: 'choose', rounds: 8, gen: G.skip([2], 20) },
-      { id: 'n15', title: 'Fives and tens', icon: '5', type: 'choose', rounds: 8, gen: G.skip([5, 10], 60) },
-      { id: 'n16', title: 'Big order', icon: '🔢', type: 'order', pick: 3, sets: [
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([3, 6, 8, 11, 12]), praise: 'Well ordered!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([2, 4, 6, 8, 10]), praise: 'Two, four, six, eight, ten!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([5, 7, 9, 10, 12]), praise: 'Well ordered!' },
-        { say: 'Put the numbers in order. Start with the smallest.', text: 'Smallest <b>first</b>', steps: num([1, 5, 8, 9, 11]), praise: 'Well ordered!' }
-      ] },
-      { id: 'np2', title: 'Pop to 12', icon: '🎈', type: 'pop', rounds: 5, gen: G.numeral(6, 12, 4) }
-    ])
-  });
-
-  /* ---------------- Shapes & Patterns ---------------- */
-
-  const HUNT = [
-    ['circle', [['ball', '⚽'], ['clock', '🕒'], ['biscuit', '🍪'], ['coin', '🪙']]],
-    ['triangle', [['pizza slice', '🍕'], ['tent', '⛺'], ['mountain', '⛰️']]],
-    ['rectangle', [['door', '🚪'], ['phone', '📱'], ['book', '📕'], ['bus', '🚌']]],
-    ['square', [['present', '🎁'], ['picture', '🖼️'], ['dice', '🎲']]]
-  ];
-  const huntList = [];
-  HUNT.forEach((h, i) => h[1].forEach(thing => {
-    // A square IS a rectangle, so never offer one as the wrong answer for the other.
-    const boxy = (n) => n === 'square' || n === 'rectangle';
-    const others = AF.U.shuffle(HUNT.filter((x, j) => j !== i && !(boxy(h[0]) && boxy(x[0])))).map(x => AF.U.one(x[1]));
-    huntList.push({
-      say: `Which one is shaped like a ${h[0]}?`, text: `Which one is shaped like a <b>${h[0]}</b>?`,
-      show: G.shape(h[0], '#FFC93C'),
-      options: [{ key: thing[0], emoji: thing[1] }].concat(others.slice(0, 2).map(o => ({ key: o[0], emoji: o[1] }))),
-      answer: thing[0], praise: `The ${thing[0]} is a ${h[0]}`
-    });
-  }));
-
-  AF.register({
-    id: 'shapes', area: 'stem',
-    title: 'Shapes', icon: '🔺', colour: '#4CC3FF',
-    blurb: 'Shapes & patterns',
-    skill: 'Shapes, colours and patterns',
-    tip: 'Go on a shape hunt at home. How many circles can you find in the kitchen?',
-    levels: AF.tiers([
-      /* ---- Basic: name it, draw it, spot the pattern ---- */
-      { id: 'sh1', title: 'Shapes', icon: '⭕', type: 'choose', rounds: 6, gen: G.shapes(['circle', 'square', 'triangle', 'star'], 3) },
-      { id: 'sht1', title: 'Draw lines', icon: '✏️', type: 'trace', kind: 'line', set: ['across', 'down', 'slide', 'zigzag', 'wave'], ordered: true, rounds: 4 },
-      { id: 'shm1', title: 'Shape holes', icon: '🧩', type: 'match', rounds: 3, n: 3, pairs: PR.shape(['circle', 'square', 'triangle', 'star', 'heart']),
-        say: 'Put each shape in its place.', text: 'Put each <b>shape</b> in its place' },
-      { id: 'sh2', title: 'Big & small', icon: '🐘', type: 'choose', rounds: 5, gen: G.size() },
-      { id: 'sh3', title: 'What’s next?', icon: '🔴', type: 'choose', rounds: 6, gen: G.pattern(['AB']) },
-      { id: 'shp1', title: 'Pop the shape', icon: '🎈', type: 'pop', rounds: 4, gen: G.shapes(['circle', 'square', 'triangle', 'star'], 3) }
-    ], [
-      /* ---- Intermediate: eight shapes, shapes in the real world, colour ---- */
-      { id: 'sh4', title: 'More shapes', icon: '💠', type: 'choose', rounds: 7, gen: G.shapes(AF.SHAPES, 4) },
-      { id: 'sht2', title: 'Draw shapes', icon: '✏️', type: 'trace', kind: 'line', set: ['circle', 'square', 'triangle', 'hill', 'loop'], ordered: true, rounds: 4 },
-      { id: 'sh5', title: 'Shape hunt', icon: '🔎', type: 'choose', rounds: 7, gen: G.ask(huntList) },
-      { id: 'shs1', title: 'Sort by colour', icon: '🎨', type: 'sort', rounds: 9,
-        items: [it('🍎', 'apple', 'red'), it('🍓', 'strawberry', 'red'), it('🚒', 'fire engine', 'red'), it('🌹', 'rose', 'red'),
-          it('🍌', 'banana', 'yellow'), it('⭐', 'star', 'yellow'), it('🐥', 'chick', 'yellow'), it('🍋', 'lemon', 'yellow'),
-          it('🐸', 'frog', 'green'), it('🥦', 'broccoli', 'green'), it('🍃', 'leaf', 'green'), it('🐢', 'turtle', 'green')],
-        bins: [{ key: 'red', emoji: '🔴', label: 'Red', c: '#EE5B5B' }, { key: 'yellow', emoji: '🟡', label: 'Yellow', c: '#F2B618' },
-          { key: 'green', emoji: '🟢', label: 'Green', c: '#58B368' }],
-        ask: i => `What colour is the ${i.w}?`, tell: (i, b) => `The ${i.w} is ${b.key}` },
-      { id: 'shm2', title: 'More holes', icon: '🧩', type: 'match', rounds: 3, n: 4, pairs: PR.shape(AF.SHAPES),
-        say: 'Put each shape in its place.', text: 'Put each <b>shape</b> in its place' },
-      { id: 'sh6', title: 'Tricky patterns', icon: '🧠', type: 'choose', rounds: 7, gen: G.pattern(['ABB', 'AAB', 'ABC']) }
-    ], [
-      /* ---- Advanced: sides and corners, long patterns, ordering by size ---- */
-      { id: 'sh7', title: 'How many sides?', icon: '📐', type: 'choose', rounds: 8, gen: G.sides() },
-      { id: 'sh8', title: 'Long patterns', icon: '🧵', type: 'choose', rounds: 8, gen: G.pattern(['AABB', 'ABCB', 'ABBC', 'AABC']) },
-      { id: 'sh9', title: 'Small to big', icon: '📏', type: 'order', pick: 3, sets: [
-        { say: 'Put them in order. Start with the smallest.', text: 'Smallest <b>first</b>',
-          steps: [step('🐜', 'ant'), step('🐭', 'mouse'), step('🐶', 'dog'), step('🐘', 'elephant')], praise: 'Ant, mouse, dog, elephant!' },
-        { say: 'Put them in order. Start with the smallest.', text: 'Smallest <b>first</b>',
-          steps: [step('🍒', 'cherry'), step('🍎', 'apple'), step('🍉', 'watermelon'), step('🌳', 'tree')], praise: 'From small to big!' },
-        { say: 'Put them in order. Start with the smallest.', text: 'Smallest <b>first</b>',
-          steps: [step('🚲', 'bike'), step('🚗', 'car'), step('🚌', 'bus'), step('✈️', 'plane')], praise: 'Bike, car, bus, plane!' },
-        { say: 'Put them in order. Start with the smallest.', text: 'Smallest <b>first</b>',
-          steps: [step('🥚', 'egg'), step('🐥', 'chick'), step('🐔', 'hen'), step('🦒', 'giraffe')], praise: 'From small to big!' }
-      ] },
-      { id: 'sh10', title: 'Corner shapes', icon: '⬡', type: 'choose', rounds: 8,
-        gen: G.shapes(AF.SHAPES.concat(['pentagon', 'hexagon']), 4) },
-      { id: 'shp2', title: 'Shape bubbles', icon: '🎈', type: 'pop', rounds: 5, gen: G.shapes(AF.SHAPES, 4) }
-    ])
-  });
 
   /* ---------------- Discover (science) ---------------- */
 

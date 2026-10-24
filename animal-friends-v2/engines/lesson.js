@@ -45,6 +45,33 @@
   };
   E.stepInfo = info;
 
+  /** The lines a level (or each step of a lesson) is about to say, first
+      ones first, so AF.Audio.preload can have them ready: a line said the
+      moment a card turns or an answer is tapped then has no gap before it.
+      Only data is read; a question generator is never called (that would
+      change the questions), but a bank of questions shows its list (.all). */
+  E.linesOf = function (level) {
+    const name = AF.Profile.character && AF.Profile.character.name;
+    const out = [], add = (t) => {
+      if (typeof t !== 'string' || !t) return;
+      if (name) t = t.split('{name}').join(name);          // (as engines/media.js says it)
+      if (out.indexOf(t) < 0) out.push(t);
+    };
+    const take = (r) => { if (r) { add(r.say); add(r.praise); add(r.sound); } };
+    (level.steps ? level.steps : [level]).forEach(lv => {
+      if (level.steps) add(info(lv, 'en').go);
+      add(lv.say);
+      (lv.cards || []).forEach(c => { add(c.say); add(c.sound); });
+      if (lv.gen && lv.gen.all) lv.gen.all.forEach(take);
+      (lv.fixed || []).forEach(take);
+      (lv.quiz || lv.questions || []).forEach(take);
+      (lv.pages || []).forEach(pg => add(pg.text));
+      (lv.pairs || []).forEach(pr => { add(pr.sayA || pr.w); add(pr.say || pr.sayB || pr.w); });
+      if (lv.items && typeof lv.ask === 'function') lv.items.forEach(it => { try { add(lv.ask(it)); } catch (e) { /* a level that needs more than its item */ } });
+    });
+    return out;
+  };
+
   /* ============================================================
      LESSON
      level: { steps: [{ step, type, ...that game's own config }], lang? }

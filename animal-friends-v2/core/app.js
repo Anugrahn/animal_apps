@@ -601,6 +601,13 @@
   /** A speaking game, or a lesson with a speaking step in it. */
   const speaks = (level) => level.type === 'speak' || (level.steps || []).some(s => s.type === 'speak');
 
+  /** What every game says after an answer or at its end (AF.STR, the friend's cheer). */
+  function praiseLines() {
+    const cheer = P.skin().cheer, str = (AF.STR && AF.STR.en) || {};
+    return [cheer, cheer + ' Three stars!', 'Well done!', 'Good try!', 'Great!', 'Yay! Well done!']
+      .concat(Object.keys(str).map(k => str[k]).filter(v => typeof v === 'string' && /[.!?]$/.test(v)));
+  }
+
   function startLevel(mod, level, index, from) {
     if (P.overLimit()) { openLimit(); return; }
     // The first speaking game stops to let a grown-up choose how it listens.
@@ -616,6 +623,10 @@
     P.get().lastModule = mod.id;
     // a Bahasa Indonesia lesson is spoken in Indonesian
     Audio.setLang(level.lang || mod.lang);
+    // its lines got ready now, so none waits to load when it is said:
+    // the first few of the level, the praise every game uses, then the rest
+    const lines = AF.Engines.linesOf ? AF.Engines.linesOf(level) : [];
+    Audio.preload(lines.slice(0, 8).concat(praiseLines(), lines.slice(8)));
 
     // the game's own painted icon beside its name, and a short "ready"
     // card so every game opens the same way (tap it, or it goes by itself);
@@ -1072,6 +1083,9 @@
 
     // Any first touch unlocks audio on phones.
     document.addEventListener('pointerdown', () => Audio.unlock(), { once: true });
+    // a modest device skips the costliest drawing (screens.css: body.lite)
+    const mem = navigator.deviceMemory, cores = navigator.hardwareConcurrency;
+    document.body.classList.toggle('lite', mem ? mem <= 4 : !!cores && cores <= 4);
     // Every touch gets an answer: a ring where the finger lands, and
     // the next screen opens out from that spot.
     document.addEventListener('pointerdown', (e) => {

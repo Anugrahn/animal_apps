@@ -580,12 +580,14 @@
         list = [{ say, text?, show?, options, answer, praise? }] */
     ask(list, shuffleOptions) {
       let bag = [], last = null;
-      return () => {
+      const next = () => {
         // a fresh round of the bag never starts with the question just asked
         if (!bag.length) { bag = U.shuffle(list); if (bag.length > 1 && bag[bag.length - 1] === last) bag.unshift(bag.pop()); }
         const q = last = bag.pop();
         return Object.assign({}, q, { options: shuffleOptions === false ? q.options : U.shuffle(q.options) });
       };
+      next.all = list;            // (read by AF.Engines.linesOf, so the voice is ready before a question is asked)
+      return next;
     }
   };
 })(window.AF = window.AF || {});

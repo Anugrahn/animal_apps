@@ -175,6 +175,22 @@ the tutorial, Today's Study, the maker and the maps. Animation is lighter
 repainting a shadow; idle movement stops behind a full-screen sheet), checked
 frame by frame against the old look so nothing got plainer.
 
+**Smoother on a cheap phone or tablet:**
+
+- **No gap before the friend speaks.** When a level starts, its lines (and
+  the praise every game uses) are decoded ahead of time and then start the
+  moment they are said, through WebAudio (`AF.Audio.preload`, the lines from
+  `AF.Engines.linesOf`, which reads a level's data and never asks a question).
+  A line not ready yet plays through the player as before. On an iPhone this
+  needs iOS 17 or later, where the page can ask to play like a media app, so
+  the silent switch does not mute the voice; older iPhones keep the player.
+- **Dragging** measures the places it can drop on once, when the drag begins,
+  and moves the thing once a frame, however often the finger reports.
+- **No full-screen blur that costs every frame**: the big celebration is a
+  solid wash (it looked the same: its cover was 92–95% opaque), and on a
+  modest device (4 GB or less, or 4 cores or fewer: `body.lite`) the result
+  and other full sheets are solid instead of blurring what is behind them.
+
 **Design review** (Laws of UX, hands-on at 390×844, 1024×768, 1280×720 and 844×390):
 
 - **Counting comes first**: in Math the things to count are now the biggest

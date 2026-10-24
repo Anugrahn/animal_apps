@@ -28,10 +28,13 @@
   const NEAR = 44;         // px: a press that ends this close to where it began, on nothing, is a tap
   const REACH = 26;        // px of forgiveness around a target
 
+  // (each target with where it stood when the drag began: measured once, not
+  // on every move of the finger, and a target that swells under the finger
+  // keeps its edge where it was, so the hover never flickers at the rim)
+  function measure(targets) { return targets.map(t => ({ t, r: t.getBoundingClientRect() })); }
   function hit(targets, x, y) {
     let best = null, bestD = Infinity;
-    targets.forEach(t => {
-      const r = t.getBoundingClientRect();
+    targets.forEach(({ t, r }) => {
       if (x < r.left - REACH || x > r.right + REACH || y < r.top - REACH || y > r.bottom + REACH) return;
       const d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
       if (d < bestD) { bestD = d; best = t; }
@@ -63,23 +66,34 @@
         if (!st.moved) {
           if (Math.hypot(dx, dy) < SLOP) return;
           st.moved = true;
+          st.spots = measure(o.targets());
           el.classList.add('dragging');
           el.style.transition = 'none';
           AF.Audio.SFX.flip();
         }
         el._at = { x: dx, y: dy };
-        // it leans the way it is being pulled
-        const lean = Math.max(-10, Math.min(10, dx / 9));
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(1.12) rotate(${lean.toFixed(1)}deg)`;
-        hover(hit(o.targets(), e.clientX, e.clientY));
+        st.fx = e.clientX; st.fy = e.clientY;
+        // drawn once a frame, however often the finger reports (some screens 120 times a second)
+        if (st.frame) return;
+        const now = st;
+        now.frame = requestAnimationFrame(() => {
+          now.frame = 0;
+          if (st !== now) return;
+          const at = el._at;
+          // it leans the way it is being pulled
+          const lean = Math.max(-10, Math.min(10, at.x / 9));
+          el.style.transform = `translate(${at.x}px, ${at.y}px) scale(1.12) rotate(${lean.toFixed(1)}deg)`;
+          hover(hit(now.spots, now.fx, now.fy));
+        });
       });
 
       const end = (e) => {
         if (!st || e.pointerId !== st.id) return;
         const was = st;
         st = null;
+        if (was.frame) cancelAnimationFrame(was.frame);
         if (!was.moved) return;                      // a tap: the click handler has it
-        const t = e.type === 'pointercancel' ? null : hit(o.targets(), e.clientX, e.clientY);
+        const t = e.type === 'pointercancel' ? null : hit(measure(o.targets()), e.clientX, e.clientY);
         hover(null);
         if (t && S.alive) {
           el._dragged = Date.now();

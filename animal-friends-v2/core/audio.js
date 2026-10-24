@@ -220,14 +220,66 @@
   function stopClip() {
     turn++;
     if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }
+    if (source) { source.onended = null; try { source.stop(); } catch (e) {} source = null; }
+  }
+
+  /* Lines played from memory (v4.2). The player has to load a file before
+     it can start, a small gap a child feels between a tap and the friend's
+     answer. A line got ready ahead of time (preload: the lines of the level
+     about to be played) is decoded once and starts the moment it is said,
+     through WebAudio. Any other line plays through the player as before,
+     and is got ready for next time. On an iPhone WebAudio is muted by the
+     silent switch unless the page asks to play like a media app, which
+     only iOS 17 and later can (navigator.audioSession): older iPhones keep
+     the player. */
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const canBuffer = !!(window.AudioContext || window.webkitAudioContext) && (!iOS || !!navigator.audioSession);
+  const buffers = new Map();                  // file -> AudioBuffer, oldest first
+  const MAX_BUFFERS = 60;                     // (about 20 MB of sound at most)
+  const queue = [];                           // files waiting to be decoded, one at a time
+  let source = null, decoding = false;
+
+  function decodeNext() {
+    if (decoding || !queue.length || !unlocked) return;
+    const file = queue.shift();
+    if (buffers.has(file)) { decodeNext(); return; }
+    const c = audioCtx();
+    if (!c) return;
+    decoding = true;
+    fetch('voice/' + file + '.mp3')
+      .then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))
+      .then(a => new Promise((ok, no) => c.decodeAudioData(a, ok, no)))   // (the callback form: older Safari)
+      .then(b => {
+        buffers.set(file, b);
+        while (buffers.size > MAX_BUFFERS) buffers.delete(buffers.keys().next().value);
+      }, () => { /* not stored: it will play through the player */ })
+      .then(() => { decoding = false; decodeNext(); });
+  }
+  function getReady(file) {
+    if (!canBuffer || buffers.has(file) || queue.indexOf(file) >= 0) return;
+    queue.push(file);
+    decodeNext();
   }
 
   /** Plays a recorded line. Returns false if it cannot, so the caller
       can speak it instead. */
   function playClip(file, pitch, end, fallback) {
     if (!unlocked) return false;               // phones block it before the first tap
-    if (!clip) clip = new window.Audio();
     stopClip();
+    const b = buffers.get(file), c = b && audioCtx();
+    if (b && c && c.state === 'running') {
+      buffers.delete(file); buffers.set(file, b);           // (kept longest: the lines said most)
+      const s = source = c.createBufferSource();
+      s.buffer = b;
+      s.playbackRate.value = clipRate(pitch);               // (lower and slower, or higher and quicker, as the player does)
+      s.connect(c.destination);
+      const mine = turn;
+      s.onended = () => { if (mine === turn) { source = null; end(); } };
+      s.start();
+      return true;
+    }
+    getReady(file);
+    if (!clip) clip = new window.Audio();
     clip.src = 'voice/' + file + '.mp3';
     clip.preservesPitch = clip.mozPreservesPitch = clip.webkitPreservesPitch = false;
     clip.playbackRate = clipRate(pitch);
@@ -250,7 +302,9 @@
     unlock() {
       if (unlocked) return;
       unlocked = true;
+      if (iOS && navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) { /* no-op */ } }
       audioCtx();
+      decodeNext();
       // iPhones only let a player that has played once inside a tap play
       // again later (from a timer): a moment of silence does that.
       if (AF.VOICE) {
@@ -347,6 +401,17 @@
 
     /** True while the friend is still saying something. */
     busy() { return talking !== 0; },
+
+    /** Gets recorded lines ready ahead of time (the first ones first), so
+        each starts the moment it is said. Indonesian lines are the
+        device's voice: nothing to get ready. */
+    /** True once a line is decoded and starts without loading (for the tests). */
+    ready(text) { const f = clipFor(text); return !!(f && buffers.has(f)); },
+
+    preload(lines) {
+      if (!canBuffer || lang === 'id') return;
+      (lines || []).slice(0, MAX_BUFFERS - 10).forEach(t => { const f = clipFor(t); if (f) getReady(f); });
+    },
 
     /** Speaks a single letter sound, e.g. /s/ — stretched so the
         child hears the phoneme, not the letter name. */

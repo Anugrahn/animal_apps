@@ -235,7 +235,13 @@
   const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const canBuffer = !!(window.AudioContext || window.webkitAudioContext) && (!iOS || !!navigator.audioSession);
   const buffers = new Map();                  // file -> AudioBuffer, oldest first
-  const MAX_BUFFERS = 60;                     // (about 20 MB of sound at most)
+  // Decoded sound is big (a 3 s line at 48 kHz is about 0.6 MB), so what is
+  // kept is counted in bytes: 24 MB, or 12 MB on a modest device (4 GB or
+  // less), the oldest let go first.
+  const mem = navigator.deviceMemory;
+  const BUDGET = (mem && mem <= 4 ? 12 : 24) * 1024 * 1024;
+  const size = (b) => b.length * b.numberOfChannels * 4;
+  let kept = 0;
   const queue = [];                           // files waiting to be decoded, one at a time
   let source = null, decoding = false;
 
@@ -250,8 +256,12 @@
       .then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))
       .then(a => new Promise((ok, no) => c.decodeAudioData(a, ok, no)))   // (the callback form: older Safari)
       .then(b => {
-        buffers.set(file, b);
-        while (buffers.size > MAX_BUFFERS) buffers.delete(buffers.keys().next().value);
+        if (buffers.has(file)) return;
+        buffers.set(file, b); kept += size(b);
+        while (kept > BUDGET && buffers.size > 1) {
+          const old = buffers.keys().next().value;
+          kept -= size(buffers.get(old)); buffers.delete(old);
+        }
       }, () => { /* not stored: it will play through the player */ })
       .then(() => { decoding = false; decodeNext(); });
   }
@@ -410,7 +420,8 @@
 
     preload(lines) {
       if (!canBuffer || lang === 'id') return;
-      (lines || []).slice(0, MAX_BUFFERS - 10).forEach(t => { const f = clipFor(t); if (f) getReady(f); });
+      queue.length = 0;                       // (what a level left behind waits no more: this one's lines come first)
+      (lines || []).slice(0, 60).forEach(t => { const f = clipFor(t); if (f) getReady(f); });
     },
 
     /** Speaks a single letter sound, e.g. /s/ — stretched so the

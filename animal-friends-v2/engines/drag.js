@@ -102,7 +102,10 @@
           return;
         }
         // landed on nothing: a quick or short slide was meant as a tap, so the click goes through
-        const tap = Date.now() - was.t < QUICK || Math.hypot(e.clientX - was.x, e.clientY - was.y) < NEAR;
+        // (a quick flick that went far and missed is a drag that missed: it goes
+        // home and costs nothing, and is never taken as a tap on the next place)
+        const far = Math.hypot(e.clientX - was.x, e.clientY - was.y);
+        const tap = far < NEAR || (Date.now() - was.t < QUICK && far < NEAR * 2);
         if (!tap) el._dragged = Date.now();
         AF.Drag.home(el);
       };

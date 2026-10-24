@@ -56,7 +56,8 @@
         <div class="say-mode"></div>`;
 
       // with no microphone the tick is the way on: it wakes up once the word has been said
-      const wakeOk = () => { if (S.alive && !locked && mode === 'tap') stage.querySelector('[data-ok]').classList.add('wake'); };
+      const r = S.round;
+      const wakeOk = () => { if (S.alive && S.round === r && !locked && mode === 'tap') stage.querySelector('[data-ok]').classList.add('wake'); };
       S.replay = () => { E.talk(S, `Say, ${word.w}.`, { onEnd: wakeOk }); };
       stage.querySelector('[data-hear]').onclick = () => { if (!busy) { AF.Art.react(S.charEl, 'talk'); model(true); } };
       stage.querySelector('[data-mic]').onclick = mic;

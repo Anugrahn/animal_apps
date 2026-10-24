@@ -212,7 +212,7 @@ if (toRecord.length && ENGINE === 'chatterbox' && !ONLY_CONVERT) {
   // letter sounds are said calmly, so the sound itself is clear
   fs.writeFileSync(list, JSON.stringify(toRecord.map(j => j.calm
     ? { text: spoken(j.text), f: j.f, ex: CALM[0], cfg: CALM[1], calm: true }
-    : { text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg })));
+    : Object.assign({ text: spoken(j.text), f: j.f, ex: j.speed === SOUND_SPEED ? 0.5 : ex, cfg }, j.speed === SOUND_SPEED ? { sound: true } : {}))));
   const py = spawn(new URL('./.venv/bin/python', import.meta.url).pathname, [new URL('./gen_cb.py', import.meta.url).pathname, list.pathname, WAVS.pathname],
     { stdio: ['ignore', 'pipe', 'inherit'], env: Object.assign({}, process.env, { PYTORCH_ENABLE_MPS_FALLBACK: '1' }) });
   py.stdout.on('data', (d) => {

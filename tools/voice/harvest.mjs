@@ -129,8 +129,7 @@ const browser = await chromium.launch({ args: ['--mute-audio'] });
       'Let’s make your friend! Tap an animal.', 'Let’s ask a grown-up!', 'Treasure! Off we go to the next one!',
       'You did all of today’s study! Hooray!', 'You finished it all! You are a star!', 'You opened the treasure! The next one is open!'].forEach(t => S(t));
     AF.AREAS.forEach(a => S(`${a.island}!`));
-    AF.registry.filter(m => m.lang !== 'id').forEach(m => S(`${m.title}! Let’s go!`));
-    AF.registry.filter(m => m.lang === 'id').forEach(m => S(`${m.title}! Let’s go!`));   // (said by the English voice, in the menus)
+    AF.registry.forEach(m => S(`${m.title}! Let’s go!`));     // (Bahasa Indonesia's too: the menus are in English)
     // the lines the games say themselves, in English (AF.STR.en, engines/base.js)
     Object.keys(AF.STR.en).forEach(k => { const v = AF.STR.en[k]; if (typeof v === 'string' && /[.!?]$/.test(v)) S(v); });
     return out;

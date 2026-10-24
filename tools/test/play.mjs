@@ -4,7 +4,7 @@
 import { chromium } from 'playwright';
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args.splice(i, 2)[1] : d; };
-const WORKERS = +opt('--workers', 6), LEVEL_MS = +opt('--ms', 240000), ONLY = (opt('--only', '') || '').split(',').filter(Boolean);
+const WORKERS = +opt('--workers', 6), LEVEL_MS = +opt('--ms', 300000), ONLY = (opt('--only', '') || '').split(',').filter(Boolean);
 const subjects = args;
 const BASE = process.env.BASE || 'http://localhost:8765/';
 

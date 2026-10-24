@@ -258,7 +258,14 @@
         const next = (want && open[py][px][want]) ? want
           : (holding() && open[py][px][held]) ? held
           : towards();
-        if (next) step(next); else stop();
+        if (next) { step(next); return; }
+        stop();
+        // an arrow still down, not yet for HOLD ms (the first square lands
+        // after STEP, sooner): it walks on once it has been held that long
+        if (held && open[py][px][held]) {
+          const d = held, since = heldAt;
+          S.later(() => { if (held === d && heldAt === since && !moving && !won) go(d, true); }, Math.max(0, HOLD - (Date.now() - since)));
+        }
       }, STEP);
     }
 

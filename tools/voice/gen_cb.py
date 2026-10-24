@@ -50,16 +50,22 @@ def take(text, j):
     MAX_WPM. The best take is kept: the one Whisper hears most rightly, then
     the slowest."""
     best, best_key = None, None
+    # What Whisper can judge: nothing in a letter sound ("ssss", "tuh": it hears a
+    # word that is not there, and would pick the take that sounds most like one),
+    # and only the word at the end of a line like "s … ssss … sun".
+    judge = None if j.get('sound') else text.split(' … ')[-1].strip() if ' … ' in text else text
+    check = checker is not None and bool(judge)
     # a short line is where Chatterbox goes astray ("kite" came out as "Great"): more tries
-    tries = (5 if len(text.split()) <= 4 else 3) if checker else 3
+    tries = (5 if len(text.split()) <= 4 else 3) if check else 3
     for attempt in range(tries):
         wav = model.generate(text, exaggeration=j['ex'], cfg_weight=j['cfg'], temperature=0.8)
         secs = wav.shape[-1] / model.sr
         ok = plausible(text, secs)
         words = len(text.split())
         quick = j.get('calm') and words >= 3 and words / secs * 60 > MAX_WPM
-        score, extra, heard = (checker.check(text, wav.cpu().numpy(), model.sr) if checker else (1.0, 0, ''))
-        right = checker is None or Checker.good(text, score, extra)
+        score, extra, heard = (checker.check(judge, wav.cpu().numpy(), model.sr) if check else (1.0, 0, ''))
+        # (in a sound-and-word line the sounds are heard as extra words: those do not count)
+        right = not check or Checker.good(judge, score, 0 if judge != text else extra)
         key = (ok, right, score - 0.25 * extra, not quick, secs)
         if best is None or key > best_key:
             best, best_key = wav, key

@@ -123,6 +123,7 @@
     }
 
     function next() {
+      saidTurn = false;                                    // ("Your turn!" once a round)
       const j = job(pool[S.round]);
       const r = S.round;
       let g = 0;

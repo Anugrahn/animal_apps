@@ -29,7 +29,7 @@ for (const [w, h] of [[390, 844], [844, 390], [1024, 768], [360, 640]]) {
     await p.evaluate(() => { const r = document.getElementById('ready'); if (r && !r.hidden) r.click(); });
     await p.waitForTimeout(700);
     for (let card = 0; card < (type === 'intro' ? 4 : 1); card++) {
-      const m = await p.evaluate(() => {
+      const measure = () => p.evaluate(() => {
         const vis = e => e && e.getClientRects().length;
         const show = [...document.querySelectorAll('.screen.active .show, .screen.active .intro-show')].find(vis);
         if (!show || !show.querySelector('.group')) return null;
@@ -38,6 +38,9 @@ for (const [w, h] of [[390, 844], [844, 390], [1024, 768], [360, 640]]) {
         return { n: its.length, item: Math.round(its[0] ? its[0].height : 0), face: face ? Math.round(face.getBoundingClientRect().height) : 0,
           cut: its.some(q => q.bottom > r.bottom + 1 || q.top < r.top - 1 || q.right > r.right + 1 || q.left < r.left - 1) || r.bottom > innerHeight || r.right > innerWidth };
       });
+      // (measured again a moment later before it counts: a picture still loading lays out differently)
+      let m = await measure();
+      if (m && m.cut) { await p.waitForTimeout(800); m = await measure(); }
       if (m) {
         rows.push(Object.assign({ size: `${w}x${h}`, id, k, card }, m));
         if (m.cut && OUT) await p.screenshot({ path: `${OUT}/${w}x${h}-${id}-${k}-${card}.png` });

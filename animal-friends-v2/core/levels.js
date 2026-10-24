@@ -204,7 +204,8 @@
       const start = back >= 0 && back !== to && AF.FX.motionOK() ? back : to;
       // the friend stands on whichever side of the stone has more room
       const side = (p) => p.x < 50 ? ';--side:1' : ';--side:-1';
-      const stand = (i) => { me.style.cssText = pct(pos[i]) + side(pos[i]); };
+      let at = start;                              // (the stone the friend stands by now)
+      const stand = (i) => { at = i; me.style.cssText = pct(pos[i]) + side(pos[i]); };
       stand(start);
       host.appendChild(me);
       if (start !== to) setTimeout(() => stand(to), 650);
@@ -230,7 +231,7 @@
         pos.splice(0, pos.length, ...spread(end));
         host.querySelectorAll('.lv-node').forEach((node, i) => { node.style.left = pos[i].x.toFixed(2) + '%'; node.style.top = pos[i].y.toFixed(2) + '%'; });
         chest.style.left = pos[n].x.toFixed(2) + '%'; chest.style.top = pos[n].y.toFixed(2) + '%';
-        stand(start);
+        stand(at);                                 // (not back to the stone just played: the walk may be over)
       };
       // and again whenever the tabs or the chest change size (lettering and
       // pictures load late: a chest whose painting has not come yet is 0px

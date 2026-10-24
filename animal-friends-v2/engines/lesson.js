@@ -58,6 +58,7 @@
       if (out.indexOf(t) < 0) out.push(t);
     };
     const take = (r) => { if (r) { add(r.say); add(r.praise); add(r.sound); } };
+    if (level.steps) add(level.say);                     // (the first card says it)
     (level.steps ? level.steps : [level]).forEach(lv => {
       if (level.steps) add(info(lv, 'en').go);
       add(lv.say);

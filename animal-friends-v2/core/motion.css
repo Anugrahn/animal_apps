@@ -29,18 +29,17 @@
 /* ---------- screens grow from where the finger was ---------- */
 .screen.active { animation: scr-in .55s var(--spring) backwards; transform-origin: var(--ox, 50%) var(--oy, 50%); }
 .screen.leaving { display: flex; z-index: 0; pointer-events: none; animation: scr-out .24s ease-in forwards; }
-#maker.leaving { display: grid; }
 @keyframes scr-in  { 0% { opacity: 0; transform: scale(.82); } 35% { opacity: 1; } }
 @keyframes scr-out { to { opacity: 0; transform: scale(1.07); } }
 .sheet-card { animation: sheet-in .55s var(--spring); }
 @keyframes sheet-in { from { opacity: 0; transform: translateY(18%) scale(.8); } }
 
 /* ---------- press: down fast, back with a bounce ---------- */
-.round-btn, .btn, .pick-card, .bean, .mk-chip, .mk-done, .island, .lv-disc, .opt-face,
+.round-btn, .btn, .pick-card, .island, .lv-disc, .opt-face,
 .mic, .drum, .pad, .code-go, .tab, .speech, .me-face, .sort-item, .mt-face, .big-round, .lm, .jy-card, .pill-go {
   transition: transform .5s var(--spring), box-shadow .18s, filter .18s, scale .5s var(--spring);
 }
-.round-btn:active, .btn:active, .pick-card:active, .bean:active, .mk-chip:active, .mk-done:active,
+.round-btn:active, .btn:active, .pick-card:active,
 .island:active, .lv-node:active .lv-disc, .opt:active .opt-face, .mic:active, .drum:active,
 .pad:active, .code-go:active, .tab:active, button.speech:active, .me-face:active, .big-round:active, .lm:active, .jy-card:active {
   transition-duration: .07s;
@@ -73,7 +72,7 @@
 .home-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 7s ease-in-out infinite; }
 .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite, sway 9s ease-in-out 2s infinite; }
 body.still .mz-item, body.still .lm-ic, body.still .lv-node.is-next .lv-disc, body.still .isl-marker, body.still .cd-star, body.still .pad-hint,
-body.still .pop-b .opt-face, body.still .pick-plus span, body.still .lv-kind,
+body.still .pop-b .opt-face, body.still .lv-kind,
 body.still .lv-chest.open { animation: none; }
 body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breathe 2.9s ease-in-out infinite; }
 
@@ -114,15 +113,6 @@ body.still .home-char .ch-img, body.still .play-char .ch-img { animation: breath
    laid out or repainted on every frame is drawn once and faded instead. */
 /* the bubbles in the pop game each get their own layer, so rising costs nothing */
 .pop-b { will-change: translate, transform; }
-/* the maker's Done glows by fading a ready-drawn halo, not by repainting a big shadow */
-.mk-done { animation: none; }
-/* (it starts outside the dark 3px ring, so the glow never paints over it) */
-.mk-done::after {
-  content: ""; position: absolute; inset: -3px; border-radius: 31px; pointer-events: none;
-  box-shadow: 0 0 38px 8px rgba(255,236,160,1); opacity: 0; animation: halo 1.8s ease-in-out infinite;
-}
-@keyframes halo { 50% { opacity: 1; } }
-body.still .mk-done::after { animation: none; opacity: .5; }
 /* behind a full-screen sheet (result, how to play, grown-ups) the screen is
    blurred, so its idle movement stops: otherwise the blur is redrawn every frame */
 body:has(> .sheet.full:not([hidden])) .screen.active *,

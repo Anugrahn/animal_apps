@@ -167,12 +167,6 @@ body[data-scene="map"][data-area="stem"]     { --w1: #6FDDD4; --w2: #1E9AAE; }
 body[data-scene="map"][data-area="life"]     { --w1: #FFBDD1; --w2: #E46A95; }
 body[data-scene="map"] .sc-hills, body[data-scene="map"] .sc-tree, body[data-scene="map"] .sc-leaves { opacity: 0; }
 
-/* The character maker: the same meadow, thrown out of focus. */
-body[data-scene="maker"] { --veil: rgba(255,214,240,.18); }
-body[data-scene="maker"] .sc-hills, body[data-scene="maker"] .sc-tree { filter: blur(2px); }
-body[data-scene="maker"] .bub { background: radial-gradient(circle, rgba(255,236,150,.75), rgba(255,236,150,0) 70%); box-shadow: none; }
-body[data-scene="maker"] .fly { display: none; }
-
 /* (the blur behind the island and the map switches at once, under the new
    screen growing in: animating a full-screen blur stuttered on tablets) */
 .scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background: #8FD0F2 center / cover no-repeat; }
@@ -479,8 +473,6 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 
 .shake { animation: nope .45s ease-in-out; }
 
-body.still .mk-done { animation: none; }
-
 
 /* ============================================================
    Shared components (UI_REDESIGN_SPEC.md §3, §10)
@@ -490,7 +482,7 @@ body.still .mk-done { animation: none; }
 /* Every child control is at least --tap-min to touch, even when
    it is drawn smaller. */
 .round-btn { width: var(--btn); }
-.round-btn::after, .pad::after, .pad-hint::after, .big-round::after, .pick-edit::after, .tutor-skip::after, .me-face::after {
+.round-btn::after, .pad::after, .pad-hint::after, .big-round::after, .tutor-skip::after, .me-face::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--tap-min)); height: max(100%, var(--tap-min));
   translate: -50% -50%; border-radius: 50%;
 }

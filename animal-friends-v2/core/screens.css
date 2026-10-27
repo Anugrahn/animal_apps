@@ -1,5 +1,5 @@
 /* ============================================================
-   screens.css — layout for pick / maker / home / map / play
+   screens.css — layout for pick / home / map / play
    and the sheets (result, how to play, grown-ups)
    ============================================================ */
 
@@ -45,114 +45,6 @@
 .pick-art { display: block; width: 100%; margin-top: -8%; }
 .pick-name { font-size: clamp(16px, 3.6vmin, 23px); font-weight: 700; line-height: 1.1; }
 .pick-species { font-size: clamp(10.5px, 2.4vmin, 14px); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
-.pick-slot { position: relative; display: grid; }
-.pick-edit {
-  position: absolute; top: 4px; right: 4px; z-index: 1; width: clamp(36px, 8vmin, 46px);
-  animation: pop-in .5s var(--spring) both; animation-delay: calc(var(--i) * 55ms + .2s);
-}
-.pick-plus { aspect-ratio: 1; display: grid; place-items: center; margin-top: 0; }
-.pick-plus span {
-  width: 62%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 30%, #FFF3C4, var(--gold));
-  font-family: var(--emoji); font-size: clamp(30px, 8vmin, 54px);
-  box-shadow: inset 0 -6px 0 rgba(0,0,0,.08); animation: pulse 2s ease-in-out infinite;
-}
-
-/* ---------- 1b. character maker ----------
-   A soft-focus meadow, the friend on a round podium, a name tag,
-   six jelly-bean buttons (one per thing you can change) and a
-   cream tray holding the choices. */
-#maker.active {
-  display: grid; gap: 8px;
-  grid-template: "stage" minmax(0, 1fr) "beans" auto "tray" auto "done" auto / minmax(0, 1fr);
-}
-.mk-back { position: absolute; z-index: 3; top: max(var(--gutter), env(safe-area-inset-top)); left: max(var(--gutter), env(safe-area-inset-left)); }
-.mk-stage { grid-area: stage; min-height: 0; padding-top: calc(var(--btn) + var(--space-2)); display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.mk-name { display: flex; gap: 8px; align-items: center; flex: none; margin-left: clamp(40px, 10vmin, 60px); }
-.mk-name input {
-  width: min(230px, 50vw); height: clamp(48px, 2vmin + 40px, 58px); border-radius: 999px; border: 3px solid var(--cream-edge); text-align: center;
-  background: var(--cream); font: inherit; font-size: var(--fs-md); font-weight: 700; color: var(--ink-brown);
-  box-shadow: 0 4px 0 rgba(170,130,80,.3); user-select: text; -webkit-user-select: text; outline: none;
-}
-.mk-name input::placeholder { color: color-mix(in srgb, var(--ink-brown) 50%, #fff); }
-.mk-name input:focus { border-color: var(--gold); }
-.mk-name .round-btn { width: var(--btn-sm); }
-.mk-view { position: relative; flex: 1; min-height: 0; aspect-ratio: 1; max-width: 100%; }
-img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; translate: -50% 0; margin: 0; z-index: 0; }
-.hud.hud-maker { position: absolute; z-index: 3; display: flex; align-items: center; top: max(var(--gutter), env(safe-area-inset-top)); right: max(var(--gutter), env(safe-area-inset-right)); gap: var(--space-2); }
-.maker-live { position: absolute; left: 0; right: 0; top: -9%; height: 100%; }
-
-.mk-beans { grid-area: beans; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; padding: 2px; }
-.bean {
-  --h: #3E9BF0;
-  position: relative; aspect-ratio: 1; min-width: 0;
-  border-radius: 26%;
-  background: radial-gradient(125% 100% at 30% 12%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 55%, color-mix(in srgb, var(--h) 82%, var(--deep)));
-  box-shadow: inset 0 -5px 0 rgba(0,0,0,.12), 0 5px 10px color-mix(in srgb, var(--h) 55%, transparent);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
-  color: #fff; font-weight: 700; font-size: var(--fs-xs); line-height: 1.1;
-  text-shadow: 0 2px 0 color-mix(in srgb, var(--h) 62%, var(--deep));
-  transition: transform .12s;
-}
-.bean::before { content: ""; position: absolute; left: 17%; top: 10%; width: 26%; height: 13%; border-radius: 50%; background: rgba(255,255,255,.7); transform: rotate(-22deg); }
-.bean svg.ic { width: 40%; height: auto; aspect-ratio: 1; margin-bottom: -2%; color: color-mix(in srgb, var(--h) 16%, #fff); --ia: color-mix(in srgb, var(--h) 78%, var(--deep)); filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, var(--deep))); }
-.bean:active { transform: scale(.94); }
-.bean.on { transform: scale(1.08); box-shadow: 0 0 0 4px #fff, 0 6px 14px color-mix(in srgb, var(--h) 60%, transparent); z-index: 1; }
-
-.mk-tray {
-  grid-area: tray; min-height: 0; max-height: 27vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  background: var(--cream); border-radius: var(--radius-card); padding: var(--space-2);
-  box-shadow: inset 0 -5px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft);
-}
-.mk-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 6px; }
-/* Standing up, the tray keeps one height whatever it holds (eleven animals
-   or three voices), so the beans above it and the friend never move. (Few
-   choices sit in its middle; auto margins, unlike centring, never hide the
-   top row when there are many.) */
-@media (max-aspect-ratio: 1/1) {
-  .mk-tray { height: min(27vh, calc(var(--big) * 2.6)); display: flex; flex-direction: column; }
-  .mk-opts { margin-block: auto; }
-}
-/* (a tablet's tray is wide: two rows hold every category) */
-@media (max-aspect-ratio: 1/1) and (min-width: 600px) { .mk-tray { height: calc(var(--big) * 1.5 + 4px); } }
-.mk-chip {
-  position: relative; aspect-ratio: 1; border-radius: 24%; min-width: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
-  font-size: 11.5px; font-weight: 700; color: #7A4A22; transition: transform .1s;
-}
-.mk-chip img { width: 128%; max-width: none; height: auto; margin: -8% 0 -10%; pointer-events: none; }
-.mk-chip i { width: 68%; aspect-ratio: 1; border-radius: 30%; box-shadow: inset 0 -4px 0 rgba(0,0,0,.1), 0 0 0 2.5px #fff, 0 3px 6px rgba(120,80,30,.25); }
-.mk-chip em { font-family: var(--emoji); font-style: normal; font-size: 28px; line-height: 1.1; }
-.mk-chip:active { transform: scale(.93); }
-.mk-chip { border-radius: 50%; background: var(--cream-hi); box-shadow: 0 3px 0 var(--cream-edge); }
-.mk-chip.on { background: #fff; box-shadow: inset 0 0 0 4px #5BC75E, 0 3px 0 var(--cream-edge); }
-
-.mk-done {
-  --h: #3CC46A;                                   /* (green: go on, like every Next) */
-  grid-area: done; justify-self: center; position: relative; margin-bottom: 4px;
-  display: flex; align-items: center; gap: 10px; padding: 9px 34px 13px 26px; border-radius: 28px;
-  background: radial-gradient(125% 110% at 30% 8%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 55%, color-mix(in srgb, var(--h) 80%, var(--deep)));
-  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--h) 45%, #fff), inset 0 -6px 0 rgba(0,0,0,.14), 0 0 0 3px color-mix(in srgb, var(--h) 70%, var(--deep)), 0 0 22px rgba(255,236,160,.9);
-  color: #fff; font-size: var(--fs-xl); font-weight: 700; text-shadow: 0 3px 0 #1F8A4C;
-  transition: transform .12s;
-}
-.mk-done::before { content: ""; position: absolute; left: 9%; top: 10%; width: 16%; height: 16%; border-radius: 50%; background: rgba(255,255,255,.7); transform: rotate(-20deg); }
-.mk-done [data-ic] { width: 1.25em; height: 1.25em; display: grid; color: #5BE36B; filter: drop-shadow(0 2px 0 #1F8A34); }
-.mk-done [data-ic] svg { width: 100%; height: 100%; }
-.mk-done:active { transform: scale(.95); }
-.mk-done { animation: glow 1.8s ease-in-out infinite; }
-@keyframes glow { 50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--h) 45%, #fff), inset 0 -6px 0 rgba(0,0,0,.14), 0 0 0 3px color-mix(in srgb, var(--h) 70%, var(--deep)), 0 0 38px 8px rgba(255,236,160,1); } }
-
-@media (min-aspect-ratio: 1/1) {
-  #maker.active {
-    grid-template: "stage beans" minmax(0, 1fr) "tray beans" auto "done done" auto / minmax(0, 1fr) clamp(170px, 26vw, 290px);
-    column-gap: 16px;
-  }
-  .mk-beans { grid-template-columns: 1fr 1fr; align-content: center; gap: 10px; }
-  .mk-tray { max-height: 22vh; justify-self: center; max-width: 100%; }
-  .mk-opts { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: clamp(58px, 9vh, 82px); overflow-x: auto; }
-  .mk-name { margin-left: 0; }
-}
 
 /* ============================================================
    The menu screens all share one frame (AF.UI.hud):
@@ -562,15 +454,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .lv-chest .chest-art, .lm-chest .chest-art, .jy-chest .chest-art { width: 100%; }
 .lv-chest.open { filter: drop-shadow(0 0 calc(var(--u) * .2) #FFE98A); }
 
-/* the maker's painted category buttons, with their name underneath */
-.bean.painted { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; border-radius: 0; text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 0 6px rgba(0,0,0,.35); }
-.bean.painted > img.pic { width: 100%; height: auto; aspect-ratio: 1; }
-.bean.painted span { font-size: max(12px, min(var(--fs-xs), 3.6vmin));   /* (six beans share a phone's width) */ color: #fff; -webkit-text-stroke: .18em color-mix(in srgb, var(--h) 70%, var(--deep)); paint-order: stroke; }
-.bean.painted.on { scale: 1.1; transform: none; box-shadow: none; }
-.bean.painted.on > img.pic { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 4px 4px rgba(20,40,60,.3)); }
-.mk-chip img { width: 92%; max-width: none; height: auto; margin: 0; }
-.mk-none { width: 46%; color: #C9B48E; display: grid; } .mk-none svg { width: 100%; height: 100%; }
-
 /* narrow phones: the sign gets its own row under the buttons, so a long
    name ("Daily Journey") never runs into the friend's card */
 @media (max-width: 480px) and (max-aspect-ratio: 1/1) {
@@ -579,7 +462,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   #home .hud { grid-template-areas: "left mid right"; }
   #home .hud-mid { margin-top: 0; }
 }
-.mk-name { position: relative; z-index: 2; }
 
 /* ---------- game icons: in the title sign, on every open stone, the ready card ---------- */
 .sign .sign-ic { height: 1.25em; width: auto; vertical-align: -.3em; margin: -.2em .3em -.2em -.35em; filter: drop-shadow(0 2px 2px rgba(40,20,5,.35)); }
@@ -762,24 +644,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 @media (max-width: 360px) {
   .play-hud .sign { padding-inline: .55em; }
   .play-hud .sign .sign-ic { display: none; }     /* (the ready card showed the game's picture) */
-}
-
-/* ---------- the maker on its side: the beans clear the friend's card,
-   Done stands under them, the friend gets the height ---------- */
-@media (min-aspect-ratio: 1/1) {
-  .mk-beans { padding-top: calc(var(--face) + var(--space-3)); }
-}
-@media (orientation: landscape) and (max-height: 560px) {
-  #maker.active, #maker.leaving {
-    grid-template: "stage beans" minmax(0, 1fr) "tray done" auto / minmax(0, 1fr) clamp(180px, 30vw, 300px);
-    gap: var(--space-2) var(--space-3);
-  }
-  .mk-beans { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding-top: calc(var(--face) + var(--space-2)); }
-  .mk-tray { max-height: none; align-self: end; }
-  .mk-opts { grid-auto-columns: clamp(52px, 15vh, 76px); }
-  .mk-done { justify-self: stretch; justify-content: center; align-self: end; padding: 8px 14px 11px; margin-bottom: 0; }
-  .mk-stage { padding-top: 0; }
-  .mk-name { margin-left: calc(var(--btn) + var(--space-2)); }
 }
 
 /* ---------- Today's Study on its side: the friend on the left, the three

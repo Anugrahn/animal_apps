@@ -1,13 +1,12 @@
 /* ============================================================
    app.js — screen router and boot
    ------------------------------------------------------------
-   Screens: pick (-> maker) -> home (islands) -> area -> map -> play.
+   Screens: pick -> home (islands) -> area -> map -> play.
    Modules never touch the router; they only ever receive a host
    element and an api object. That is what keeps them swappable.
 
    On top of v1 this adds what makes it feel like a learning
    platform rather than one game:
-     * a character maker
      * an island world for a home screen, one island per area
      * the Daily Journey — three picks across the curriculum
      * the Birthday Quest — the party edition's six-stop first run,
@@ -22,7 +21,6 @@
   const P = AF.Profile, Art = AF.Art, Audio = AF.Audio;
 
   let current = { module: null, level: null, index: -1, area: null };
-  let liveView = null;
 
   /* ---------- screen router ---------- */
 
@@ -51,15 +49,14 @@
     const sc = $(id);
     if (sc) sc.querySelectorAll('.scroll').forEach(s => { s.scrollTop = 0; });
     fitSigns();
-    if (id !== 'maker' && liveView) { liveView.stop(); liveView = null; }
 
     // The world outside changes with where you are: the open meadow
     // at home, each island's own sky inside it, an island out at sea
-    // for a level map, a soft-focus meadow for the maker. Bird song stops
+    // for a level map. Bird song stops
     // inside a game so it never competes with the voice or the mic.
     const area = current.module ? current.module.area : current.area;
     document.body.dataset.area = area || '';
-    document.body.dataset.scene = { home: 'home', journey: 'home', pick: 'calm', maker: 'maker', map: 'map', area: 'isles' }[id] || area || 'calm';
+    document.body.dataset.scene = { home: 'home', journey: 'home', pick: 'calm', map: 'map', area: 'isles' }[id] || area || 'calm';
     // data-scene colours the world; data-screen lays the screen out.
     document.body.dataset.screen = { map: 'subject-map', play: 'game' }[id] || id;
     // each island brings its own painted things into the corners
@@ -133,25 +130,17 @@
 
     Art.PRESETS.forEach((preset, i) => {
       const spec = Art.normalise(preset);
-      // The card picks the friend; the pencil beside it (its own button,
-      // on top of the card's corner) changes the friend first.
-      const slot = document.createElement('div');
-      slot.className = 'pick-slot';
-      slot.style.setProperty('--i', i + 1);
       const btn = document.createElement('button');
       btn.className = 'pick-card';
+      btn.style.setProperty('--i', i + 1);
       btn.innerHTML = `
         <span class="pick-art" data-art></span>
         <span class="pick-name">${spec.name}</span>
         <span class="pick-species">${spec.tag}</span>`;
-      const edit = document.createElement('button');
-      edit.className = 'pick-edit jelly';
-      edit.dataset.ic = 'edit';
-      edit.setAttribute('aria-label', `Change ${spec.name}`);
-      edit.addEventListener('click', () => { Audio.unlock(); Audio.SFX.pop(); openMaker(spec); });
       const art = btn.querySelector('[data-art]');
       Art.paint(art, spec);
-      slot.style.setProperty('--c', art.style.getPropertyValue('--c'));
+      // the card's rim takes the friend's own colour (Art.paint works it out)
+      btn.style.setProperty('--c', art.style.getPropertyValue('--c'));
 
       btn.addEventListener('click', () => {
         Audio.unlock();
@@ -165,8 +154,7 @@
         meet(spec, 1300);
       });
 
-      slot.append(btn, edit);
-      host.appendChild(slot);
+      host.appendChild(btn);
     });
     delete host.dataset.busy;
   }
@@ -183,112 +171,6 @@
       show('home');
       if (!P.seenTutorial) openTutorial();
     }, wait);
-  }
-
-  /* ============================================================
-     1b. character maker
-     ============================================================ */
-
-  const NAMES = ['Coco', 'Milo', 'Bubbles', 'Nori', 'Peanut', 'Zuzu', 'Tofu', 'Momo', 'Poppy', 'Ziggy',
-    'Pudding', 'Kiki', 'Noodle', 'Pebble', 'Sunny', 'Lulu', 'Bean', 'Rolo', 'Maple', 'Dot'];
-
-  /* One jelly bean per thing the child can change. */
-  const TABS = [
-    { key: 'species', label: 'Friend', tab: 'animal', hue: '#3E9BF0' },
-    { key: 'hat',     label: 'Hat',    tab: 'hat', hue: '#F5B81C' },
-    { key: 'wear',    label: 'Wear',   tab: 'wear', hue: '#1FB8A6' },
-    { key: 'item',    label: 'Hold',   tab: 'hold', hue: '#EF5350' },
-    { key: 'voice',   label: 'Voice',  tab: 'voice', hue: '#A45CE0' }
-  ];
-
-  function openMaker(from) {
-    // The maker dresses a party friend up; Pinkfong is the one it opens on.
-    const spec = Art.normalise(from || Art.PRESETS[0]);
-    spec.tag = '';
-    let tab = 'species';
-
-    show('maker');
-    if (!from) Audio.say('Tap a friend to play with!');
-    $('maker').querySelector('.hud-maker').innerHTML = AF.UI.pills();
-    liveView = Art.live($('maker-live'), spec);
-    const nameEl = $('maker-name');
-    nameEl.value = spec.name;
-
-    /* What each choice looks like in the tray. Wherever it can, the
-       choice is shown ON the child's own friend, so "top hat" is a
-       picture of their friend in a top hat, not a word to read. */
-    function chip(o) {
-      const on = spec[tab] === o.id ? ' on' : '';
-      let inner;
-      if (tab === 'voice') inner = `<em>${o.emoji}</em><span>${o.label}</span>`;
-      else {
-        // the painted face of each animal, or the painted hat / glasses / thing itself
-        const src = Art.pic(tab, o.id);
-        inner = src ? `<img src="${src}" alt="" draggable="false">` : `<span class="mk-none">${AF.Icon.svg('close')}</span>`;
-      }
-      return `<button class="mk-chip${on}" data-id="${o.id}" aria-label="${o.label}">${inner}</button>`;
-    }
-
-    function list() {
-      if (tab === 'species') return Object.keys(Art.SPECIES).map(id => ({ id: id, emoji: Art.SPECIES[id].emoji, label: Art.SPECIES[id].label }));
-      return { hat: Art.HATS, wear: Art.WEARS, item: Art.ITEMS, voice: Art.VOICES }[tab];
-    }
-
-    function renderTabs() {
-      $('maker-tabs').innerHTML = TABS.map(t => `
-        <button class="bean painted${t.key === tab ? ' on' : ''}" data-tab="${t.key}" style="--h:${t.hue}" role="tab" aria-selected="${t.key === tab}">
-          <img class="pic" src="art/ui/tab-${t.tab}.webp" alt="" draggable="false"><span>${t.label}</span>
-        </button>`).join('');
-      $('maker-tabs').querySelectorAll('.bean').forEach(b => b.onclick = () => {
-        Audio.SFX.tap();
-        tab = b.dataset.tab;
-        renderTabs();
-      });
-      $('maker-opts').innerHTML = list().map(chip).join('');
-      $('maker-opts').querySelectorAll('.mk-chip').forEach(b => b.onclick = () => choose(b.dataset.id));
-      const on = $('maker-opts').querySelector('.on');
-      if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'center' });
-    }
-
-    function choose(id) {
-      Audio.SFX.pop();
-      if (tab === 'species') {
-        spec.colour = Art.SPECIES[id].colour;
-        spec.name = Art.SPECIES[id].label;
-        if (nameEl) nameEl.value = spec.name;
-      }
-      spec[tab] = id;
-      if (tab === 'voice') {
-        const v = Art.VOICES.filter(x => x.id === id)[0];
-        Audio.say(`Hello! I am ${spec.name}.`, { pitch: v.pitch, rate: v.rate });
-      } else {
-        liveView.set(spec);
-      }
-      renderTabs();
-    }
-
-    nameEl.oninput = () => { spec.name = nameEl.value.trim() || 'Friend'; };
-    $('maker-dice').onclick = () => {
-      Audio.SFX.pop();
-      spec.name = AF.U.one(NAMES, spec.name);
-      nameEl.value = spec.name;
-    };
-
-    // Back: home if there is already a friend, otherwise the ready-made friends.
-    $('maker-back').onclick = () => {
-      Audio.SFX.tap();
-      if (P.character) { renderHome(); show('home'); }
-      else { renderPick(); show('pick'); }
-    };
-    $('maker-done').onclick = () => {
-      Audio.unlock();
-      Audio.SFX.right();
-      liveView.cheer();
-      AF.FX.confetti(40);
-      meet(spec, 1500);
-    };
-
-    renderTabs();
   }
 
   /* ============================================================
@@ -1319,11 +1201,6 @@
     });
 
     $('btn-tutor').addEventListener('click', () => { sheet('grown', false); openTutorial(); });
-    $('btn-swap').addEventListener('click', () => {
-      Audio.SFX.tap();
-      sheet('grown', false);
-      openMaker(P.character);
-    });
     $('btn-reset').addEventListener('click', function () {
       if (this.dataset.armed) {
         P.reset();
@@ -1331,7 +1208,8 @@
         this.removeAttribute('data-armed');
         this.textContent = 'Start over';
         sheet('grown', false);
-        openMaker(null);
+        renderPick();
+        show('pick');
       } else {
         this.dataset.armed = '1';
         this.textContent = 'Tap again to erase everything';
@@ -1345,7 +1223,7 @@
     // Count time played, a quarter-minute at a time, only while on screen.
     setInterval(() => {
       if (document.visibilityState !== 'visible' || !P.character) return;
-      if ($('pick').classList.contains('active') || $('maker').classList.contains('active')) return;
+      if ($('pick').classList.contains('active')) return;
       if (!$('grown').hidden) return;
       P.addPlay(15000);
     }, 15000);
@@ -1387,8 +1265,8 @@
   }
 
   /* A way to jump straight to a screen, for testing and demos:
-       ?go=home | maker | parents | tutorial | journey | quest | area:stem | map:math | map:math:4 | play:phonics:ph1-1 | play:maze:m3
-     Add &friend=4 to start as the fifth ready-made friend (only before a friend is made).
+       ?go=home | parents | tutorial | journey | quest | area:stem | map:math | map:math:4 | play:phonics:ph1-1 | play:maze:m3
+     Add &friend=2 to start as the third party friend (only before one is chosen).
      A link can't get past the grown-up check: ?go=parents and &speech=check still ask the sum. */
   function deepLink() {
     const q = new URLSearchParams(location.search);
@@ -1401,7 +1279,6 @@
     renderHome();
     show('home');
     if (part[0] === 'pick') { renderPick(); show('pick'); }
-    else if (part[0] === 'maker') openMaker(P.character);
     else if (part[0] === 'parents') gate(renderGrown);
     else if (part[0] === 'tutorial') openTutorial();
     else if (part[0] === 'area') openArea(part[1]);
@@ -1422,7 +1299,7 @@
     }
   }
 
-  AF.App = { goHome: goHome, openArea: openArea, openMap: openMap, startLevel: startLevel, openMaker: openMaker,
+  AF.App = { goHome: goHome, openArea: openArea, openMap: openMap, startLevel: startLevel,
     openQuest: openQuest, showCertificate: showCertificate,
     finishLevel: finishLevel };   // (finishLevel: for testing a level's ending)
 

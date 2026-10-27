@@ -25,26 +25,56 @@
   text-shadow: 0 .06em 0 var(--violet-deep), 0 0 18px rgba(74, 18, 72, .35); margin-top: 1vmin;
 }
 .pick-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.45); font-size: clamp(14px, 3.4vmin, 20px); font-weight: 600; }
-.pick-scroll { width: 100%; }
-.pick-row {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 29%), 1fr));
-  gap: clamp(10px, 2.4vmin, 22px); width: min(1040px, 100%); margin: 0 auto; padding: 14px 4px 30px;
+/* The four friends ARE this screen, so they are measured against the
+   room left under the ribbon — by width and by height at once — and
+   take all of it. Two abreast standing up, four abreast on anything
+   wider than it is tall; never a small cluster with an empty half
+   screen under it, and never below a comfortable thumb on a phone. */
+.pick-scroll {
+  width: 100%; display: grid; align-content: center; justify-items: center;
+  container-type: size;                          /* 100cqw/100cqh: the room the cards have */
+  padding-block: var(--space-2);
 }
+/* (a card that cannot be made to fit scrolls from the top, not from its middle) */
+@supports (align-content: safe center) { .pick-scroll { align-content: safe center; } }
+
+.pick-row {
+  --cols: 2; --rows: 2;
+  --pick-gap: clamp(10px, 2.4vmin, 26px);
+  --pick-tall: 1.2;                              /* a card is this much taller than it is wide */
+  --by-w: calc((100cqw - (var(--cols) - 1) * var(--pick-gap)) / var(--cols));
+  --by-h: calc((100cqh - (var(--rows) - 1) * var(--pick-gap)) / var(--rows) / var(--pick-tall));
+  /* never under a thumb's worth, never past the fluid scale's ceiling */
+  --card: clamp(136px, min(var(--by-w), var(--by-h)), calc(var(--big) * 3.6));
+  display: grid; grid-template-columns: repeat(var(--cols), var(--card));
+  gap: var(--pick-gap); justify-content: center;
+}
+/* wider than it is tall — a laptop, a tablet or a phone on its side:
+   the four stand side by side and take the height instead */
+@media (min-aspect-ratio: 1/1) { .pick-row { --cols: 4; --rows: 1; } }
+
 .pick-card {
   --edge: color-mix(in srgb, var(--c) 62%, var(--deep));
-  position: relative; padding: 4px 6px 14px; border-radius: var(--radius-card); background: var(--cream);
-  box-shadow: inset 0 -8px 0 color-mix(in srgb, var(--c) 26%, #fff), 0 9px 0 var(--edge), 0 18px 28px rgba(10,52,58,.3);
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  --lift: clamp(6px, calc(var(--card) * .03), 14px);        /* how far the card stands off the page */
+  position: relative; padding: calc(var(--card) * .02) calc(var(--card) * .04) calc(var(--card) * .07);
+  border-radius: var(--radius-card); background: var(--cream);
+  box-shadow: inset 0 calc(var(--lift) * -.9) 0 color-mix(in srgb, var(--c) 26%, #fff),
+              0 var(--lift) 0 var(--edge), 0 calc(var(--lift) * 2) calc(var(--lift) * 3) rgba(10,52,58,.3);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1px;
   animation: pop-in .5s cubic-bezier(.3,1.5,.5,1) both;
   animation-delay: calc(var(--i) * 55ms);
   transition: transform .12s, box-shadow .12s;
 }
-.pick-card:active { transform: translateY(7px); box-shadow: 0 2px 0 var(--edge); }
-.pick-card.chosen { box-shadow: 0 0 0 6px var(--gold), 0 9px 0 var(--edge), 0 18px 28px rgba(10,52,58,.3); }
+.pick-card:active { transform: translateY(var(--lift)); box-shadow: 0 2px 0 var(--edge); }
+.pick-card.chosen {
+  box-shadow: 0 0 0 calc(var(--lift) * .7) var(--gold), 0 var(--lift) 0 var(--edge),
+              0 calc(var(--lift) * 2) calc(var(--lift) * 3) rgba(10,52,58,.3);
+}
 .pick-card:focus-visible { outline: 5px solid var(--gold); outline-offset: 5px; }
-.pick-art { display: block; width: 100%; margin-top: -8%; }
-.pick-name { font-size: clamp(16px, 3.6vmin, 23px); font-weight: 700; line-height: 1.1; }
-.pick-species { font-size: clamp(10.5px, 2.4vmin, 14px); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
+.pick-art { display: block; width: 100%; margin-top: -6%; }
+/* the name and the title are read off the card, so they grow with it */
+.pick-name { font-size: clamp(17px, calc(var(--card) * .125), calc(var(--big) * .46)); font-weight: 700; line-height: 1.1; }
+.pick-species { font-size: clamp(11px, calc(var(--card) * .072), calc(var(--big) * .26)); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
 
 /* ============================================================
    The menu screens all share one frame (AF.UI.hud):

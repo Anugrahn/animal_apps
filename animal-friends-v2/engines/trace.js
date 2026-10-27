@@ -441,14 +441,14 @@
       };
 
       S.replay = () => {
-        E.talk(S, j.say, j.sound ? { onEnd: () => { if (S.alive) AF.Audio.sound(j.sound); } } : null);
+        E.talk(S, j.say, { sound: j.sound });
         // hearing it again before starting shows it again too
         if (state === 'ready' && ink === 0 && cur === 0) demo(() => ready());
       };
 
       glyph();
       requestAnimationFrame(frame);
-      S.later(() => { E.talk(S, j.say, j.sound ? { onEnd: () => { if (S.alive) AF.Audio.sound(j.sound); } } : null); }, 320);
+      S.later(() => { E.talk(S, j.say, { sound: j.sound }); }, 320);
     }
 
     S.on(document, 'keydown', (e) => {

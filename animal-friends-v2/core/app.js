@@ -129,17 +129,6 @@
     const host = $('pick-row');
     host.innerHTML = '';
 
-    const make = document.createElement('button');
-    make.className = 'pick-card pick-make';
-    make.style.setProperty('--c', '#FFC93C');
-    make.style.setProperty('--i', 0);
-    make.innerHTML = `
-      <span class="pick-art pick-plus"><span>✨</span></span>
-      <span class="pick-name">Make my own</span>
-      <span class="pick-species">Choose everything!</span>`;
-    make.addEventListener('click', () => { Audio.unlock(); Audio.SFX.pop(); openMaker(null); });
-    host.appendChild(make);
-
     Art.PRESETS.forEach((preset, i) => {
       const spec = Art.normalise(preset);
       // The card picks the friend; the pencil beside it (its own button,
@@ -200,8 +189,7 @@
 
   /* One jelly bean per thing the child can change. */
   const TABS = [
-    { key: 'species', label: 'Animal', tab: 'animal', hue: '#3E9BF0' },
-    { key: 'colour',  label: 'Colour', tab: 'colour', hue: '#F2617A' },
+    { key: 'species', label: 'Friend', tab: 'animal', hue: '#3E9BF0' },
     { key: 'hat',     label: 'Hat',    tab: 'hat', hue: '#F5B81C' },
     { key: 'wear',    label: 'Wear',   tab: 'wear', hue: '#1FB8A6' },
     { key: 'item',    label: 'Hold',   tab: 'hold', hue: '#EF5350' },
@@ -209,18 +197,17 @@
   ];
 
   function openMaker(from) {
-    // A brand-new friend starts as a plain white bear: a blank page to make your own.
-    const spec = Art.normalise(from || { species: 'bear', colour: '#F4EEE6', name: AF.U.one(NAMES) });
+    // The maker dresses a party friend up; Pinkfong is the one it opens on.
+    const spec = Art.normalise(from || Art.PRESETS[0]);
     spec.tag = '';
     let tab = 'species';
 
     show('maker');
-    if (!from) Audio.say('Let’s make your friend! Tap an animal.');
+    if (!from) Audio.say('Tap a friend to play with!');
     $('maker').querySelector('.hud-maker').innerHTML = AF.UI.pills();
     liveView = Art.live($('maker-live'), spec);
     const nameEl = $('maker-name');
-    nameEl.value = from ? spec.name : '';
-    if (!from) spec.name = AF.U.one(NAMES);
+    nameEl.value = spec.name;
 
     /* What each choice looks like in the tray. Wherever it can, the
        choice is shown ON the child's own friend, so "top hat" is a
@@ -228,8 +215,7 @@
     function chip(o) {
       const on = spec[tab] === o.id ? ' on' : '';
       let inner;
-      if (tab === 'colour') inner = `<i style="background:${o.id}"></i>`;
-      else if (tab === 'voice') inner = `<em>${o.emoji}</em><span>${o.label}</span>`;
+      if (tab === 'voice') inner = `<em>${o.emoji}</em><span>${o.label}</span>`;
       else {
         // the painted face of each animal, or the painted hat / glasses / thing itself
         const src = Art.pic(tab, o.id);
@@ -240,7 +226,6 @@
 
     function list() {
       if (tab === 'species') return Object.keys(Art.SPECIES).map(id => ({ id: id, emoji: Art.SPECIES[id].emoji, label: Art.SPECIES[id].label }));
-      if (tab === 'colour') return Art.COLOURS.map(c => ({ id: c, label: c }));
       return { hat: Art.HATS, wear: Art.WEARS, item: Art.ITEMS, voice: Art.VOICES }[tab];
     }
 
@@ -263,8 +248,9 @@
     function choose(id) {
       Audio.SFX.pop();
       if (tab === 'species') {
-        // Keep a colour the child picked; swap a default for the new animal's default.
-        if (spec.colour === Art.SPECIES[spec.species].colour) spec.colour = Art.SPECIES[id].colour;
+        spec.colour = Art.SPECIES[id].colour;
+        spec.name = Art.SPECIES[id].label;
+        if (nameEl) nameEl.value = spec.name;
       }
       spec[tab] = id;
       if (tab === 'voice') {
@@ -282,6 +268,7 @@
       spec.name = AF.U.one(NAMES, spec.name);
       nameEl.value = spec.name;
     };
+
     // Back: home if there is already a friend, otherwise the ready-made friends.
     $('maker-back').onclick = () => {
       Audio.SFX.tap();
@@ -1175,9 +1162,9 @@
       }, 250);
     });
 
-    // First time: straight into the character creator.
+    // First time: pick one of the party friends.
     if (P.character) { renderHome(); show('home'); }
-    else openMaker(null);
+    else { renderPick(); show('pick'); }
 
     deepLink();
   }

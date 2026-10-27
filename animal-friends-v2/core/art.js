@@ -23,18 +23,13 @@
 
   /* ---------- the menu the child chooses from ---------- */
 
+  /* Naura's party cast. Each cheer reuses a line the voice already
+     has on disk, so no character here needs a new recording. */
   const SPECIES = {
-    dino:    { label: 'Dino',    emoji: '🦖', colour: '#86D24C', cheer: 'Roar!' },
-    bear:    { label: 'Bear',    emoji: '🐻', colour: '#C98A55', cheer: 'Lovely work!' },
-    rabbit:  { label: 'Rabbit',  emoji: '🐰', colour: '#F4EEE6', cheer: 'Yay, you did it!' },
-    cat:     { label: 'Cat',     emoji: '🐱', colour: '#FFB45E', cheer: 'Purr-fect!' },
-    puppy:   { label: 'Puppy',   emoji: '🐶', colour: '#E9C79A', cheer: 'Woof! Good job!' },
-    panda:   { label: 'Panda',   emoji: '🐼', colour: '#FFFFFF', cheer: 'Hip hip hooray!' },
-    fox:     { label: 'Fox',     emoji: '🦊', colour: '#FF8A4C', cheer: 'You are fantastic!' },
-    lion:    { label: 'Lion',    emoji: '🦁', colour: '#FFC75A', cheer: 'Roar!' },
-    frog:    { label: 'Frog',    emoji: '🐸', colour: '#8EDB5A', cheer: 'Ribbit! Well done!' },
-    penguin: { label: 'Penguin', emoji: '🐧', colour: '#4A5A86', cheer: 'Super cool!' },
-    chick:   { label: 'Chick',   emoji: '🐥', colour: '#FFD84A', cheer: 'Cheep cheep!' }
+    pinkfong: { label: 'Pinkfong', emoji: '🦊', colour: '#FF5FA2', cheer: 'You are fantastic!' },
+    hogi:     { label: 'Hogi',     emoji: '🦔', colour: '#2FB98A', cheer: 'Hip hip hooray!' },
+    jeni:     { label: 'Jeni',     emoji: '🐰', colour: '#FFC32B', cheer: 'Yay, you did it!' },
+    poki:     { label: 'Poki',     emoji: '🐵', colour: '#F0463C', cheer: 'Super cool!' }
   };
 
   const COLOURS = [
@@ -50,8 +45,7 @@
     { id: 'crown', emoji: '👑', label: 'Crown' },
     { id: 'cap', emoji: '🧢', label: 'Cap' },
     { id: 'tophat', emoji: '🎩', label: 'Top hat' },
-    { id: 'bow', emoji: '🎀', label: 'Bow' },
-    { id: 'explorer', emoji: '🧭', label: 'Explorer hat' }
+    { id: 'bow', emoji: '🎀', label: 'Bow' }
   ];
   const WEARS = [
     { id: 'none', emoji: '🚫', label: 'Nothing' },
@@ -81,17 +75,10 @@
 
   /* Ready-made friends. The first three are the v1 cast. */
   const PRESETS = [
-    { name: 'Rex',     species: 'dino',    tag: 'The Little Dino',     voice: 'low' },
-    { name: 'Mochi',   species: 'bear',    tag: 'Your Huggable Bear',  voice: 'mid' },
-    { name: 'Pip',     species: 'rabbit',  tag: 'Your Playful Rabbit', voice: 'high' },
-    { name: 'Luna',    species: 'cat',     tag: 'The Curious Cat',     voice: 'high' },
-    { name: 'Bao',     species: 'panda',   tag: 'The Gentle Panda',    voice: 'mid' },
-    { name: 'Finn',    species: 'fox',     tag: 'The Clever Fox',      voice: 'mid' },
-    { name: 'Biscuit', species: 'puppy',   tag: 'The Happy Puppy',     voice: 'mid' },
-    { name: 'Leo',     species: 'lion',    tag: 'The Brave Lion',      voice: 'low' },
-    { name: 'Hop',     species: 'frog',    tag: 'The Jumpy Frog',      voice: 'high' },
-    { name: 'Waddle',  species: 'penguin', tag: 'The Cool Penguin',    voice: 'mid' },
-    { name: 'Sunny',   species: 'chick',   tag: 'The Sunny Chick',     voice: 'high' }
+    { name: 'Pinkfong', species: 'pinkfong', tag: 'The Star Prince',     voice: 'high' },
+    { name: 'Hogi',     species: 'hogi',     tag: 'The Clever One',      voice: 'mid' },
+    { name: 'Jeni',     species: 'jeni',     tag: 'The Fastest Friend',  voice: 'high' },
+    { name: 'Poki',     species: 'poki',     tag: 'King of Inventions',  voice: 'low' }
   ];
 
   const V1 = { dino: 0, bear: 1, rabbit: 2 };      // v1 saved a bare id
@@ -99,7 +86,7 @@
   function normalise(spec) {
     if (typeof spec === 'string') spec = PRESETS[V1[spec] || 0];
     spec = spec || PRESETS[2];
-    const sp = SPECIES[spec.species] ? spec.species : 'rabbit';
+    const sp = SPECIES[spec.species] ? spec.species : 'pinkfong';
     return {
       name: (spec.name || SPECIES[sp].label).slice(0, 12),
       species: sp,
@@ -693,22 +680,16 @@
      ============================================================ */
 
   const ART = 'art/';
-  /* Every animal has the same eight painted poses (art/char/<animal>-<pose>). */
-  const POSES = { idle: 'idle', cheer: 'cheer', happy: 'cheer', hmm: 'think', think: 'think', talk: 'wave',
-    wave: 'wave', walk: 'walk', point: 'point', sit: 'sit', explorer: 'explorer' };
+  /* The party cast is one painted picture each (art/char/<friend>-idle).
+     Every pose resolves to it; the life comes from MOVES below. */
+  const POSES = { idle: 'idle', cheer: 'idle', happy: 'idle', hmm: 'idle', think: 'idle', talk: 'idle',
+    wave: 'idle', walk: 'idle', point: 'idle', sit: 'idle' };
   //           hat: [x, bottom y, width]  eyes: [x, y, width]  neck: [x, y, width]  hand: [x, y]
-  const ANCHOR = {         // measured on each animal's standing (idle) pose
-    dino:    { hat: [46, 18, 50], eyes: [45, 36, 48], neck: [44, 58, 40], hand: [74, 70] },
-    bear:    { hat: [50, 18, 52], eyes: [50, 33, 42], neck: [50, 51, 40], hand: [22, 72] },
-    rabbit:  { hat: [45, 32, 40], eyes: [45, 45, 32], neck: [45, 58, 28], hand: [26, 78] },
-    cat:     { hat: [52, 20, 46], eyes: [52, 33, 40], neck: [52, 55, 34], hand: [29, 75] },
-    puppy:   { hat: [50, 16, 46], eyes: [50, 33, 40], neck: [50, 55, 36], hand: [24, 75] },
-    panda:   { hat: [50, 17, 50], eyes: [50, 33, 48], neck: [50, 53, 40], hand: [25, 73] },
-    fox:     { hat: [50, 20, 42], eyes: [50, 34, 36], neck: [50, 51, 34], hand: [31, 76] },
-    lion:    { hat: [51, 16, 44], eyes: [51, 36, 34], neck: [51, 56, 36], hand: [34, 74] },
-    frog:    { hat: [47, 9, 46], eyes: [47, 14, 58], neck: [47, 48, 44], hand: [22, 73] },
-    penguin: { hat: [50, 13, 46], eyes: [50, 34, 40], neck: [50, 57, 44], hand: [20, 74] },
-    chick:   { hat: [51, 22, 44], eyes: [51, 37, 40], neck: [51, 57, 40], hand: [25, 67] }
+  const ANCHOR = {         // measured on each friend's own painted picture
+    pinkfong: { hat: [51, 24, 40], eyes: [52, 38, 34], neck: [50, 55, 32], hand: [83, 48] },
+    hogi:     { hat: [55, 24, 44], eyes: [56, 42, 40], neck: [55, 58, 36], hand: [80, 56] },
+    jeni:     { hat: [54, 31, 32], eyes: [55, 46, 28], neck: [54, 62, 26], hand: [76, 56] },
+    poki:     { hat: [65, 24, 32], eyes: [66, 42, 28], neck: [64, 60, 24], hand: [42, 34] }
   };
 
   const WEAR_ART = {
@@ -720,33 +701,17 @@
   };
   const EYES = { glasses: 1, sunglasses: 1, heartglasses: 1 };
 
-  function hsl(hex) {
-    const [r, g, b] = rgb(hex).map(v => v / 255);
-    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
-    if (!d) return [0, 0, l];
-    const s = d / (1 - Math.abs(2 * l - 1));
-    const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
-    return [(h * 60 + 360) % 360, s, l];
-  }
-  /** A CSS filter that turns the animal's own colour into `colour`. */
-  function tint(species, colour) {
-    const base = SPECIES[species].colour;
-    if (!colour || colour.toLowerCase() === base.toLowerCase()) return '';
-    const a = hsl(base), b = hsl(colour);
-    if (b[1] < 0.12) return `grayscale(1) brightness(${(0.75 + b[2] * 0.6).toFixed(2)})`;
-    const sat = Math.max(0.3, Math.min(2.2, b[1] / Math.max(0.15, a[1])));
-    const lit = Math.max(0.55, Math.min(1.5, 0.55 + b[2] * (0.45 / Math.max(0.2, a[2])) + 0.2));
-    return `hue-rotate(${Math.round(b[0] - a[0])}deg) saturate(${sat.toFixed(2)}) brightness(${lit.toFixed(2)})`;
-  }
+  /* The party cast keeps its own colours — Pinkfong is not Pinkfong in
+     green — so the painted picture is never recoloured and the maker
+     has no colour tray. */
+  function tint() { return ''; }
+
   const plain = (spec) => spec.hat === 'none' && spec.wear === 'none' && spec.item === 'none';
 
-  /** Which picture to show. A friend with nothing on changes pose; one
-      wearing things stays in the standing pose so they fit; the explorer
-      hat on its own is the painted explorer pose (with its backpack). */
+  /** Which picture to show. Each party friend has one, so every pose
+      resolves to it — see POSES. */
   function sprite(spec, pose) {
-    const sp = spec.species;
-    if (spec.hat === 'explorer' && spec.wear === 'none' && spec.item === 'none') return sp + '-explorer';
-    return sp + '-' + (plain(spec) ? POSES[pose] || 'idle' : 'idle');
+    return spec.species + '-' + (POSES[pose] || 'idle');
   }
 
   function paintedHTML(spec, pose) {
@@ -760,7 +725,7 @@
       over += img(WEAR_ART.item[spec.item], 'acc acc-item', box(a.hand[0], a.hand[1], big ? 34 : 28, spec.item === 'balloon' ? '-88%' : '-55%'));
     }
     if (EYES[spec.wear]) over += img(WEAR_ART.wear[spec.wear], 'acc', box(a.eyes[0], a.eyes[1], a.eyes[2], '-50%'));
-    if (spec.hat !== 'none' && !/-explorer$/.test(sprite(spec, pose))) over += img(WEAR_ART.hat[spec.hat], 'acc acc-hat', box(a.hat[0], a.hat[1], a.hat[2], '-92%'));
+    if (spec.hat !== 'none') over += img(WEAR_ART.hat[spec.hat], 'acc acc-hat', box(a.hat[0], a.hat[1], a.hat[2], '-92%'));
     const f = tint(spec.species, spec.colour);
     const main = img('char/' + sprite(spec, pose), 'ch-img', f ? 'filter:' + f : '')
       .replace('<img ', `<img onerror="this.outerHTML='<span class=&quot;ch-e&quot;>${SPECIES[spec.species].emoji}</span>'" `);

@@ -8,7 +8,7 @@
    Bump VERSION whenever any file changes, or returning visitors
    keep the old copy.
    ============================================================ */
-const VERSION = 'af-v4.2.2';
+const VERSION = 'af-v4.2.3';
 
 const FILES = [
   './', 'index.html', 'privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',

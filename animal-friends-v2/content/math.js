@@ -46,6 +46,17 @@
     <rect x="20" y="${90 - 76 * level}" width="60" height="${76 * level}" fill="#5AB8F5" clip-path="url(#gl${Math.round(level * 100)})"/>
     <path d="M28 14 H72 L66 90 H34 Z" fill="none" stroke="#6B8FA8" stroke-width="4" stroke-linejoin="round"/>`);
 
+  /* Drawn, not written: the wavy-line character this card used to show (〰️)
+     has no painting and is missing from many phone fonts, so it came out as
+     the device's own flat emoji or an empty box. The child traces a zig zag
+     in the very next step. */
+  const zig = svg('<path d="M6 46 L22 12 L38 46 L54 12 L70 46 L86 12 L102 46" fill="none" stroke="#3D8BFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>', '0 4 108 50', 'opt-svg wide-svg');
+  /** a bar chart with the number written on top of each bar */
+  const barChart = svg([4, 2, 6].map((v, i) =>
+    `<rect x="${18 + i * 30}" y="${82 - v * 11}" width="22" height="${v * 11}" rx="4" fill="${['#3D8BFF', '#FFC93C', '#3DBE5B'][i]}"/>` +
+    `<text x="${29 + i * 30}" y="${77 - v * 11}" font-size="13" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" fill="#3A2410">${v}</text>`).join('') +
+    '<line x1="12" y1="82" x2="108" y2="82" stroke="#6B5A3E" stroke-width="2"/>', '0 0 112 90', 'opt-svg graph-svg');
+
   /** a clock face showing h:m (m = 0 or 30) */
   function clock(h, m, cls) {
     const hr = ((h % 12) + m / 60) * 30, mn = m * 6;
@@ -300,6 +311,10 @@
       return () => {
         const set = U.shuffle(U.one(SETS));
         return {
+          // `same`: this is the one game where the picture in the question is
+          // MEANT to be on a card too. Everywhere else that gives the answer
+          // away, and validate.mjs says so.
+          same: true,
           say: 'Find the one that is the same.', text: 'Find the <b>same</b> one',
           show: `<span class="big-e">${set[0]}</span>`,
           options: U.shuffle(set.slice(0, 3)).map(e => ({ key: e, emoji: e })), answer: set[0], praise: 'The same!'
@@ -318,7 +333,7 @@
               `<text x="${30 + i * 28}" y="${78 - counts[i] * 11}" font-size="10" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" fill="#3A2410">${counts[i]}</text>` +
               `<text x="${30 + i * 28}" y="100" font-size="15" text-anchor="middle">${k[0]}</text>`).join('') +
               '<line x1="14" y1="82" x2="104" y2="82" stroke="#6B5A3E" stroke-width="2"/>', '0 0 110 106', 'opt-svg graph-svg')
-          : `<span class="pgraph">${kinds.map((k, i) => `<span class="pg-row"><b>${k[0]}</b>${row('⬤', counts[i], 'pg-dots')}</span>`).join('')}</span>`;
+          : `<span class="pgraph">${kinds.map((k, i) => `<span class="pg-row"><b>${k[0]}</b>${row('🔵', counts[i], 'pg-dots')}</span>`).join('')}</span>`;
         const ask = U.one(asks);
         const most = counts.indexOf(Math.max(...counts)), least = counts.indexOf(Math.min(...counts));
         if (ask === 'most' || ask === 'least') {
@@ -442,11 +457,16 @@
       };
     },
 
-    /** "What time do we have breakfast?" */
+    /** "What time do we have breakfast?"
+        Nothing in T may carry the same picture as its own answer card in O: a
+        child would match the two pictures and never think about the time of
+        day. That is why waking up is a clock and not a sunrise, and why
+        "see the sun go down" and "see the moon" are not here at all —
+        the only honest picture for either IS the answer card. */
     when() {
-      const T = [['🥣', 'eat breakfast', 'morning'], ['🌅', 'wake up', 'morning'], ['🏫', 'go to school', 'morning'],
-        ['🥪', 'eat lunch', 'midday'], ['☀️', 'play in the hot sun', 'midday'], ['🛁', 'have a bath', 'evening'],
-        ['🌇', 'see the sun go down', 'evening'], ['😴', 'go to sleep', 'night'], ['🌙', 'see the moon', 'night']];
+      const T = [['🥣', 'eat breakfast', 'morning'], ['⏰', 'wake up', 'morning'], ['🏫', 'go to school', 'morning'],
+        ['🥪', 'eat lunch', 'midday'], ['🏖️', 'play in the hot sun', 'midday'], ['🛁', 'have a bath', 'evening'],
+        ['😴', 'go to sleep', 'night']];
       const O = { morning: ['🌅', 'morning'], midday: ['☀️', 'midday'], evening: ['🌇', 'evening'], night: ['🌙', 'night'] };
       let prev = null;
       return () => {
@@ -581,7 +601,7 @@
     lesson('m1-5', 'Patterns', 'pattern',
       [card('Red, blue, red, blue. This is a pattern!', '<span class="pattern"><i>🔴</i><i>🔵</i><i>🔴</i><i>🔵</i></span>'),
         card('A pattern goes again and again. What comes next? Red!', '<span class="pattern"><i>🔴</i><i>🔵</i><i>🔴</i><i>🔵</i><i>🔴</i></span>'),
-        card('Lines can make patterns too. Zig, zag, zig, zag!', '<span class="big-e">〰️</span>')],
+        card('Lines can make patterns too. Zig, zag, zig, zag!', zig)],
       ch(G.pattern(['AB'])),
       { type: 'trace', kind: 'line', set: ['zigzag', 'wave'], ordered: true },
       ch(G.pattern(['AB']))),
@@ -615,7 +635,7 @@
 
   const level2 = [
     lesson('m2-1', 'Count to ten', 'number',
-      [countCard(6, APPLE), countCard(8, STAR), countCard(10, DUCK), card('Ten fingers. Five and five make ten!', '<span class="big-e">🙌</span>', '10')],
+      [countCard(6, APPLE), countCard(8, STAR), countCard(10, DUCK), card('Ten fingers. Five and five make ten!', '<span class="big-e">✋✋</span>', '10')],
       ch(G.count(5, 10, 4)),
       { type: 'trace', kind: 'number', set: [6, 7, 8, 9], ordered: true, rounds: 3 },
       ch(G.numeral(1, 10, 4))),
@@ -651,7 +671,7 @@
       ch(G.pattern(['ABB', 'ABC', 'AAB']))),
     lesson('m2-6', 'Sort and count', 'data',
       [card('Sorting means putting things that go together in groups.', '<span class="pattern"><i>🐶</i><i>🐱</i></span><span class="pattern"><i>🐟</i><i>🐳</i></span>'),
-        card('Then we count each group. Which group has more?', '<span class="pgraph"><span class="pg-row"><b>🐶</b>' + row('⬤', 3, 'pg-dots') + '</span><span class="pg-row"><b>🐟</b>' + row('⬤', 2, 'pg-dots') + '</span></span>')],
+        card('Then we count each group. Which group has more?', '<span class="pgraph"><span class="pg-row"><b>🐶</b>' + row('🔵', 3, 'pg-dots') + '</span><span class="pg-row"><b>🐟</b>' + row('🔵', 2, 'pg-dots') + '</span></span>')],
       ch(M.graph(['most', 'count'])),
       { type: 'sort', rounds: 6,
         items: [it('🐮', 'cow', 'land'), it('🐴', 'horse', 'land'), it('🐶', 'dog', 'land'), it('🐟', 'fish', 'water'), it('🐳', 'whale', 'water'), it('🐬', 'dolphin', 'water'), it('🐦', 'bird', 'sky'), it('🦋', 'butterfly', 'sky')],
@@ -734,8 +754,8 @@
       ch(M.story(['take'], 10)),
       ch(M.story(['add', 'take'], 10))),
     lesson('m3-8', 'Picture graphs', 'data',
-      [card('A picture graph shows how many. Each dot is one fruit.', '<span class="pgraph"><span class="pg-row"><b>🍎</b>' + row('⬤', 4, 'pg-dots') + '</span><span class="pg-row"><b>🍌</b>' + row('⬤', 2, 'pg-dots') + '</span></span>'),
-        card('The longest row has the most. Apples have the most!', '<span class="pgraph"><span class="pg-row"><b>🍎</b>' + row('⬤', 4, 'pg-dots') + '</span></span>')],
+      [card('A picture graph shows how many. Each dot is one fruit.', '<span class="pgraph"><span class="pg-row"><b>🍎</b>' + row('🔵', 4, 'pg-dots') + '</span><span class="pg-row"><b>🍌</b>' + row('🔵', 2, 'pg-dots') + '</span></span>'),
+        card('The longest row has the most. Apples have the most!', '<span class="pgraph"><span class="pg-row"><b>🍎</b>' + row('🔵', 4, 'pg-dots') + '</span></span>')],
       ch(M.graph(['most', 'least'])),
       ch(M.graph(['count'])),
       ch(M.graph(['most', 'least', 'count', 'more']))),
@@ -797,7 +817,7 @@
       ch(M.clock(true))),
     lesson('m4-7', 'Bar charts', 'data',
       [card('A bar chart shows how many with bars. A taller bar means more.', svg('<rect x="20" y="40" width="20" height="48" rx="4" fill="#3D8BFF"/><rect x="50" y="64" width="20" height="24" rx="4" fill="#FFC93C"/><rect x="80" y="20" width="20" height="68" rx="4" fill="#3DBE5B"/><line x1="12" y1="88" x2="108" y2="88" stroke="#6B5A3E" stroke-width="2"/>', '0 0 112 92', 'opt-svg graph-svg')),
-        card('Read the number at the top of each bar.', '<span class="big-e">📊</span>')],
+        card('Read the number at the top of each bar.', barChart)],
       ch(M.graph(['most', 'least'], true)),
       ch(M.graph(['count'], true)),
       ch(M.graph(['most', 'count', 'more'], true))),

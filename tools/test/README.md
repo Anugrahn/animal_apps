@@ -6,7 +6,7 @@ Headless checks for Animal Friends, run on this computer with the app served
 
 | Script | What it does |
 |---|---|
-| `node validate.mjs phonics math english bahasa` | Checks a subject's data: every question has its answer among its options, no duplicate options, every traced letter has strokes, every step has an engine, no speaking step in Indonesian, and lists emoji without a painting. |
+| `node validate.mjs phonics math english bahasa` | Checks a subject's data: every question has its answer among its options, no duplicate options, no two cards a child would read as the same picture, every traced letter has strokes, every step has an engine, no speaking step in Indonesian, and lists emoji without a painting. |
 | `node play.mjs phonics math [--workers 8] [--only m3-5,m4-6]` | Plays every level of the subjects to its result screen, like a child tapping everything (it traces with the keyboard and taps the arrows in a maze). Prints levels that never finish and any page error. No subject named: all of them. |
 | `node today.mjs` | Today's Study on a Monday, Tuesday, a Wednesday with yesterday's lessons left over, a Saturday (review) and a Sunday, with a fake clock. |
 | `node migrate.mjs` | Loads a first-curriculum profile (Letters, Numbers, Stories stars) and checks the stars move to `legacyStars` once and the total stays the same. |

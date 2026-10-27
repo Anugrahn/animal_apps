@@ -23,6 +23,14 @@ const out = await p.evaluate((ids) => {
     else {
       const keys = r.options.map(o => String(o.key));
       if (new Set(keys).size !== keys.length) bad.push(where + ': duplicate option keys ' + keys.join(','));
+      // two cards a child reads as the same picture (the leg painted as a foot)
+      const seen = new Map();
+      r.options.forEach(o => {
+        if (!o.emoji) return;
+        const k = AF.Icon.looksLike(o.emoji) || o.emoji;
+        if (seen.has(k)) bad.push(where + `: ${seen.get(k)} and ${o.key} show the same picture ${k}`);
+        else seen.set(k, o.key);
+      });
       if (!r.options.some(o => o.key === r.answer)) bad.push(where + `: answer ${r.answer} not among options ${keys.join(',')}`);
       r.options.forEach(o => seeE(o.emoji));
     }

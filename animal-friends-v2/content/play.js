@@ -16,8 +16,22 @@
 (function (AF) {
   'use strict';
 
-  const W = AF.WORDS, PR = AF.Pairs;
+  const W = AF.WORDS, PR = AF.Pairs, U = AF.U;
   const many = (n, item) => Array.from({ length: n }, () => item);
+
+  /** Deal a story's questions afresh every time it is played.
+      The story engine hands its `quiz` straight to the choose engine
+      (engines/media.js), which lays the cards out in the order it is given —
+      and written by hand the right answer always ended up in the first seat.
+      Twenty questions, twenty times card one: a child soon stops listening and
+      just taps the first card. `Object.assign` in media.js reads this getter,
+      so the cards are shuffled again for every play. */
+  const deal = (list) => list.map(r => {
+    const opts = r.options;
+    const out = Object.assign({}, r);
+    Object.defineProperty(out, 'options', { get: () => U.shuffle(opts), enumerable: true, configurable: true });
+    return out;
+  });
 
   /* ---------------- Maze ---------------- */
 
@@ -203,11 +217,11 @@
           { art: '{me} 🌻', text: 'Look! A big yellow flower.', bg: '#E3F7D2' },
           { art: '{me} 🌻 🐝', text: '{name} was so happy. A bee was happy too!', bg: '#FFE6F0' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'What did {name} find?', options: [{ key: 'seed', emoji: '🌰' }, { key: 'ball', emoji: '⚽' }, { key: 'shoe', emoji: '👟' }], answer: 'seed', praise: 'A seed!' },
           { say: 'What did the seed need to grow?', options: [{ key: 'rain', emoji: '🌧️', label: 'rain and sun' }, { key: 'cake', emoji: '🍰', label: 'cake' }], answer: 'rain', praise: 'Rain and sun!' },
           { say: 'What did the seed grow into?', options: [{ key: 'flower', emoji: '🌻' }, { key: 'car', emoji: '🚗' }, { key: 'fish', emoji: '🐟' }], answer: 'flower', praise: 'A flower!' }
-        ]
+        ])
       },
       {
         id: 'st4', title: 'Splash!', icon: '🦆', type: 'story',
@@ -218,10 +232,10 @@
           { art: '{me} 🦆 💦', text: 'They made big bubbles. Pop, pop, pop!', bg: '#D9F7F0' },
           { art: '{me} ☀️ 🦆', text: 'Then the sun dried them. What a fun day!', bg: '#FFF6B8' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'Who did {name} meet?', options: [{ key: 'duck', emoji: '🦆' }, { key: 'cow', emoji: '🐮' }, { key: 'lion', emoji: '🦁' }], answer: 'duck', praise: 'A duck!' },
           { say: 'Where did they jump?', options: [{ key: 'pond', emoji: '🌊', label: 'in the pond' }, { key: 'bed', emoji: '🛏️', label: 'on the bed' }], answer: 'pond', praise: 'In the pond!' }
-        ]
+        ])
       }
     ], [
       {
@@ -234,11 +248,11 @@
           { art: '🐥 ⚽ {me}', text: 'They played ball. They laughed and laughed.', bg: '#E3F7D2' },
           { art: '{me} 😊 🐥', text: 'Now {name} felt happy. {name} had a new friend.', bg: '#FFE6F0' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'How did {name} feel at the start?', options: [face('nervous', '😟'), face('sleepy', '😴'), face('angry', '😠')], answer: 'nervous', praise: 'Nervous. That is okay.' },
           { say: 'What helped {name} feel calm?', options: [{ key: 'breath', emoji: '🌬️', label: 'a slow breath' }, { key: 'shout', emoji: '📢', label: 'shouting' }], answer: 'breath', praise: 'A slow breath!' },
           { say: 'How did {name} feel at the end?', options: [face('happy', '😊'), face('sad', '😢'), face('scared', '😨')], answer: 'happy', praise: 'Happy!' }
-        ]
+        ])
       },
       {
         id: 'st5', title: 'The Sharing Tree', icon: '🍎', type: 'story',
@@ -251,12 +265,12 @@
           { art: '🌱 🌳 🌳', text: 'They planted the seeds. One day there will be many apple trees.', bg: '#D9F7F0' },
           { art: '{me} 💛 🐰', text: 'Sharing made everyone happy. {name} most of all.', bg: '#FFE6F0' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'How many apples were on the tree?', options: [{ key: 1, glyph: '1' }, { key: 3, glyph: '3' }, { key: 5, glyph: '5' }], answer: 1, praise: 'One apple.' },
           { say: 'What did {name} do with the apple?', options: [{ key: 'share', emoji: '🤝', label: 'shared it' }, { key: 'hide', emoji: '🙈', label: 'hid it' }, { key: 'throw', emoji: '🗑️', label: 'threw it away' }], answer: 'share', praise: 'Shared it!' },
           { say: 'What did they plant?', options: [{ key: 'seeds', emoji: '🌱', label: 'the seeds' }, { key: 'shoe', emoji: '👟', label: 'a shoe' }], answer: 'seeds', praise: 'The seeds!' },
           { say: 'How did everyone feel?', options: [face('happy', '😊'), face('angry', '😠'), face('scared', '😨')], answer: 'happy', praise: 'Happy!' }
-        ]
+        ])
       }
     ], [
       {
@@ -269,11 +283,11 @@
           { art: '{me} 🌙 🚩', text: '{name} landed on the moon. It was quiet and grey.', bg: '#3A3A6E' },
           { art: '🌍 💙 {me}', text: 'Far away was the Earth. It looked like a blue ball. Time to go home!', bg: '#23234F' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'Where did {name} go?', options: [{ key: 'moon', emoji: '🌙' }, { key: 'beach', emoji: '🏖️' }, { key: 'shop', emoji: '🏪' }], answer: 'moon', praise: 'The moon!' },
           { say: 'What did {name} fly in?', options: [{ key: 'rocket', emoji: '🚀' }, { key: 'bus', emoji: '🚌' }, { key: 'boat', emoji: '⛵' }], answer: 'rocket', praise: 'A rocket!' },
           { say: 'What did the Earth look like?', options: [{ key: 'ball', emoji: '🌍', label: 'a blue ball' }, { key: 'box', emoji: '📦', label: 'a box' }], answer: 'ball', praise: 'A blue ball!' }
-        ]
+        ])
       },
       {
         id: 'st6', title: 'The Lost Kitten', icon: '🐱', type: 'story',
@@ -288,13 +302,13 @@
           { art: '👧 🐱 💛', text: 'The kitten jumped into her arms. Purr, purr, purr.', bg: '#FFE6F0' },
           { art: '{me} 😊 🌈', text: 'Thank you! said the girl. The rain stopped, and {name} walked home under a rainbow.', bg: '#D9F7F0' }
         ],
-        quiz: [
+        quiz: deal([
           { say: 'What did {name} find under the box?', options: [{ key: 'kitten', emoji: '🐱' }, { key: 'puppy', emoji: '🐶' }, { key: 'ball', emoji: '⚽' }], answer: 'kitten', praise: 'A kitten!' },
           { say: 'What was the weather like?', options: [{ key: 'rain', emoji: '🌧️', label: 'rainy' }, { key: 'sun', emoji: '☀️', label: 'sunny' }, { key: 'snow', emoji: '❄️', label: 'snowy' }], answer: 'rain', praise: 'It was rainy.' },
           { say: 'How did {name} keep the kitten warm?', options: [{ key: 'scarf', emoji: '🧣', label: 'a scarf' }, { key: 'snow', emoji: '❄️', label: 'snow' }], answer: 'scarf', praise: 'With a warm scarf.' },
           { say: 'Which house was the kitten’s home?', options: [{ key: 3, glyph: '3', label: 'the third' }, { key: 1, glyph: '1', label: 'the first' }, { key: 2, glyph: '2', label: 'the second' }], answer: 3, praise: 'The third house!' },
           { say: 'How did the girl feel at the end?', options: [face('happy', '😊'), face('sad', '😢'), face('angry', '😠')], answer: 'happy', praise: 'Happy!' }
-        ]
+        ])
       }
     ])
   });

@@ -179,7 +179,8 @@
 
 /* ---------- 2b. Daily Journey: today's three games ---------- */
 #journey { gap: var(--space-3); }
-.jy-list { flex: none; display: flex; flex-direction: column; --gap: var(--space-4); gap: var(--gap); width: min(calc(var(--big) * 5.6), 100%); margin: var(--space-3) auto 0; }
+.jy-list { --road: #D9B97E;                    /* the road between stops, before it is walked */
+  flex: none; display: flex; flex-direction: column; --gap: var(--space-4); gap: var(--gap); width: min(calc(var(--big) * 5.6), 100%); margin: var(--space-3) auto 0; }
 .jy-card { display: flex; align-items: center; gap: var(--space-4); min-height: calc(var(--big) * .88); padding: var(--space-2) var(--space-4) var(--space-3) var(--space-3); text-align: left; animation: drop-in .5s var(--spring) backwards; animation-delay: calc(var(--i) * 80ms); }
 .jy-card .jelly { width: clamp(56px, 15vmin, calc(var(--big) * .72)); font-size: 28px; }
 .jy-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -204,7 +205,7 @@
 .jy-card.is-done .jy-num { background: var(--gold-dark); }
 .jy-card + .jy-card::before {
   content: ""; position: absolute; z-index: -1; left: calc(var(--space-3) + var(--jw) / 2 - 3px); bottom: 100%; width: 6px; height: calc(var(--gap) + 12px);
-  border-radius: 3px; background: #D9B97E; box-shadow: 0 0 0 2px rgba(255,255,255,.75);
+  border-radius: 3px; background: var(--road); box-shadow: 0 0 0 2px rgba(255,255,255,.75);
 }
 .jy-card.is-done + .jy-card::before { background: var(--gold); }
 .jy-card:not(.is-next):not(.is-done) .jelly { filter: saturate(.8); }
@@ -810,6 +811,55 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 #journey.is-quest .jy-foot { flex: none; container-type: normal; padding-bottom: var(--space-3); }
 #journey.is-quest .jy-char { width: clamp(64px, 22vw, 120px); }
 #journey.is-quest .jy-chest { width: auto; margin-bottom: 0; }
+
+/* ---- the road answers ----
+   v2 of the quest moved a lot and said nothing: every return from a
+   stop re-ran the whole screen's zoom AND re-dropped all six cards,
+   while the one thing that had actually changed — the stop just
+   walked — was simply found already gold. So now the road stays
+   still on the way back and that one stop plays out instead, in the
+   app's own spring. Everything here is decoration: it is off under
+   "Bubbles, confetti & wiggles" and under the device's reduce-motion
+   setting (motion.css), and the road is correct without any of it. */
+
+/* six stops arrive a little quicker than three do */
+#journey.is-quest .jy-card { animation-delay: calc(var(--i) * 55ms); }
+
+/* a tap is answered where the finger is, not only by the next screen */
+#journey.is-quest .pq-stop:active { transform: scale(.95); }
+#journey.is-quest .pq-stop.is-picked { animation: pq-dip .3s var(--spring); }
+@keyframes pq-dip { 40% { transform: scale(.93); } }
+
+/* coming back: the road is already there */
+.jy-list.is-back .jy-card { animation: none; }
+
+/* ...except the stop just walked, which lands, takes its stars one by
+   one, fills the road behind it in gold and hands the play button on */
+.jy-list.is-back .pq-stop.is-won { animation: pq-won .55s var(--spring) .18s backwards; }
+@keyframes pq-won { 0% { transform: scale(.9); } 55% { transform: scale(1.05); } }
+.pq-stop.is-won .jy-stars i.on { animation: pop-in .4s var(--spring) backwards; }
+.pq-stop.is-won .jy-stars i.on:nth-child(1) { animation-delay: .34s; }
+.pq-stop.is-won .jy-stars i.on:nth-child(2) { animation-delay: .46s; }
+.pq-stop.is-won .jy-stars i.on:nth-child(3) { animation-delay: .58s; }
+/* the line down to the next stop: gold wipes over the sand it was */
+.pq-stop.is-won + .jy-card::before {
+  background: linear-gradient(var(--gold) 50%, var(--road) 50%); background-size: 100% 200%;
+  animation: pq-fill .45s ease-out .48s backwards;
+}
+@keyframes pq-fill { from { background-position: 0 100%; } }
+/* the next stop takes over (never faded out: it is the one thing to tap) */
+.jy-list.is-back .pq-stop.is-next { animation: pq-next .5s var(--spring) .5s backwards; }
+@keyframes pq-next { 0% { transform: scale(.93); } 60% { transform: scale(1.04); } }
+
+/* and the cake is one stop closer */
+.pq-cake.is-bump img { animation: pq-bump .6s var(--spring) .3s backwards; }
+@keyframes pq-bump { 0% { translate: 0 0; scale: 1 1; } 35% { translate: 0 -14%; scale: 1.08 .94; } 70% { translate: 0 0; scale: .96 1.04; } }
+.pq-cake.is-bump .pq-cake-label { animation: pop-in .4s var(--spring) .34s backwards; }
+
+body.still .jy-list.is-back .pq-stop.is-won, body.still .jy-list.is-back .pq-stop.is-next,
+body.still .pq-stop.is-won .jy-stars i.on, body.still .pq-stop.is-won + .jy-card::before,
+body.still #journey.is-quest .pq-stop.is-picked,
+body.still .pq-cake.is-bump img, body.still .pq-cake.is-bump .pq-cake-label { animation: none; }
 
 /* the cake stands where Today's Study keeps its treasure chest */
 .pq-cake { display: grid; justify-items: center; gap: 2px; padding: 0; border: 0; background: none; }

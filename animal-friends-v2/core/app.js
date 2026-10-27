@@ -374,6 +374,7 @@
     const firstOpen = picks.findIndex(p => t.done.indexOf(p.key) < 0);
     const list = $('journey-list');
     list.innerHTML = '';
+    list.classList.remove('is-back');          // (the quest's: today's three always arrive)
     const TAG = { review: 'Review', fun: 'Fun & Joy' };
     picks.forEach((p, i) => {
       const isDone = t.done.indexOf(p.key) >= 0;
@@ -439,6 +440,11 @@
     const party = AF.PARTY, stops = questStops();
     if (!stops.length) { renderHome(); show('home'); return; }   // no party data: the ordinary app
     const T = party.text, q = P.quest();
+    // The stop just walked, so coming back SHOWS it being finished
+    // instead of finding it already done. backToMap leaves it on
+    // current; goHome clears current first, so it is only ever the
+    // stop a guest has this moment come back from.
+    const won = back && current.module && current.justPlayed ? current.module.id + ':' + current.justPlayed : '';
     current = { module: null, level: null, index: -1, area: null };
     const isDone = (s) => q.done.indexOf(s.key) >= 0;
     const left = stops.filter(s => !isDone(s)).length;
@@ -456,12 +462,16 @@
 
     const list = $('journey-list');
     list.innerHTML = '';
+    // Coming back, the road does not arrive all over again: the one
+    // stop that changed is the only thing that moves (screens.css).
+    list.classList.toggle('is-back', !!back);
     stops.forEach((s, i) => {
       const done = isDone(s);
       const stars = P.stars(s.mod.id, s.level.id);
       const b = document.createElement('button');
       // done (ticked, with its stars) · next (the big play button) · still to come
-      b.className = 'card jy-card pq-stop' + (done ? ' is-done' : '') + (i === first ? ' is-next' : '');
+      b.className = 'card jy-card pq-stop' + (done ? ' is-done' : '') + (i === first ? ' is-next' : '')
+        + (left && s.key === won ? ' is-won' : '');
       b.style.setProperty('--i', i);
       b.setAttribute('aria-label', `${i + 1}. ${s.label}${done ? `, selesai, ${stars} bintang` : ''}`);
       b.innerHTML = `
@@ -469,8 +479,17 @@
         <span class="jy-text"><b>${AF.U.esc(s.label)}</b><small>${AF.U.esc(s.mod.title)}</small></span>
         ${done ? AF.UI.stars(stars, 'jy-stars') : i === first ? '<span class="jy-end jy-go" data-ic="play"></span>' : ''}`;
       // Any stop that is not done can be tapped: a party is not the
-      // place to tell a guest they are in the wrong order.
-      b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(s.mod, s.level, s.index, 'quest'); });
+      // place to tell a guest they are in the wrong order. The road
+      // answers the finger before the game is even asked for — the
+      // bright note every other choice in the app makes, a sparkle
+      // where the tap landed, and the stop dipping under it.
+      b.addEventListener('click', () => {
+        Audio.unlock();
+        Audio.SFX.pop();
+        AF.FX.sparkleAt(b, 12);
+        b.classList.add('is-picked');
+        startLevel(s.mod, s.level, s.index, 'quest');
+      });
       list.appendChild(b);
     });
 
@@ -483,13 +502,42 @@
         <img src="art/${party.art.cake}.webp" alt="" draggable="false">
         <span class="pq-cake-label">${AF.U.esc(left ? T.stopsLeft(left) : T.seeCake)}</span>
       </button>`;
-    foot.querySelector('.pq-cake').onclick = () => {
+    const cake = foot.querySelector('.pq-cake');
+    cake.onclick = () => {
       if (left) return;
       Audio.SFX.pop();
       showCertificate();
     };
 
     show('journey');
+
+    /* ---- what a guest comes back to ----
+       The stop just walked turns gold and takes its stars, the road
+       behind it fills towards the next one, the cake jumps because it
+       is one stop closer, and the friend cheers — after the screen has
+       grown in, so only one thing moves at a time. The classes do the
+       motion (screens.css); it is off with "Bubbles, confetti & wiggles".
+       (After show(), so the road can be measured: a hidden screen has
+       no height to compare.) */
+    const wonCard = won && left ? list.querySelector('.is-won') : null;
+    if (wonCard) {
+      cake.classList.add('is-bump');
+      setTimeout(() => {
+        if (!wonCard.isConnected) return;
+        AF.FX.sparkleAt(wonCard, 14);
+        Art.react($('journey-char'), 'cheer');
+      }, 280);
+    }
+    // a road longer than the screen (a short phone, a phone on its side)
+    // brings the next stop into view rather than leaving it below the fold
+    const aim = list.querySelector('.is-next') || wonCard;
+    if (aim && list.scrollHeight > list.clientHeight) {
+      const smooth = AF.FX.motionOK();
+      setTimeout(() => {
+        if (aim.isConnected) aim.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+      }, smooth ? 380 : 0);
+    }
+
     partySay(left ? (back ? party.say.back : party.say.start) : party.say.done);
   }
 

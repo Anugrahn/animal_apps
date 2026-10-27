@@ -686,10 +686,10 @@
     wave: 'idle', walk: 'idle', point: 'idle', sit: 'idle' };
   //           hat: [x, bottom y, width]  eyes: [x, y, width]  neck: [x, y, width]  hand: [x, y]
   const ANCHOR = {         // measured on each friend's own painted picture
-    pinkfong: { hat: [51, 24, 40], eyes: [52, 38, 34], neck: [50, 55, 32], hand: [83, 48] },
-    hogi:     { hat: [55, 24, 44], eyes: [56, 42, 40], neck: [55, 58, 36], hand: [80, 56] },
-    jeni:     { hat: [54, 31, 32], eyes: [55, 46, 28], neck: [54, 62, 26], hand: [76, 56] },
-    poki:     { hat: [65, 24, 32], eyes: [66, 42, 28], neck: [64, 60, 24], hand: [42, 34] }
+    pinkfong: { hat: [54, 20, 40], eyes: [56, 36, 34], neck: [53, 54, 32], hand: [86, 42] },
+    hogi:     { hat: [57, 26, 44], eyes: [58, 42, 42], neck: [57, 60, 38], hand: [83, 56] },
+    jeni:     { hat: [55, 32, 32], eyes: [56, 46, 28], neck: [55, 62, 26], hand: [76, 54] },
+    poki:     { hat: [63, 26, 34], eyes: [64, 42, 30], neck: [62, 60, 26], hand: [40, 38] }
   };
 
   const WEAR_ART = {

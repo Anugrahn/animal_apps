@@ -10,6 +10,8 @@
      * a character maker
      * an island world for a home screen, one island per area
      * the Daily Journey — three picks across the curriculum
+     * the Birthday Quest — the party edition's six-stop first run,
+       which opens the rest of the app (content/party.js)
      * a grown-up area: progress, time limit, speech settings
      * a how-to-play walkthrough
    ============================================================ */
@@ -174,6 +176,9 @@
     P.chooseCharacter(spec);
     Audio.say(`Hi! I am ${spec.name}. Let's play!`);
     showSoon(() => {
+      // a party guest goes straight to the Birthday Quest: the how-to-play
+      // slides can wait until the world is open
+      if (questOn()) { openQuest(); return; }
       renderHome();
       show('home');
       if (!P.seenTutorial) openTutorial();
@@ -433,6 +438,20 @@
     pill.setAttribute('aria-label', `Today’s Study: ${done} of ${picks.length} done` + (next ? `. Next: ${next.mod.title}, ${next.level.title}` : ''));
     pill.onclick = () => { Audio.unlock(); Audio.SFX.pop(); openJourney(); };
 
+    /* ---- the party keepsake: once the Birthday Quest is walked, the
+       certificate stays one tap away beside Today's Study ---- */
+    if (AF.PARTY && P.questFinished()) {
+      let again = $('pq-again');
+      if (!again) {
+        again = document.createElement('button');
+        again.id = 'pq-again';
+        again.className = 'btn pq-again';
+        again.innerHTML = `<img src="art/${AF.PARTY.art.star}.webp" alt="" draggable="false"><span>${AF.U.esc(AF.PARTY.text.certAgain)}</span>`;
+        pill.parentElement.appendChild(again);
+      }
+      again.onclick = () => { Audio.unlock(); Audio.SFX.pop(); showCertificate(); };
+    }
+
     /* ---- one floating island per area of the curriculum ---- */
     const world = $('world');
     world.querySelectorAll('.isl-cell').forEach(c => c.remove());
@@ -461,6 +480,11 @@
 
   function openJourney(back) {
     current = { module: null, level: null, index: -1, area: null };
+    // (the screen is shared with the party's quest: hand it back)
+    $('journey').classList.remove('is-quest');
+    delete document.body.dataset.quest;
+    const homeBtn = $('journey').querySelector('[data-home]');
+    if (homeBtn) homeBtn.hidden = false;
     const d = new Date(), weekend = d.getDay() === 0 || d.getDay() === 6;
     renderHud('journey', { title: 'Today’s Study', crumb: weekend ? 'Review day' : ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][d.getDay()] });
     const t = P.today();
@@ -490,6 +514,174 @@
     show('journey');
     // (said on the way in, not each time a lesson comes back here)
     if (!back || all) Audio.say(all ? 'You did it all today! Well done!' : weekend ? 'It is review day! Let’s play what we learned.' : 'Here is today’s study. Let’s start!');
+  }
+
+  /* ============================================================
+     2a. the Birthday Quest — the party edition's first run
+     ------------------------------------------------------------
+     A party guest has never seen this app. So before the world
+     opens they walk one short road of six stops (content/party.js),
+     and finishing it opens everything.
+
+     It is the Daily Journey above with a different plan: the same
+     screen, the same stop cards, the same startLevel(..., from) and
+     the same road back through finishLevel. What differs is that
+     the plan is fixed rather than made each morning, that a guest
+     is steered here until it is done, and that it ends in a cake
+     and a certificate instead of tomorrow.
+     ============================================================ */
+
+  /** The six stops, shaped like the journey's picks: [{ mod, level, index, key, label }]. */
+  function questStops() {
+    const party = AF.PARTY;
+    if (!party || !Array.isArray(party.stops)) return [];
+    return party.stops.map(s => {
+      const mod = AF.module(s.m);
+      const index = mod ? mod.levels.findIndex(l => l.id === s.l) : -1;
+      return index < 0 ? null : {
+        mod: mod, level: mod.levels[index], index: index,
+        key: s.m + ':' + s.l, label: s.label || mod.levels[index].title
+      };
+    }).filter(Boolean);
+  }
+
+  /** True while a guest still owes the quest: everything steers there. */
+  function questOn() {
+    return !!AF.PARTY && !P.questFinished() && questStops().length > 0;
+  }
+
+  /** The party talks Bahasa Indonesia, in the device's Indonesian voice. */
+  const partySay = (line) => { if (line) Audio.say(line, { lang: 'id' }); };
+
+  function openQuest(back) {
+    const party = AF.PARTY, stops = questStops();
+    if (!stops.length) { renderHome(); show('home'); return; }   // no party data: the ordinary app
+    const T = party.text, q = P.quest();
+    current = { module: null, level: null, index: -1, area: null };
+    const isDone = (s) => q.done.indexOf(s.key) >= 0;
+    const left = stops.filter(s => !isDone(s)).length;
+    const first = stops.findIndex(s => !isDone(s));
+
+    // The quest borrows Today's Study's screen; .is-quest and
+    // body[data-quest] are what the party's own styling hangs on.
+    const screen = $('journey');
+    screen.classList.add('is-quest');
+    document.body.dataset.quest = left ? 'on' : 'done';
+    renderHud('journey', { left: 'settings', title: T.title, crumb: T.crumb });
+    // until the quest is walked there is nowhere else to go
+    const home = screen.querySelector('[data-home]');
+    if (home) home.hidden = left > 0;
+
+    const list = $('journey-list');
+    list.innerHTML = '';
+    stops.forEach((s, i) => {
+      const done = isDone(s);
+      const stars = P.stars(s.mod.id, s.level.id);
+      const b = document.createElement('button');
+      // done (ticked, with its stars) · next (the big play button) · still to come
+      b.className = 'card jy-card pq-stop' + (done ? ' is-done' : '') + (i === first ? ' is-next' : '');
+      b.style.setProperty('--i', i);
+      b.setAttribute('aria-label', `${i + 1}. ${s.label}${done ? `, selesai, ${stars} bintang` : ''}`);
+      b.innerHTML = `
+        <span class="jy-stop">${AF.Icon.jelly(s.mod.id, s.mod.colour, '', s.mod.icon)}<i class="jy-num">${i + 1}</i></span>
+        <span class="jy-text"><b>${AF.U.esc(s.label)}</b><small>${AF.U.esc(s.mod.title)}</small></span>
+        ${done ? AF.UI.stars(stars, 'jy-stars') : i === first ? '<span class="jy-end jy-go" data-ic="play"></span>' : ''}`;
+      // Any stop that is not done can be tapped: a party is not the
+      // place to tell a guest they are in the wrong order.
+      b.addEventListener('click', () => { Audio.unlock(); Audio.SFX.tap(); startLevel(s.mod, s.level, s.index, 'quest'); });
+      list.appendChild(b);
+    });
+
+    // The friend waits by the cake, and the cake is the way on once
+    // every stop is walked (where Today's Study has its treasure chest).
+    Art.paint($('journey-char'), null, left ? 'idle' : 'cheer');
+    const foot = $('journey-chest');
+    foot.innerHTML = `
+      <button class="pq-cake${left ? '' : ' is-ready'}"${left ? ' tabindex="-1" aria-hidden="true"' : ` aria-label="${AF.U.esc(T.seeCake)}"`}>
+        <img src="art/${party.art.cake}.webp" alt="" draggable="false">
+        <span class="pq-cake-label">${AF.U.esc(left ? T.stopsLeft(left) : T.seeCake)}</span>
+      </button>`;
+    foot.querySelector('.pq-cake').onclick = () => {
+      if (left) return;
+      Audio.SFX.pop();
+      showCertificate();
+    };
+
+    show('journey');
+    partySay(left ? (back ? party.say.back : party.say.start) : party.say.done);
+  }
+
+  /** The cake, then the certificate: the end of the quest. */
+  function questFinale() {
+    const party = AF.PARTY, T = party.text;
+    Audio.stop();
+    // the whole app opens here, before the cake: a guest who closes the
+    // page mid-celebration must not come back to a locked door
+    P.finishQuest();
+    // AF.FX.party speaks in whatever language is current, and the party
+    // speaks Indonesian (put back to English when the certificate closes)
+    Audio.setLang('id');
+    AF.FX.party(T.cakeTitle, T.cakeSub, showCertificate, party.art.cake, party.say.cake);
+  }
+
+  /** The certificate sheet, built the first time it is needed. */
+  function certSheet() {
+    let el = $('party-cert');
+    if (el) return el;
+    const T = AF.PARTY.text, art = AF.PARTY.art;
+    el = document.createElement('div');
+    el.id = 'party-cert';
+    el.className = 'sheet full pq-sheet';
+    el.hidden = true;
+    el.innerHTML = `
+      <div class="sheet-card pq-cert">
+        <img class="pq-cert-banner" src="art/${art.thanks}.webp" alt="" draggable="false">
+        <h2 class="pq-cert-title">${AF.U.esc(T.certTitle)}</h2>
+        <p class="pq-cert-host" id="pq-host"></p>
+        <div class="pq-cert-hero">
+          <img class="pq-cert-wand" src="art/${art.wand}.webp" alt="" draggable="false">
+          <div class="pq-cert-char" id="pq-char"></div>
+          <img class="pq-cert-gift" src="art/${art.gift}.webp" alt="" draggable="false">
+        </div>
+        <p class="pq-cert-who"><b id="pq-who"></b><small id="pq-kind"></small></p>
+        <p class="pq-cert-did">${AF.U.esc(T.certDid)}</p>
+        <p class="pq-cert-score"><img src="art/${art.star}.webp" alt="" draggable="false"><b id="pq-stars">0</b><span>${AF.U.esc(T.certStars)}</span></p>
+        <ol class="pq-cert-road" id="pq-road"></ol>
+        <p class="pq-cert-foot"><span id="pq-date"></span> · ${AF.U.esc(T.certBy)}</p>
+        <button class="pill-go pq-cert-go" id="pq-go">${AF.U.esc(T.certGo)}</button>
+      </div>`;
+    document.body.appendChild(el);
+    $('pq-go').onclick = () => {
+      Audio.SFX.tap();
+      Audio.stop();
+      Audio.setLang('en');
+      sheet('party-cert', false);
+      goHome();
+    };
+    return el;
+  }
+
+  /** The keepsake: the friend who played and the stars they collected. */
+  function showCertificate() {
+    const party = AF.PARTY;
+    if (!party) return;
+    const stops = questStops(), skin = P.skin();
+    // the stars are the levels' own stars, so the certificate can never
+    // claim more (or fewer) than the child actually has
+    const stars = stops.reduce((n, s) => n + P.stars(s.mod.id, s.level.id), 0);
+    certSheet();
+    $('pq-host').textContent = `${party.text.certFor} ${party.host} ke-${party.age}`;
+    $('pq-who').textContent = skin.name;
+    // the friend's own title ("The Star Prince"), not its species id
+    $('pq-kind').textContent = (P.character && P.character.tag) || '';
+    $('pq-stars').textContent = stars;
+    $('pq-road').innerHTML = stops.map(s => `
+      <li class="pq-road-stop"><img src="art/${AF.Levels.kindIcon(s.level, s.mod)}.webp" alt="" draggable="false"><span>${AF.U.esc(s.label)}</span></li>`).join('');
+    $('pq-date').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    sheet('party-cert', true);
+    Art.paint($('pq-char'), null, 'cheer');
+    AF.FX.confetti(70);
+    setTimeout(() => partySay(party.say.cert), 600);
   }
 
   /* ============================================================
@@ -604,6 +796,10 @@
     }
     // "Play again" and "Next" keep coming back to the same place
     if (from == null && current.level && current.from) from = current.from;
+    // A party guest plays a stop once, so the quest plays a shorter copy
+    // of the level (content/party.js caps). Same id, same scoring, same
+    // stars; the level itself, and the ordinary lesson, are untouched.
+    if (from === 'quest' && AF.PARTY) level = AF.Levels.shorten(level, AF.PARTY.caps);
 
     current = { module: mod, level: level, index: index, area: mod.area, tier: level.tier || 0, from: from || 'map' };
     P.noteAttempt(mod.id, level.id);
@@ -664,6 +860,15 @@
     if (picks.some(p => p.key === key) && t.done.indexOf(key) < 0) { t.done.push(key); P.save(); }
     const dayDone = picks.length > 0 && picks.every(p => t.done.indexOf(p.key) >= 0) && !t.cheered;
 
+    // The party's Birthday Quest, kept the same way: which stops are
+    // walked, which one is next, and whether the road is finished.
+    const quest = current.from === 'quest' && !!AF.PARTY;
+    const stops = quest ? questStops() : [];
+    if (quest) P.noteQuestStop(key);
+    const walked = (s) => P.quest().done.indexOf(s.key) >= 0;
+    const questDone = quest && stops.length > 0 && stops.every(walked);
+    const nextStop = quest ? stops.filter(s => !walked(s))[0] : null;
+
     let nextIdx = index + 1;
     while (mod.levels[nextIdx] && mod.levels[nextIdx].soon) nextIdx++;
     const nextLv = mod.levels[nextIdx];
@@ -685,7 +890,11 @@
 
     const names = AF.stageNames(mod);
     const leave = (then) => {
-      if (dayDone) {
+      // the sixth stop: the cake and the certificate take it from here
+      if (questDone) {
+        if (dayDone) { t.cheered = true; P.save(); }
+        questFinale();
+      } else if (dayDone) {
         t.cheered = true; P.save();
         AF.FX.party('Today’s study done!', 'You finished everything for today', then, 'ui/medal', 'You did all of today’s study! Hooray!');
       } else if (moduleDone) {
@@ -698,7 +907,7 @@
     AF.Levels.showResult({
       title: title,
       stars: stars,
-      hasNext: fromJourney ? !!nextPick : !!nextLv,
+      hasNext: quest ? !!nextStop : fromJourney ? !!nextPick : !!nextLv,
       from: current.from,
       // a lesson ends on its whole road, every step ticked
       steps: level.steps ? level.steps.map(st => AF.Engines.stepInfo(st, level.lang)) : null,
@@ -706,7 +915,8 @@
       tip: res.first && mod.tip ? mod.tip : '',
       spoken: stars === 3 ? P.skin().cheer + ' Three stars!' : 'Well done!',
       onRetry: () => startLevel(mod, level, index),
-      onNext:  () => leave(() => fromJourney ? startLevel(nextPick.mod, nextPick.level, nextPick.index, 'journey') : startLevel(mod, nextLv, nextIdx)),
+      onNext:  () => leave(() => quest ? startLevel(nextStop.mod, nextStop.level, nextStop.index, 'quest')
+        : fromJourney ? startLevel(nextPick.mod, nextPick.level, nextPick.index, 'journey') : startLevel(mod, nextLv, nextIdx)),
       onMap:   () => leave(() => {
         // a stage just finished: the map opens on the new stage
         if (tierDone && current.from !== 'journey') { current.justPlayed = null; Audio.stop(); openMap(mod, tier + 1); }
@@ -715,14 +925,16 @@
     });
   }
 
-  /** Back from a game: to the Daily Journey if it was started there,
-      otherwise to the subject's map, where the friend walks on. */
+  /** Back from a game: to the party's quest or the Daily Journey if it
+      was started there, otherwise to the subject's map, where the
+      friend walks on. */
   function backToMap() {
     const mod = current.module;
     current.justPlayed = current.level ? current.level.id : null;
     if (mod && mod.stop) mod.stop();
     Audio.stop();
     Audio.setLang('en');
+    if (current.from === 'quest') { openQuest(true); return; }
     if (current.from === 'journey') { openJourney(true); return; }
     if (mod) openMap(mod, current.level ? current.level.tier || 0 : null);
     else goHome();
@@ -762,6 +974,8 @@
     Audio.stop();
     Audio.setLang('en');
     current = { module: null, level: null, index: -1, area: null };
+    // the party edition: until the Birthday Quest is walked, it is home
+    if (questOn()) { openQuest(true); return; }
     renderHome();
     show('home');
   }
@@ -775,8 +989,8 @@
      friend's voice, so each slide is a big picture and one spoken line.
      (Grown-ups find everything else behind the cog.) */
   const SLIDES = [
-    { pose: 'cheer', logo: true, demo: [], text: 'Meet your animal friend and play!',
-      say: 'Hello! Welcome to Animal Friends. Let’s play and learn together!' },
+    { pose: 'cheer', logo: true, demo: [], text: 'Meet your friend and play!',
+      say: 'Hello! Welcome to Naura’s party. Let’s play and learn together!' },
     { pose: 'idle', title: 'Pick an island', demo: [['literacy', '#F28A2E', 'ABC', 'world/island-literacy'], ['stem', '#F2B618', 'Math', 'world/island-stem'], ['life', '#E5535A', 'Habits', 'world/island-life'], ['playtime', '#3E9BF0', 'Play', 'world/island-play']],
       text: 'Tap an island to play.', say: 'Tap an island to play.' },
     { pose: 'point', title: 'Little steps', demo: [['sound', '#3E9BF0', 'Listen', 'ui/sound'], ['edit', '#F28A2E', 'Trace', 'game/trace'], ['playtime', '#A45CE0', 'Play', 'game/puzzle'], ['star', '#FFC93C', 'Quiz', 'game/coin']],
@@ -1054,7 +1268,8 @@
     return !!(AF.Icon && AF.World && AF.Art && AF.Profile && AF.Audio && AF.Speech && AF.FX && AF.Levels && AF.Gen &&
       E.choose && E.order && E.build && E.memory && E.maze && E.speak && E.story && E.song && E.breathe &&
       E.sort && E.match && E.trace && E.pop && E.code && E.lesson && E.intro && AF.Drag &&
-      ['phonics', 'english', 'bahasa', 'math'].every(id => AF.module(id)) && AF.registry && AF.registry.length >= 13);
+      // (12 since the party edition left Story Time out of content/play.js)
+      ['phonics', 'english', 'bahasa', 'math'].every(id => AF.module(id)) && AF.registry && AF.registry.length >= 12);
   }
 
   function boot() {
@@ -1063,7 +1278,7 @@
       try { tried = sessionStorage.getItem('af.reload') === '1'; sessionStorage.setItem('af.reload', '1'); } catch (e) { tried = true; }
       if (!tried) { location.reload(); return; }
       document.body.insertAdjacentHTML('beforeend',
-        '<div class="sheet"><div class="sheet-card"><h2>Something did not load</h2><p class="sheet-sub">Please check the connection, then close and open Animal Friends again.</p></div></div>');
+        '<div class="sheet"><div class="sheet-card"><h2>Something did not load</h2><p class="sheet-sub">Please check the connection, then close and open the app again.</p></div></div>');
       return;
     }
     try { sessionStorage.removeItem('af.reload'); } catch (e) { /* no-op */ }
@@ -1162,15 +1377,17 @@
       }, 250);
     });
 
-    // First time: pick one of the party friends.
-    if (P.character) { renderHome(); show('home'); }
-    else { renderPick(); show('pick'); }
+    // First time: pick one of the party friends. A guest who has one
+    // already lands back on the quest until it is walked.
+    if (!P.character) { renderPick(); show('pick'); }
+    else if (questOn()) openQuest();
+    else { renderHome(); show('home'); }
 
     deepLink();
   }
 
   /* A way to jump straight to a screen, for testing and demos:
-       ?go=home | maker | parents | tutorial | journey | area:stem | map:math | map:math:4 | play:phonics:ph1-1 | play:maze:m3
+       ?go=home | maker | parents | tutorial | journey | quest | area:stem | map:math | map:math:4 | play:phonics:ph1-1 | play:maze:m3
      Add &friend=4 to start as the fifth ready-made friend (only before a friend is made).
      A link can't get past the grown-up check: ?go=parents and &speech=check still ask the sum. */
   function deepLink() {
@@ -1189,6 +1406,7 @@
     else if (part[0] === 'tutorial') openTutorial();
     else if (part[0] === 'area') openArea(part[1]);
     else if (part[0] === 'journey') openJourney();
+    else if (part[0] === 'quest') openQuest();
     else if (part[0] === 'map' && mod) {
       const stage = parseInt(part[2], 10);
       openMap(mod, Number.isFinite(stage) ? stage : null);
@@ -1205,6 +1423,7 @@
   }
 
   AF.App = { goHome: goHome, openArea: openArea, openMap: openMap, startLevel: startLevel, openMaker: openMaker,
+    openQuest: openQuest, showCertificate: showCertificate,
     finishLevel: finishLevel };   // (finishLevel: for testing a level's ending)
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

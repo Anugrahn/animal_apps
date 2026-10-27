@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#12A594">
+  <meta name="theme-color" content="#F04E9E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>Animal Friends</title>
+  <title>Naura’s Wonderf4ur World</title>
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -60,6 +60,9 @@
 
 <!-- ============ 1. CHARACTER PICKER ============ -->
 <main id="pick" class="screen">
+  <!-- the party ribbon: branding over the first screen a child ever sees.
+       Decorative, so the real heading under it is what is read out. -->
+  <img class="ribbon" src="art/party/party-banner.webp" alt="" width="420" height="123" draggable="false" aria-hidden="true">
   <h1 class="pick-title">Pick your friend</h1>
   <p class="pick-sub">They will play with you the whole way.</p>
   <div class="scroll pick-scroll">
@@ -240,7 +243,7 @@
         <summary><span class="g-ic" data-ic="journey" style="--h:#A45CE0"></span>How the lessons work</summary>
         <div class="g-body grown-how">
           <p>The four core subjects are modelled on the curriculum Danbi Education describes for its <b>Wink</b> home-learning
-            programme (Korea; Animal Friends is not affiliated with it): short daily lessons, each one a small road from a new idea to using it:
+            programme (Korea; Naura’s Wonderf4ur World is not affiliated with it): short daily lessons, each one a small road from a new idea to using it:
             <b>concept → practice → problem-solving → review</b>.</p>
           <ul>
             <li><b>Phonics</b> (4 steps): letter sounds a–z, short and long vowels, blends and digraphs, silent letters and tricky sounds.
@@ -362,6 +365,7 @@
 <script src="content/stem.js"></script>
 <script src="content/life.js"></script>
 <script src="content/play.js"></script>
+<script src="content/party.js"></script>  <!-- party edition: the Birthday Quest's six stops -->
 <!-- boot -->
 <script src="core/app.js"></script>
 </body>

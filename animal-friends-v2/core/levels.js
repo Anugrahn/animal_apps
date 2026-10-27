@@ -96,6 +96,40 @@
       return AF.Profile.stars(moduleId, levelId) === 3;
     },
 
+    /**
+     * A shorter run of a level, for a one-off visit (the party's
+     * Birthday Quest): the same level, with fewer questions.
+     *
+     * The copy keeps the level's `id` and `type`, so stars, attempts
+     * and the result card all behave exactly as they always do — only
+     * how many rounds an engine asks for changes, and only for the
+     * copy. The level in content/*.js is never touched, so the
+     * ordinary lesson keeps its own pacing.
+     *
+     * caps = { rounds, pairs, cycles } (content/party.js).
+     */
+    shorten(level, caps) {
+      if (!level || !caps) return level;
+      // a game whose engine plays its whole pool when `rounds` is
+      // missing, so a cap has to be given to it rather than lowered
+      const POOLED = { trace: 1, sort: 1, match: 1, speak: 1, build: 1 };
+      const cut = (lv) => {
+        const out = Object.assign({}, lv);
+        if (caps.rounds > 0) {
+          if (out.rounds > 0) out.rounds = Math.min(out.rounds, caps.rounds);
+          else if (POOLED[out.type]) out.rounds = caps.rounds;
+          if (Array.isArray(out.fixed)) out.fixed = out.fixed.slice(0, Math.max(1, caps.rounds));
+        }
+        if (caps.pairs > 0 && out.n > 0) out.n = Math.min(out.n, caps.pairs);
+        if (caps.cycles > 0 && out.cycles > 0) out.cycles = Math.min(out.cycles, caps.cycles);
+        return out;
+      };
+      const out = cut(level);
+      // a lesson is a few games in a row: each step is shortened too
+      if (Array.isArray(level.steps)) out.steps = level.steps.map(cut);
+      return out;
+    },
+
     /* ---------- the level map: an island with a winding path ---------- */
 
     /**
@@ -277,10 +311,12 @@
 
       const nextBtn = card.querySelector('[data-act="next"]');
       nextBtn.hidden = !opts.hasNext;
-      // back to Today's Study, when the game came from there
+      // back to Today's Study, or to the party's quest, when the game came from there
       const mapBtn = card.querySelector('[data-act="map"]');
-      mapBtn.dataset.ic = opts.from === 'journey' ? 'journey' : 'map';
-      mapBtn.setAttribute('aria-label', opts.from === 'journey' ? 'Back to today’s study' : 'Back to the map');
+      const onRoad = opts.from === 'journey' || opts.from === 'quest';
+      mapBtn.dataset.ic = onRoad ? 'journey' : 'map';
+      mapBtn.setAttribute('aria-label', opts.from === 'quest' ? 'Kembali ke Petualangan Pesta'
+        : opts.from === 'journey' ? 'Back to today’s study' : 'Back to the map');
       // a lesson's road, every step ticked
       let road = card.querySelector('.result-road');
       if (!road) { road = document.createElement('ol'); road.className = 'steps result-road'; card.querySelector('.result-title').after(road); }

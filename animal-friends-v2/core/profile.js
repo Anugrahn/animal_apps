@@ -16,6 +16,7 @@
        settings: { sound, motion, speech, limit },
        seenTutorial, extra: { date, min },
        today:    { date, picks, done, cheered },   lastPlan: the day before's
+       quest:    { done: ['moduleId:levelId'], finished, at },   // the party edition's Birthday Quest
        curriculum: 2,  legacyStars: n,  legacy: { moduleId: { stars, attempts, log } }
      }
 
@@ -42,6 +43,7 @@
       settings: { sound: true, nature: true, motion: true, open: false, speech: 'ask', limit: 0 },
       seenTutorial: false,
       extra: null,
+      quest: null,
       createdAt: null, lastPlayed: null
     };
   }
@@ -258,6 +260,40 @@
       }
       return p.today;
     },
+
+    /* ---------- the Birthday Quest (party edition) ---------- */
+
+    /** { done: ['moduleId:levelId'], finished, at } — the six stops a
+        party guest walks before the rest of the app opens. Only which
+        stops are done is kept: a stop's stars are the level's own
+        stars, so nothing here can ever disagree with them. */
+    quest() {
+      const p = Profile.get();
+      if (!p.quest || typeof p.quest !== 'object' || !Array.isArray(p.quest.done)) {
+        p.quest = { done: [], finished: false, at: 0 };
+      }
+      return p.quest;
+    },
+
+    /** Marks one stop walked. `key` is 'moduleId:levelId'. */
+    noteQuestStop(key) {
+      const q = Profile.quest();
+      if (key && q.done.indexOf(key) < 0) { q.done.push(key); save(); }
+      return q;
+    },
+
+    /** The quest is over: the whole app opens from here on. This only
+        ever opens levels — "Open every level" is the setting the
+        grown-up area already has, and a level with stars was never
+        locked anyway, so nothing a guest won can be taken back. */
+    finishQuest() {
+      const q = Profile.quest();
+      if (!q.finished) { q.finished = true; q.at = Date.now(); save(); }
+      if (!Profile.setting('open')) Profile.setSetting('open', true);
+      return q;
+    },
+
+    questFinished() { return !!Profile.quest().finished; },
 
     /** Minutes played on each of the last `n` days, oldest first: [{ key, day, min }]. */
     week(n) {

@@ -9,18 +9,36 @@
 }
 
 :root {
-  /* v2 was violet. The outdoor look is teal and leaf-green; the
-     old variable names are kept so nothing else had to change. */
-  --ink: #1D3348;
-  --ink-soft: #56707F;
-  --violet: #12A594;          /* brand teal */
-  --violet-light: #63DCC8;
-  --violet-deep: #0C6E69;
-  --white-edge: #C8E9E0;
+  /* ---------- the party palette (Naura's birthday edition) ----------
+     Six colours, read straight off the sticker sheet in art/party:
+     hot pink, purple, sunny yellow and sky blue on a white outline.
+     Every colour below is written in terms of these, so the whole app
+     re-skins from this one block — no screen is painted on its own. */
+  --p-pink: #FF4FA3;
+  --p-pink-light: #FFC2E2;
+  --p-pink-deep: #B41E74;
+  --p-purple: #A465F0;
+  --p-purple-deep: #6B2FB5;
+  --p-yellow: #FFD63C;
+  --p-yellow-deep: #E09A12;
+  --p-sky: #5FC8FF;
+  --p-sky-deep: #2A7FC4;
+
+  /* v2 was violet, v4 outdoor teal, this edition is party pink; the old
+     variable names are kept so nothing else had to change. */
+  --ink: #3C1B36;
+  --ink-soft: #8A6080;
+  --violet: var(--p-pink);            /* brand */
+  --violet-light: var(--p-pink-light);
+  --violet-deep: var(--p-pink-deep);
+  --white-edge: #F6CCE4;
   /* the sky and hills — re-coloured per island by body[data-scene] */
-  --sky1: #4FB2F6; --sky2: #CDEEFF;
+  --sky1: #FF9FD2; --sky2: #FFE8F5;
   --h1: #A9E68C; --h2: #88DA70; --h3: #70CC5D; --h4: #57B94F;
-  --sand: #EEDDAA; --veil: transparent;
+  --sand: #EEDDAA; --veil: var(--wash);
+  /* one pink wash over every painted background, so the party reads
+     the same on the meadow, the islands and each subject map */
+  --wash: rgba(255, 96, 180, .17);
   --radius: 30px;
   --emoji: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
   font-family: "Fredoka", "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
@@ -72,14 +90,37 @@
 
   --dur-fast: 120ms; --dur-medium: 260ms; --dur-slow: 900ms;
 
-  /* materials, from the mock-ups: cream cards, wooden signs */
-  --cream: #FFF6E4; --cream-2: #FCEBCB; --cream-edge: #E2C894;
-  --wood: #C9894B; --wood-2: #A8693A; --wood-dark: #6E3F1E; --wood-text: #FFF4DC;
-  --ink-brown: #5B3A1E;
-  --nav: #3D8BF2; --nav-dark: #2462C4;
-  --go: #3CC46A; --go-dark: #22964B;
-  --gold: #FFC93C; --gold-dark: #D99412;
-  --navy: #1E4A8F;
+  /* materials: cream cards and wooden signs, re-cast as party card and
+     bubblegum signage (the names are the old ones on purpose) */
+  --cream: #FFF7FC; --cream-2: #FCE3F1; --cream-edge: #EFBEDC;
+  --cream-hi: #FFFDFE;                    /* the lit top of a cream card */
+  --ink-mute: #8A6B96;                    /* small print; 4.5:1 on a cream card */
+  --wood: var(--p-pink); --wood-2: #E13A8C; --wood-dark: var(--p-purple-deep); --wood-text: #FFF4FA;
+  --ink-brown: #6B2FB5;
+  --nav: #4FB3F5; --nav-dark: var(--p-sky-deep);
+  --go: #3CC46A; --go-dark: #22964B;      /* green still means "go on" */
+  --gold: var(--p-yellow); --gold-dark: var(--p-yellow-deep);
+  --navy: #5B2A8F;
+
+  /* ---------- party surfaces, so no screen repeats a colour ---------- */
+  /* the one dark every control is shaded with — rims, drop edges, the
+     stroke round a label. It was a navy and a brown; one deep plum now
+     warms every button and badge in the app at once. */
+  --deep: #2A0E2E;
+  --jelly-h: var(--p-sky);                /* a jelly button with no job of its own */
+  --title-outline: var(--p-purple-deep);  /* the thick outline round a white title */
+  --btn-face: #FFE8F5; --btn-edge: var(--cream-edge);
+  --count-1: #FF8CC6; --count-2: var(--p-pink); --count-edge: var(--p-pink-deep);
+  --scrim: rgba(74, 18, 72, .62);         /* behind a sheet or the celebration */
+  --sign-face: #FF6FB5; --sign-face-2: #F03C93; --sign-face-3: #D91F7C;
+  --sign-rim: var(--p-pink-deep); --sign-edge: #8E1458;
+  --sign-text: #FFE86A; --sign-ink: var(--p-purple-deep);
+  --sign-bolt: var(--p-yellow); --sign-bolt-2: #FFF0B0;
+  --sign-trim: var(--p-purple);           /* the sweet at each end of a sign */
+
+  /* the greeting confetti (core/ui.js: AF.UI.greet) */
+  --confetti-1: var(--p-pink); --confetti-2: var(--p-yellow); --confetti-3: var(--p-purple);
+  --confetti-4: var(--p-sky);  --confetti-5: #FF8CC6;        --confetti-6: #FFFFFF;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,11 +151,13 @@ button:disabled { opacity: .4; cursor: default; }
    Sky, four layers of hills, a sandy path, two big trees and
    drifting bubbles. Everything is drawn in code (index.html), so
    there are no image files and it scales to any screen. */
-body[data-scene="literacy"] { --sky1:#FFC27A; --sky2:#FFF0D2; --h1:#C3E08F; --h2:#A3CF71; --h3:#83BC59; --h4:#62A247; --veil: rgba(40,70,20,.16); }
-body[data-scene="stem"]     { --sky1:#86CFFF; --sky2:#E4F6FF; --h1:#A2E0BA; --h2:#78CFA3; --h3:#52BB8F; --h4:#37A27B; --veil: rgba(8,70,66,.16); }
-body[data-scene="life"]     { --sky1:#FFAEC2; --sky2:#FFE8EC; --h1:#B2E0AC; --h2:#8CCF90; --h3:#68BB7A; --h4:#4CA266; --veil: rgba(70,30,40,.14); }
-body[data-scene="play"]     { --sky1:#66B4FF; --sky2:#CDEBFF; --h1:#86D7C8; --h2:#5CC3B4; --h3:#3CAD9F; --h4:#279388; --veil: rgba(8,50,80,.16); }
-body[data-scene="calm"]     { --veil: rgba(8,70,66,.18); }
+/* Each island keeps its own temperature, but all four are now washed
+   in one of the party colours rather than in forest green. */
+body[data-scene="literacy"] { --sky1:#FFC27A; --sky2:#FFF0D2; --h1:#C3E08F; --h2:#A3CF71; --h3:#83BC59; --h4:#62A247; --veil: rgba(255,150,60,.20); }
+body[data-scene="stem"]     { --sky1:#86CFFF; --sky2:#E4F6FF; --h1:#A2E0BA; --h2:#78CFA3; --h3:#52BB8F; --h4:#37A27B; --veil: rgba(120,120,255,.20); }
+body[data-scene="life"]     { --sky1:#FFAEC2; --sky2:#FFE8EC; --h1:#B2E0AC; --h2:#8CCF90; --h3:#68BB7A; --h4:#4CA266; --veil: rgba(255,80,170,.22); }
+body[data-scene="play"]     { --sky1:#66B4FF; --sky2:#CDEBFF; --h1:#86D7C8; --h2:#5CC3B4; --h3:#3CAD9F; --h4:#279388; --veil: rgba(150,90,255,.20); }
+body[data-scene="calm"]     { --veil: var(--wash); }   /* the picker and the quiet screens */
 
 /* A level map is an island out on the water: the hills step aside
    and each area gets its own sea. */
@@ -125,7 +168,7 @@ body[data-scene="map"][data-area="life"]     { --w1: #FFBDD1; --w2: #E46A95; }
 body[data-scene="map"] .sc-hills, body[data-scene="map"] .sc-tree, body[data-scene="map"] .sc-leaves { opacity: 0; }
 
 /* The character maker: the same meadow, thrown out of focus. */
-body[data-scene="maker"] { --veil: rgba(255,246,214,.12); }
+body[data-scene="maker"] { --veil: rgba(255,214,240,.18); }
 body[data-scene="maker"] .sc-hills, body[data-scene="maker"] .sc-tree { filter: blur(2px); }
 body[data-scene="maker"] .bub { background: radial-gradient(circle, rgba(255,236,150,.75), rgba(255,236,150,0) 70%); box-shadow: none; }
 body[data-scene="maker"] .fly { display: none; }
@@ -145,7 +188,10 @@ body[data-scene="play"] .scenery     { background-image: url(../art/bg-play.jpg)
 body[data-scene="isles"] .scenery { background-image: url(../art/bg-island.jpg); filter: blur(14px) saturate(1.1); }
 body[data-scene="map"] .scenery   { background-image: url(../art/bg-map.jpg); filter: blur(14px) saturate(1.1); }
 .sc-hills, .sc-tree, .sc-leaves { display: none; }
-.scenery::after { display: none; }
+/* The party gel: one coloured film over whichever background is up, so
+   every screen is lit by the same party and no screen is re-painted on
+   its own. (It was switched off when the painted backgrounds arrived;
+   the party edition turns it back on, gently, through --veil.) */
 .scenery::after { content: ""; position: absolute; inset: 0; background: var(--veil); transition: background .6s; }
 .sc-hills { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sc-hills, .sc-tree, .sc-leaves { transition: opacity .5s, filter .5s; }
@@ -225,18 +271,18 @@ body.still .bub { bottom: var(--rest, 30vh); }
    a darker rim, a highlight spot. The glyph inside (core/icons.js)
    takes a deeper tone of the same hue; its accents take a pale one. */
 .jelly, .round-btn {
-  --h: #3DA5F4;
-  --hd: color-mix(in srgb, var(--h) 72%, #0B2A3A);
+  --h: var(--jelly-h);
+  --hd: color-mix(in srgb, var(--h) 72%, var(--deep));
   --ia: color-mix(in srgb, var(--h) 20%, #fff);
   position: relative; display: grid; place-items: center; flex: none;
   aspect-ratio: 1; border-radius: 31%;
-  background: radial-gradient(130% 105% at 28% 10%, color-mix(in srgb, var(--h) 52%, #fff), var(--h) 56%, color-mix(in srgb, var(--h) 86%, #0B2A3A));
+  background: radial-gradient(130% 105% at 28% 10%, color-mix(in srgb, var(--h) 52%, #fff), var(--h) 56%, color-mix(in srgb, var(--h) 86%, var(--deep)));
   box-shadow:
     inset 0 0 0 2px color-mix(in srgb, var(--h) 40%, #fff),
-    inset 0 -4px 0 color-mix(in srgb, var(--h) 80%, #0B2A3A),
+    inset 0 -4px 0 color-mix(in srgb, var(--h) 80%, var(--deep)),
     0 0 0 2.5px var(--hd),
     0 6px 12px color-mix(in srgb, var(--h) 55%, transparent);
-  color: color-mix(in srgb, var(--h) 42%, #0B2A3A);
+  color: color-mix(in srgb, var(--h) 42%, var(--deep));
   font-family: var(--emoji); line-height: 1;
   transition: transform .12s, filter .12s;
 }
@@ -249,18 +295,18 @@ svg.ic .a { fill: var(--ia, #fff); }
 .jelly-alt { font-size: .5em; }
 
 /* Buttons carry a white glyph (subject icons keep the tone-on-tone look). */
-.round-btn { width: clamp(46px, 10.5vmin, 64px); font-size: clamp(20px, 5vmin, 30px); color: #fff; --ia: color-mix(in srgb, var(--h) 72%, #0B2A3A); }
-.round-btn > svg.ic { filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
+.round-btn { width: clamp(46px, 10.5vmin, 64px); font-size: clamp(20px, 5vmin, 30px); color: #fff; --ia: color-mix(in srgb, var(--h) 72%, var(--deep)); }
+.round-btn > svg.ic { filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, var(--deep))); }
 .round-btn:active { transform: scale(.92); filter: brightness(.95); }
-.round-btn:focus-visible, .btn:focus-visible { outline: 4px solid #FFC93C; outline-offset: 4px; }
+.round-btn:focus-visible, .btn:focus-visible { outline: 4px solid var(--gold); outline-offset: 4px; }
 /* each job has its own colour, like a toy with labelled buttons */
-[data-ic="help"], [data-ic="hint"], [data-ic="star"] { --h: #FFC93C; }
-.round-btn[data-ic="help"], .round-btn[data-ic="hint"] { color: #7A4A00; }
+[data-ic="help"], [data-ic="hint"], [data-ic="star"] { --h: var(--gold); }
+.round-btn[data-ic="help"], .round-btn[data-ic="hint"] { color: #8A5A00; }
 .round-btn[data-ic="help"] > svg.ic, .round-btn[data-ic="hint"] > svg.ic { filter: none; }
 [data-ic="sound"], [data-ic="check"] { --h: #3CCB7F; }
 [data-ic="close"]  { --h: #F0565B; }
-[data-ic="dice"], [data-ic="edit"] { --h: #A968E8; }
-[data-ic="mic"]    { --h: #FF6FAE; }
+[data-ic="dice"], [data-ic="edit"] { --h: var(--p-purple); }
+[data-ic="mic"]    { --h: var(--p-pink); }
 
 
 /* icons used inline in text buttons */
@@ -269,9 +315,9 @@ svg.ic .a { fill: var(--ia, #fff); }
 
 /* ---------- top bars ---------- */
 .bar { display: flex; align-items: center; gap: 10px; flex: none; }
-/* Titles are white with a thick blue outline, straight on the sky. */
+/* Titles are white with one thick outline, straight on the sky. */
 .outlined, .bar-title {
-  --ol: #2F86E0; color: #fff;
+  --ol: var(--title-outline); color: #fff;
   text-shadow:
     0 .09em 0 var(--ol), .09em 0 0 var(--ol), -.09em 0 0 var(--ol), 0 -.09em 0 var(--ol),
     .065em .065em 0 var(--ol), -.065em .065em 0 var(--ol), .065em -.065em 0 var(--ol), -.065em -.065em 0 var(--ol),
@@ -281,21 +327,21 @@ svg.ic .a { fill: var(--ia, #fff); }
 .bar-title { font-size: var(--fs-xl); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .12em .1em .22em; }
 .bar-note { font-size: var(--fs-xs); font-weight: 700; color: #fff; display: block; margin-top: -.3em; text-shadow: 0 1px 0 rgba(20,60,120,.7), 0 0 8px rgba(20,60,120,.5); }
 body[data-area="literacy"] .bar-title { --ol: #D9701A; }
-body[data-area="stem"] .bar-title     { --ol: #1E8FA0; }
-body[data-area="life"] .bar-title     { --ol: #D8436A; }
+body[data-area="stem"] .bar-title     { --ol: var(--p-sky-deep); }
+body[data-area="life"] .bar-title     { --ol: var(--p-pink-deep); }
 .bar-note:empty { display: none; }
 
 .starcount {
   display: inline-flex; align-items: center; gap: .35em; flex: none;
-  background: linear-gradient(#62AEF5, #3B86E0); color: #fff; border-radius: 999px;
+  background: linear-gradient(var(--count-1), var(--count-2)); color: #fff; border-radius: 999px;
   padding: .22em .85em .26em .3em; font-weight: 700; font-size: var(--fs-sm);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #2A63B8; text-shadow: 0 1px 0 #2A63B8;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 var(--count-edge); text-shadow: 0 1px 0 var(--count-edge);
 }
 .starcount.streak { background: linear-gradient(#FFA954, #F07E2A); box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 3px 0 #C25A12; text-shadow: 0 1px 0 #C25A12; padding-left: .5em; }
 .starcount .s { font-family: var(--emoji); }
 .coin {
   width: 1.3em; aspect-ratio: 1; border-radius: 50%; display: inline-grid; place-items: center; text-shadow: none;
-  background: radial-gradient(circle at 34% 28%, #FFF0A8, #FFC93C 60%, #E9A712);
+  background: radial-gradient(circle at 34% 28%, #FFF0A8, var(--gold) 60%, var(--gold-dark));
   box-shadow: inset 0 0 0 1.5px #FFE680, 0 0 0 1.5px #B97A00; color: #B97A00;
 }
 .coin svg.ic { width: 68%; height: 68%; }
@@ -319,7 +365,7 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 .sheet {
   position: fixed; inset: 0; z-index: 12; display: grid; place-items: center;
   padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
-  background: rgba(12,62,66,.6); animation: screen-in .22s ease-out;
+  background: var(--scrim); animation: screen-in .22s ease-out;
 }
 #gate { z-index: 14; }
 .sheet-card {
@@ -335,14 +381,14 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 
 .btn {
   min-height: 54px; padding: 0 24px; border-radius: 999px;
-  background: #E6F6F1; box-shadow: 0 5px 0 var(--white-edge);
+  background: var(--btn-face); box-shadow: 0 5px 0 var(--btn-edge);
   font-size: var(--fs-md); font-weight: 700;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   transition: transform .1s, box-shadow .1s;
 }
-.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--white-edge); }
-.btn.go { background: #36D6B5; box-shadow: 0 5px 0 #1FA88A; color: #fff; }
-.btn.go:active { box-shadow: 0 1px 0 #1FA88A; }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--btn-edge); }
+.btn.go { background: var(--go); box-shadow: 0 5px 0 var(--go-dark); color: #fff; }
+.btn.go:active { box-shadow: 0 1px 0 var(--go-dark); }
 .btn em { font-family: var(--emoji); font-style: normal; }
 .btn.go [data-ic] { color: #fff; }
 .btn.danger { background: #FFE7E7; box-shadow: 0 5px 0 #F3C9C9; color: #B3362F; }
@@ -350,6 +396,22 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 
 /* ---------- effects layer ---------- */
 #fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+
+/* ---------- the opening: happy birthday, once ----------
+   Built by AF.UI.greet (core/ui.js) into #fx, which takes no pointer
+   events, so none of this can cover a tap or sit behind an answer.
+   It is only ever made when motion is on, and it removes itself. */
+.greet { position: absolute; inset: 0; pointer-events: none; }
+.greet-bit {
+  position: absolute; top: -8vh; left: var(--x); width: var(--w); height: calc(var(--w) * .62);
+  border-radius: 2px; background: var(--col);
+  animation: fall var(--dur) cubic-bezier(.35,.1,.6,1) var(--delay) forwards;
+}
+.greet-bit.round { height: var(--w); border-radius: 50%; }
+.greet-bit.star {
+  height: var(--w); border-radius: 0;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
 .spark {
   position: absolute; width: var(--s); height: var(--s);
   margin: calc(var(--s)/-2) 0 0 calc(var(--s)/-2);
@@ -365,17 +427,17 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 
 .party {
   position: fixed; inset: 0; z-index: 25; display: none; place-items: center;
-  background: rgba(10,105,98,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: var(--scrim); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   text-align: center;
 }
 .party.is-on { display: grid; }
 .party-char { width: min(46vmin, 250px); margin: 0 auto; }
 .party-text {
-  font-size: var(--fs-3xl); font-weight: 700; color: #FFC93C;
+  font-size: var(--fs-3xl); font-weight: 700; color: var(--gold);
   text-shadow: 0 .05em 0 #fff, .05em 0 0 #fff, -.05em 0 0 #fff, 0 -.05em 0 #fff, 0 .13em 0 var(--violet-deep);
   animation: pop-in .5s cubic-bezier(.3,1.6,.5,1) .2s both;
 }
-.party-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.4); font-size: var(--fs-sm); font-weight: 600; margin-top: 6px; }
+.party-sub { color: #fff; text-shadow: 0 2px 0 rgba(74,18,72,.45); font-size: var(--fs-sm); font-weight: 600; margin-top: 6px; }
 
 .empty { color: #fff; text-align: center; margin: auto; font-size: var(--fs-md); }
 
@@ -456,7 +518,7 @@ body.still .mk-done { animation: none; }
 /* the friend's face in a round frame */
 .me-face {
   width: var(--face); aspect-ratio: 1; border-radius: 50%; position: relative; flex: none;
-  background: radial-gradient(circle at 40% 30%, #FFFDF6, #CFEFC5);
+  background: radial-gradient(circle at 40% 30%, var(--cream-hi), #CFEFC5);
   box-shadow: 0 0 0 3px #fff, 0 4px 10px rgba(10,52,58,.25);
 }
 .me-clip { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; }
@@ -464,38 +526,43 @@ body.still .mk-done { animation: none; }
 .me-face .ch::before { display: none; }
 .me-face .ch-img { animation: none; }
 
-/* ---------- wooden sign: the name of every screen ----------
-   A plank with two bolts and a leaf at each end, yellow letters with
-   a brown outline (games.png, game_level mock-up). */
+/* ---------- the sign: the name of every screen ----------
+   Was a wooden plank. For the party it is a bubblegum plaque with two
+   gold studs and a sweet at each end — same shape, same bolts, same
+   yellow lettering, every colour out of the --sign-* tokens. */
 .sign-wrap { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--space-1); min-width: 0; }
 .sign {
   position: relative; margin: 0 14px; max-width: calc(100% - 28px); white-space: nowrap;
   padding: .14em .95em .22em; border-radius: .42em;
-  font-size: var(--fs-xl); font-weight: 700; line-height: 1.12; color: #FFD84A;
-  -webkit-text-stroke: .16em #6A3A16; paint-order: stroke; text-shadow: 0 .07em 0 #4A2408;
+  font-size: var(--fs-xl); font-weight: 700; line-height: 1.12; color: var(--sign-text);
+  -webkit-text-stroke: .16em var(--sign-ink); paint-order: stroke; text-shadow: 0 .07em 0 var(--sign-edge);
   background:
-    radial-gradient(circle at .5em .55em, #8A5A2E 0 .09em, #D9B27C .1em .14em, transparent .15em),
-    radial-gradient(circle at calc(100% - .5em) .55em, #8A5A2E 0 .09em, #D9B27C .1em .14em, transparent .15em),
-    repeating-linear-gradient(176deg, rgba(255,255,255,.06) 0 3px, transparent 3px 12px),
-    linear-gradient(#C98A4E, #A7672F 55%, #8E5424);
-  box-shadow: inset 0 0 0 .1em #7A4520, inset 0 .16em 0 rgba(255,220,160,.35), 0 .12em 0 #5C3214, 0 .3em .4em rgba(60,30,10,.28);
+    radial-gradient(circle at .5em .55em, var(--sign-bolt-2) 0 .09em, var(--sign-bolt) .1em .14em, transparent .15em),
+    radial-gradient(circle at calc(100% - .5em) .55em, var(--sign-bolt-2) 0 .09em, var(--sign-bolt) .1em .14em, transparent .15em),
+    repeating-linear-gradient(176deg, rgba(255,255,255,.1) 0 3px, transparent 3px 12px),
+    linear-gradient(var(--sign-face), var(--sign-face-2) 55%, var(--sign-face-3));
+  box-shadow: inset 0 0 0 .1em var(--sign-rim), inset 0 .16em 0 rgba(255,255,255,.4), 0 .12em 0 var(--sign-edge), 0 .3em .4em rgba(90,10,60,.26);
 }
-/* a leaf at each end */
+/* a round sweet at each end */
 .sign::before, .sign::after {
-  content: ""; position: absolute; top: 46%; width: .78em; height: .44em; border-radius: 100% 0 100% 0;
-  background: linear-gradient(135deg, #8EDB5A, #3FA34D); box-shadow: inset 0 -.05em 0 rgba(0,0,0,.12);
+  content: ""; position: absolute; top: 44%; width: .5em; height: .5em; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fff 0 12%, var(--sign-trim) 60%, color-mix(in srgb, var(--sign-trim) 70%, #2A0A3A));
+  box-shadow: 0 0 0 .07em #fff, 0 .1em .12em rgba(90,10,60,.3);
 }
-.sign::before { left: -.5em; rotate: 200deg; }
-.sign::after { right: -.5em; rotate: -20deg; }
+.sign::before { left: -.42em; }
+.sign::after { right: -.42em; }
 
-/* the title: "Animal" over "Friends" on the sign */
-.logo.sign { display: flex; flex-direction: column; align-items: center; padding: .1em .55em .14em; line-height: .9; font-size: var(--fs-2xl); -webkit-text-stroke: 0; text-shadow: none; }
-.logo span { position: relative; display: block; color: #5A2E0E; -webkit-text-stroke: .17em #5A2E0E; paint-order: stroke; filter: drop-shadow(0 .05em 0 rgba(40,20,5,.5)); }
-.logo span::after {
-  content: attr(data-t); position: absolute; left: 0; top: 0; -webkit-text-stroke: 0;
-  background: linear-gradient(#FFEA6A, #FFC21E 55%, #FF9A1E); -webkit-background-clip: text; background-clip: text; color: transparent;
+/* ---------- the logo: the party sticker (art/party/party-logo.webp) ----------
+   The name is drawn, not set, so it is one image. It is measured in `em`
+   of the font-size it inherits, which is how the screens that already
+   resize the logo (#home, .tutor-head, and both landscape rules in
+   screens.css) go on working with no rules of their own. `max-width`
+   means a narrow phone shrinks it rather than letting it run off. */
+.logo { display: flex; justify-content: center; margin: 0; font-size: var(--fs-2xl); line-height: 0; }
+.logo img {
+  display: block; width: min(100%, 7.4em); height: auto; max-width: 100%;
+  filter: drop-shadow(0 .07em .06em rgba(120,20,90,.35));
 }
-.logo span + span::after { background-image: linear-gradient(#C8F27A, #7FD64A 55%, #4DB43A); }
 
 .crumb {
   padding: .1em .9em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: var(--fs-xs);
@@ -504,7 +571,7 @@ body.still .mk-done { animation: none; }
 
 /* ---------- soft card: cream, thick bottom edge ---------- */
 .card {
-  background: linear-gradient(#FFFBF1, var(--cream)); border-radius: var(--radius-card);
+  background: linear-gradient(var(--cream-hi), var(--cream)); border-radius: var(--radius-card);
   box-shadow: inset 0 -6px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft);
 }
 
@@ -532,9 +599,9 @@ body.still .mk-done { animation: none; }
   --h: var(--go);
   position: relative; display: grid; place-items: center; width: clamp(64px, 9vmin + 34px, calc(var(--big) * .96)); aspect-ratio: 1; border-radius: 50%; color: #fff;
   background: radial-gradient(120% 100% at 30% 14%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 60%);
-  box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), inset 0 -6px 0 color-mix(in srgb, var(--h) 70%, #0B2A3A), 0 6px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A), 0 12px 20px rgba(10,40,60,.25);
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), inset 0 -6px 0 color-mix(in srgb, var(--h) 70%, var(--deep)), 0 6px 0 color-mix(in srgb, var(--h) 60%, var(--deep)), 0 12px 20px rgba(10,40,60,.25);
 }
-.big-round > svg.ic { width: 52%; height: 52%; filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
+.big-round > svg.ic { width: 52%; height: 52%; filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, var(--deep))); }
 .big-round:active { transform: scale(.9); }
 
 /* ---------- green pill button (Next): green always means "go on" ---------- */
@@ -561,8 +628,8 @@ body.still .mk-done { animation: none; }
   display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: var(--btn); min-width: clamp(92px, 27vmin, 140px);
   padding: 4px 12px 6px; border-radius: 20px; color: #fff; font-weight: 700; font-size: var(--fs-sm); line-height: 1.1; white-space: nowrap;
   background: linear-gradient(color-mix(in srgb, var(--h) 70%, #fff), var(--h));
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A);
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--h) 55%, #0B2A3A);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 color-mix(in srgb, var(--h) 60%, var(--deep));
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--h) 55%, var(--deep));
 }
 .tab[data-t="1"] { --h: #3D8BF2; } .tab[data-t="2"] { --h: #A45CE0; }
 .tab-stars { display: inline-flex; align-items: center; gap: 1px; height: 1em; }

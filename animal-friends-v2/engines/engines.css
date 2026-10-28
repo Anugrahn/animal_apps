@@ -552,8 +552,12 @@ body.still .tr-start circle { animation: none; }
 .story-e:nth-child(2) { animation-delay: .15s; } .story-e:nth-child(3) { animation-delay: .3s; }
 .story-me { width: clamp(100px, 30vmin, 210px); flex: none; }
 .story-text { flex: none; text-align: center; font-size: var(--fs-lg); font-weight: 600; line-height: 1.35; padding: 0 6px; }
-/* (each word's tap area reaches above and below it, about 44px tall, without moving the text) */
-.story-w { display: inline-block; border-radius: 8px; padding: .32em .14em; margin: -.32em -.12em; transition: background .2s; }
+/* Each word's tap area reaches above and below it without moving the text.
+   The padding alone only reaches 44px once --fs-lg is about 24px, so on a
+   small phone it fell to 38px; the overlay guarantees the height. It is not
+   widened — that would cover the word beside it. */
+.story-w { display: inline-block; border-radius: 8px; padding: .32em .14em; margin: -.32em -.12em; transition: background .2s; position: relative; }
+.story-w::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; height: max(100%, 44px); }
 .story-w:active, .story-w.pop { background: #FFE27A; }
 .story-w.pop { animation: pulse .35s; }
 .story-text.reading { animation: read 1s ease-out; }
@@ -722,8 +726,12 @@ img.emo { display: inline-block; width: 1.2em; height: 1.2em; object-fit: contai
 .story-art::before { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 35%, transparent); pointer-events: none; }
 .story.night .story-art { background-image: url(../art/bg-abc.jpg); filter: hue-rotate(200deg) brightness(.6) saturate(1.2); }
 .story-e, .story-me { position: relative; }
-.story-me { width: clamp(130px, 40vmin, 260px); }
-.story-e img.emo { width: 1.1em; height: 1.1em; }
+/* On a 320px phone the friend and the picture both sat on their floors
+   (130px + 64px) inside a 295px frame, so each was trimmed at one edge.
+   A share of the frame keeps them whole however narrow it gets. */
+.story-me { width: min(clamp(130px, 40vmin, 260px), 38%); }
+.story-e { max-width: 50%; }
+.story-e img.emo { width: 100%; height: auto; }
 .story-e { filter: drop-shadow(0 8px 6px rgba(40,30,10,.3)); }
 
 /* order: the numbered places sit on a wooden strip */

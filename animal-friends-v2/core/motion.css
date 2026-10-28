@@ -51,7 +51,13 @@
 /* ---------- arriving ---------- */
 @keyframes drop-in { from { opacity: 0; transform: translateY(46%) scale(.6) rotate(-7deg); } }
 .opt { animation: drop-in .55s var(--spring) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
-.show, .slots, .build-top, .say-card, .lyrics, .story, .breath { animation: drop-in .5s var(--spring) backwards; }
+/* The big panels of a game — the words of a song, a story's page, the thing
+   being asked about — sit directly under the friend's speech bubble, and the
+   bubble is a button ("hear it again"). Coming in on the shared spring they
+   flew up PAST where they sit, by about 30px for a third of a second, over
+   that button: measured covering its middle on eight devices. They still rise
+   into place; they just no longer overshoot the control above them. */
+.show, .slots, .build-top, .say-card, .lyrics, .story, .breath { animation: drop-in .5s cubic-bezier(.2, .8, .3, 1) backwards; }
 .stage.leaving { animation: stage-out .23s ease-in forwards; pointer-events: none; }
 @keyframes stage-out { to { opacity: 0; transform: translateY(5%) scale(.94); } }
 .speech.re { animation: re-pop .4s var(--spring); }

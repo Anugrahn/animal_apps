@@ -350,6 +350,12 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   gap: var(--space-2); text-align: center;
   padding: max(var(--space-5), env(safe-area-inset-top)) max(var(--space-4), env(safe-area-inset-right)) calc(var(--space-5) + env(safe-area-inset-bottom)) max(var(--space-4), env(safe-area-inset-left));
 }
+/* Open "Try at home" on a small phone and the card is taller than the
+   screen. Centred and clipped, that lost the top of the stars and the
+   bottom of the buttons with no way to reach either; it scrolls instead,
+   and `safe` keeps the top reachable when it does. */
+.result-card { overflow-y: auto; overflow-x: clip; }
+@supports (justify-content: safe center) { .result-card { justify-content: safe center; } }
 .result-stars { display: flex; align-items: flex-end; gap: var(--space-2); }
 .result-stars i { width: clamp(58px, 18vmin, calc(var(--big) * 1.1)); aspect-ratio: 1; display: grid; color: rgba(255,255,255,.7); filter: drop-shadow(0 4px 0 rgba(120,90,40,.25)); }
 .result-stars i:nth-child(2) { width: clamp(70px, 22vmin, calc(var(--big) * 1.32)); margin-bottom: 6%; }
@@ -681,7 +687,10 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   .play-guide { flex-direction: column; align-items: flex-start; gap: 0; }
   .play-friend { width: clamp(64px, 21vh, 170px); margin: 0 0 -6px 4px; }
   /* (the maze and coding boards need the width more than the question does) */
-  #play:has(.stage-maze, .stage-code) .play-top { flex-basis: clamp(130px, 18vw, 220px); }
+  /* (the ceiling grows with the screen, like every other size in the app:
+     a fixed 220px left "Line up the arrows, then press Go" at one or two
+     words a line on a laptop, beside half a screen of empty grass) */
+  #play:has(.stage-maze, .stage-code) .play-top { flex-basis: clamp(130px, 18vw, calc(var(--big) * 2.4)); }
   .prompt-col { width: 100%; }
   .speech.prompt { font-size: var(--fs-md); min-height: 48px; }
   .speech.prompt::before { left: 26px; top: -12px; margin-top: 0; border: 9px solid transparent; border-bottom: 13px solid #fff; border-top: 0; }   /* the tail points up, at the friend */

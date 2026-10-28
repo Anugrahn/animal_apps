@@ -813,7 +813,16 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 /* ============ the Birthday Quest (party edition) ============
    Today's Study has three stops and the chest sits below them. The quest
    has six, so the road scrolls on its own and the cake stays in view. */
-#journey.is-quest .jy-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; --gap: var(--space-2); padding-bottom: var(--space-2); }
+/* The road scrolls up and down and only up and down. The next stop stands
+   1.03 of itself and wears a gold ring, which is wider than the column:
+   that made the road draggable sideways by a few pixels and sliced the
+   ring flat at both edges. Room for the ring, and no sideways scroll. */
+#journey.is-quest .jy-list {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: clip; overscroll-behavior: contain;
+  /* the growth is a share of the card, so the room left for it is a share
+     of the row, never less than a comfortable edge on a small phone */
+  --gap: var(--space-2); padding: 0 max(var(--space-2), 1.6%) var(--space-2);
+}
 #journey.is-quest .jy-card { min-height: calc(var(--big) * .66); }
 #journey.is-quest .jy-card .jelly { width: clamp(48px, 12vmin, calc(var(--big) * .6)); }
 #journey.is-quest .jy-foot { flex: none; container-type: normal; padding-bottom: var(--space-3); }

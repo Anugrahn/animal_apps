@@ -94,11 +94,20 @@ content lives on inside the core subjects). A child's stars from them are kept
 in `legacyStars` and still count in the total, so nobody's star count drops;
 their per-level records are kept in `legacy` in the profile.
 
-**Bahasa Indonesia is spoken by the device's own Indonesian voice**, not the
-recorded one (which is English): `lang: 'id'` on the subject sets
-`AF.Audio.setLang('id')` while it plays, and the engines' own lines come from
-`AF.STR.id`. Android has an Indonesian voice in Google's text-to-speech; on a
-Mac it is "Damayanti". The grown-up area shows which one is in use.
+**Bahasa Indonesia is recorded with an Indonesian voice**, like the English
+lines (changed 2026-10-28 by the owner, reversing his own earlier rule that the
+device should say it): until then the device chose, so a child heard Damayanti
+on an iPhone, one of Google's voices — sometimes a man's — on Android, and an
+English reader on a phone with no Indonesian voice at all. The clips are made
+by `tools/voice/record_id.mjs` with macOS Damayanti and sit in `voice/` beside
+the English ones, keyed by the line's own text, so nothing special-cases them
+at playback. Indonesian still never gets a speaking (`speak`) step.
+
+`lang: 'id'` on the subject sets `AF.Audio.setLang('id')` while it plays, and
+the engines' own lines come from `AF.STR.id`. The device's Indonesian voice is
+now only the fallback, for a line with no recording; Android has one in
+Google's text-to-speech, and on a Mac it is "Damayanti". The grown-up area
+shows which one is in use.
 
 ### How a lesson is built
 

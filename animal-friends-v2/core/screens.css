@@ -814,7 +814,12 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 @media (orientation: landscape) and (max-height: 560px) {
   .board-isles { --bw: 83.333vh; top: calc(var(--btn) + 26px + 40vh); }
   .lm-name { font-size: clamp(13px, calc(var(--bw) * .04), 20px); }
-  .board-map { --u: calc(var(--bw) * .23); }    /* (bigger stones; the path already fills the height) */
+  /* Held sideways the board was drawn only 195px wide in an 802px window,
+     so two stones 38.6px across sat 27.8px apart and collided in the art —
+     a finger aiming at one landed on its neighbour. Widening the board
+     moves them apart (52.2px across, 37.5px between) and no pad rule could
+     have done it, because the collision was in the painting, not the CSS. */
+  .board-map { --bw: 90vh; top: 40%; --u: calc(var(--bw) * .23); }
   .lv-name { font-size: var(--fs-xs); }
   /* four or five stage tabs: two neat columns beside the map */
   #map .tabs.many { display: grid; grid-template-columns: repeat(2, auto); gap: var(--space-1); }

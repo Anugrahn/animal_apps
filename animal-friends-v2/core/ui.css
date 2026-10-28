@@ -117,6 +117,10 @@
   --sign-text: #FFE86A; --sign-ink: var(--p-purple-deep);
   --sign-bolt: var(--p-yellow); --sign-bolt-2: #FFF0B0;
   --sign-trim: var(--p-purple);           /* the sweet at each end of a sign */
+  /* how big that sweet is and how far it stands off the end of the plaque.
+     Written here because a screen that has to clip a sign (the game's
+     title bar) leaves `--sign-pip` of room so the sweet is not halved. */
+  --sign-pip: .5em; --sign-pip-out: .42em;
 
   /* the greeting confetti (core/ui.js: AF.UI.greet) */
   --confetti-1: var(--p-pink); --confetti-2: var(--p-yellow); --confetti-3: var(--p-purple);
@@ -537,12 +541,12 @@ button.speech:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--whi
 }
 /* a round sweet at each end */
 .sign::before, .sign::after {
-  content: ""; position: absolute; top: 44%; width: .5em; height: .5em; border-radius: 50%;
+  content: ""; position: absolute; top: 44%; width: var(--sign-pip); height: var(--sign-pip); border-radius: 50%;
   background: radial-gradient(circle at 34% 28%, #fff 0 12%, var(--sign-trim) 60%, color-mix(in srgb, var(--sign-trim) 70%, #2A0A3A));
   box-shadow: 0 0 0 .07em #fff, 0 .1em .12em rgba(90,10,60,.3);
 }
-.sign::before { left: -.42em; }
-.sign::after { right: -.42em; }
+.sign::before { left: calc(var(--sign-pip-out) * -1); }
+.sign::after { right: calc(var(--sign-pip-out) * -1); }
 
 /* ---------- the logo: the party sticker (art/party/party-logo.webp) ----------
    The name is drawn, not set, so it is one image. It is measured in `em`

@@ -303,7 +303,11 @@ body.still .jy-end.jy-go { animation: none; }
 /* ---------- 4. game: back · the game's sign · home, then the friend and a bubble ---------- */
 #play { gap: var(--space-2); }
 .play-hud { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.play-hud .sign { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-xl); }
+/* The game's name is the one sign the row may have to cut short, so it is
+   the one sign that clips. `clip` with a margin the width of the sweet
+   that stands off each end keeps the words inside the plaque without
+   slicing its two sweets in half, as `hidden` did on every game screen. */
+.play-hud .sign { flex: 0 1 auto; min-width: 0; overflow: clip; overflow-clip-margin: var(--sign-pip); text-overflow: ellipsis; font-size: var(--fs-xl); }
 .play-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 2vmin, 16px); }
 .play-top { display: flex; align-items: center; gap: var(--space-2); flex: none; }
 .play-guide { display: flex; align-items: center; gap: var(--space-1); flex: 1; min-width: 0; }

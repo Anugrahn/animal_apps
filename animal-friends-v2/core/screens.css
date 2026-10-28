@@ -147,17 +147,25 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
    and Home sits bottom-right on every screen but Home.
    ============================================================ */
 .hud {
-  position: relative; z-index: 3; flex: none;
+  position: relative; z-index: var(--z-hud); flex: none;
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "left . right" "mid mid mid";
   align-items: start; gap: var(--space-1) var(--space-2);
+  /* The frame is a row of three things with a lot of air between them,
+     drawn over the island and the level map. The air is not a button,
+     so it must not take a tap: the chest and the stones that reach up
+     under it were being answered for by the empty grid. Only what a
+     child can actually press answers here. (The maze and coding
+     screens already did this; it belongs to every screen's frame.) */
+  pointer-events: none;
 }
+.hud button, .hud a, .hud input, .hud [role="button"], .hud [tabindex]:not([tabindex="-1"]) { pointer-events: auto; }
 .hud-left { grid-area: left; display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
 .hud-left .round-btn.small { width: max(58px, var(--btn-sm)); --h: var(--gold); border-radius: 50%; }   /* (the "?" is a child's button too) */
 .hud-left + .hud-right + .hud-mid { align-self: start; }
 .hud-right { grid-area: right; display: flex; align-items: center; gap: var(--space-2); }
 .hud-mid { grid-area: mid; justify-self: center; min-width: 0; max-width: 100%; }
 .hud { grid-template-areas: "left mid right"; }
-.hud-home { position: absolute; z-index: 4; right: max(var(--gutter), env(safe-area-inset-right)); bottom: max(var(--gutter), env(safe-area-inset-bottom)); }
+.hud-home { position: absolute; z-index: var(--z-home); right: max(var(--gutter), env(safe-area-inset-right)); bottom: max(var(--gutter), env(safe-area-inset-bottom)); }
 
 /* ---------- 2. home: four islands round the friend ---------- */
 #home { padding-bottom: 0; gap: 0; }
@@ -297,7 +305,12 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 .jy-card.is-next { scale: 1.03; }
 .jy-end.jy-go { width: clamp(56px, 13vmin, 72px); height: auto; aspect-ratio: 1; background: none; box-shadow: none; animation: pulse 1.6s ease-in-out infinite; }
 body.still .jy-end.jy-go { animation: none; }
-.jy-foot { flex: 1; min-height: 0; display: flex; align-items: flex-end; justify-content: center; gap: var(--space-2); padding-bottom: var(--space-6); container-type: size; }
+/* The friend and the chest stand at the foot of the road. The box they
+   stand in is as tall as whatever room is left, so it lay over the last
+   stop on a short screen and answered for it. It is scenery: only what
+   is actually pressed (the cake, once it is ready) answers. */
+.jy-foot { flex: 1; min-height: 0; display: flex; align-items: flex-end; justify-content: center; gap: var(--space-2); padding-bottom: var(--space-6); container-type: size; pointer-events: none; }
+.jy-foot button { pointer-events: auto; }
 .jy-char { width: min(42cqh, 46vw, calc(var(--big) * 2.6)); }
 .jy-chest { width: min(22cqh, 24vw, calc(var(--big) * 1.3)); margin-bottom: 2%; }
 .jy-chest svg { width: 100%; height: auto; display: block; }

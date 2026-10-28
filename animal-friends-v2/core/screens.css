@@ -1,144 +1,80 @@
 /* ============================================================
-   screens.css — layout for pick / maker / home / map / play
+   screens.css — layout for pick / home / map / play
    and the sheets (result, how to play, grown-ups)
    ============================================================ */
 
 /* ---------- 1. character picker ---------- */
 #pick { align-items: center; gap: 1.2vmin; text-align: center; }
 
+/* the party ribbon (art/party/party-banner.webp) heads the picker: it
+   is the one place in the app that gets a second piece of the sticker
+   sheet, because it is the first screen and has nothing else on top */
+.ribbon {
+  display: block; flex: none; width: min(80%, 360px); height: auto;
+  margin: 0 auto calc(var(--space-2) * -1);
+  filter: drop-shadow(0 .03em .04em rgba(120, 20, 90, .3));
+  animation: pop-in .55s var(--spring) both;
+}
+/* a phone on its side: the ribbon is measured by the height instead, so
+   all four friends still fit on one screen with nothing to scroll */
+@media (orientation: landscape) and (max-height: 560px) {
+  .ribbon { width: auto; height: clamp(38px, 16vh, 70px); margin-bottom: 0; }
+}
 .pick-title {
-  font-size: clamp(27px, 7vmin, 52px); font-weight: 700; color: #fff; line-height: 1.1;
-  text-shadow: 0 .06em 0 var(--violet-deep), 0 0 18px rgba(12,62,66,.35); margin-top: 1vmin;
+  font-size: clamp(22px, 5.4vmin, 40px); font-weight: 700; color: #fff; line-height: 1.1;
+  text-shadow: 0 .06em 0 var(--violet-deep), 0 0 18px rgba(74, 18, 72, .35); margin-top: 1vmin;
 }
 .pick-sub { color: #fff; text-shadow: 0 2px 0 rgba(12,62,66,.45); font-size: clamp(14px, 3.4vmin, 20px); font-weight: 600; }
-.pick-scroll { width: 100%; }
-.pick-row {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 29%), 1fr));
-  gap: clamp(10px, 2.4vmin, 22px); width: min(1040px, 100%); margin: 0 auto; padding: 14px 4px 30px;
+/* The four friends ARE this screen, so they are measured against the
+   room left under the ribbon — by width and by height at once — and
+   take all of it. Two abreast standing up, four abreast on anything
+   wider than it is tall; never a small cluster with an empty half
+   screen under it, and never below a comfortable thumb on a phone. */
+.pick-scroll {
+  width: 100%; display: grid; align-content: center; justify-items: center;
+  container-type: size;                          /* 100cqw/100cqh: the room the cards have */
+  padding-block: var(--space-2);
 }
+/* (a card that cannot be made to fit scrolls from the top, not from its middle) */
+@supports (align-content: safe center) { .pick-scroll { align-content: safe center; } }
+
+.pick-row {
+  --cols: 2; --rows: 2;
+  --pick-gap: clamp(10px, 2.4vmin, 26px);
+  --pick-tall: 1.2;                              /* a card is this much taller than it is wide */
+  --by-w: calc((100cqw - (var(--cols) - 1) * var(--pick-gap)) / var(--cols));
+  --by-h: calc((100cqh - (var(--rows) - 1) * var(--pick-gap)) / var(--rows) / var(--pick-tall));
+  /* never under a thumb's worth, never past the fluid scale's ceiling */
+  --card: clamp(136px, min(var(--by-w), var(--by-h)), calc(var(--big) * 3.6));
+  display: grid; grid-template-columns: repeat(var(--cols), var(--card));
+  gap: var(--pick-gap); justify-content: center;
+}
+/* wider than it is tall — a laptop, a tablet or a phone on its side:
+   the four stand side by side and take the height instead */
+@media (min-aspect-ratio: 1/1) { .pick-row { --cols: 4; --rows: 1; } }
+
 .pick-card {
-  --edge: color-mix(in srgb, var(--c) 62%, #12404A);
-  position: relative; padding: 4px 6px 14px; border-radius: var(--radius-card); background: var(--cream);
-  box-shadow: inset 0 -8px 0 color-mix(in srgb, var(--c) 26%, #fff), 0 9px 0 var(--edge), 0 18px 28px rgba(10,52,58,.3);
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  --edge: color-mix(in srgb, var(--c) 62%, var(--deep));
+  --lift: clamp(6px, calc(var(--card) * .03), 14px);        /* how far the card stands off the page */
+  position: relative; padding: calc(var(--card) * .02) calc(var(--card) * .04) calc(var(--card) * .07);
+  border-radius: var(--radius-card); background: var(--cream);
+  box-shadow: inset 0 calc(var(--lift) * -.9) 0 color-mix(in srgb, var(--c) 26%, #fff),
+              0 var(--lift) 0 var(--edge), 0 calc(var(--lift) * 2) calc(var(--lift) * 3) rgba(10,52,58,.3);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1px;
   animation: pop-in .5s cubic-bezier(.3,1.5,.5,1) both;
   animation-delay: calc(var(--i) * 55ms);
   transition: transform .12s, box-shadow .12s;
 }
-.pick-card:active { transform: translateY(7px); box-shadow: 0 2px 0 var(--edge); }
-.pick-card.chosen { box-shadow: 0 0 0 6px #FFC93C, 0 9px 0 var(--edge), 0 18px 28px rgba(10,52,58,.3); }
-.pick-card:focus-visible { outline: 5px solid #FFC93C; outline-offset: 5px; }
-.pick-art { display: block; width: 100%; margin-top: -8%; }
-.pick-name { font-size: clamp(16px, 3.6vmin, 23px); font-weight: 700; line-height: 1.1; }
-.pick-species { font-size: clamp(10.5px, 2.4vmin, 14px); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
-.pick-slot { position: relative; display: grid; }
-.pick-edit {
-  position: absolute; top: 4px; right: 4px; z-index: 1; width: clamp(36px, 8vmin, 46px);
-  animation: pop-in .5s var(--spring) both; animation-delay: calc(var(--i) * 55ms + .2s);
+.pick-card:active { transform: translateY(var(--lift)); box-shadow: 0 2px 0 var(--edge); }
+.pick-card.chosen {
+  box-shadow: 0 0 0 calc(var(--lift) * .7) var(--gold), 0 var(--lift) 0 var(--edge),
+              0 calc(var(--lift) * 2) calc(var(--lift) * 3) rgba(10,52,58,.3);
 }
-.pick-plus { aspect-ratio: 1; display: grid; place-items: center; margin-top: 0; }
-.pick-plus span {
-  width: 62%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 30%, #FFF3C4, #FFC93C);
-  font-family: var(--emoji); font-size: clamp(30px, 8vmin, 54px);
-  box-shadow: inset 0 -6px 0 rgba(0,0,0,.08); animation: pulse 2s ease-in-out infinite;
-}
-
-/* ---------- 1b. character maker ----------
-   A soft-focus meadow, the friend on a round podium, a name tag,
-   six jelly-bean buttons (one per thing you can change) and a
-   cream tray holding the choices. */
-#maker.active {
-  display: grid; gap: 8px;
-  grid-template: "stage" minmax(0, 1fr) "beans" auto "tray" auto "done" auto / minmax(0, 1fr);
-}
-.mk-back { position: absolute; z-index: 3; top: max(var(--gutter), env(safe-area-inset-top)); left: max(var(--gutter), env(safe-area-inset-left)); }
-.mk-stage { grid-area: stage; min-height: 0; padding-top: calc(var(--btn) + var(--space-2)); display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.mk-name { display: flex; gap: 8px; align-items: center; flex: none; margin-left: clamp(40px, 10vmin, 60px); }
-.mk-name input {
-  width: min(230px, 50vw); height: clamp(48px, 2vmin + 40px, 58px); border-radius: 999px; border: 3px solid #F1DDB0; text-align: center;
-  background: #FFF8E6; font: inherit; font-size: var(--fs-md); font-weight: 700; color: #7A4A22;
-  box-shadow: 0 4px 0 rgba(170,130,80,.3); user-select: text; -webkit-user-select: text; outline: none;
-}
-.mk-name input::placeholder { color: #B58E62; }
-.mk-name input:focus { border-color: #FFC93C; }
-.mk-name .round-btn { width: var(--btn-sm); }
-.mk-view { position: relative; flex: 1; min-height: 0; aspect-ratio: 1; max-width: 100%; }
-img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; translate: -50% 0; margin: 0; z-index: 0; }
-.hud.hud-maker { position: absolute; z-index: 3; display: flex; align-items: center; top: max(var(--gutter), env(safe-area-inset-top)); right: max(var(--gutter), env(safe-area-inset-right)); gap: var(--space-2); }
-.maker-live { position: absolute; left: 0; right: 0; top: -9%; height: 100%; }
-
-.mk-beans { grid-area: beans; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; padding: 2px; }
-.bean {
-  --h: #3E9BF0;
-  position: relative; aspect-ratio: 1; min-width: 0;
-  border-radius: 26%;
-  background: radial-gradient(125% 100% at 30% 12%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 55%, color-mix(in srgb, var(--h) 82%, #0B2A3A));
-  box-shadow: inset 0 -5px 0 rgba(0,0,0,.12), 0 5px 10px color-mix(in srgb, var(--h) 55%, transparent);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
-  color: #fff; font-weight: 700; font-size: var(--fs-xs); line-height: 1.1;
-  text-shadow: 0 2px 0 color-mix(in srgb, var(--h) 62%, #0B2A3A);
-  transition: transform .12s;
-}
-.bean::before { content: ""; position: absolute; left: 17%; top: 10%; width: 26%; height: 13%; border-radius: 50%; background: rgba(255,255,255,.7); transform: rotate(-22deg); }
-.bean svg.ic { width: 40%; height: auto; aspect-ratio: 1; margin-bottom: -2%; color: color-mix(in srgb, var(--h) 16%, #fff); --ia: color-mix(in srgb, var(--h) 78%, #0B2A3A); filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--h) 60%, #0B2A3A)); }
-.bean:active { transform: scale(.94); }
-.bean.on { transform: scale(1.08); box-shadow: 0 0 0 4px #fff, 0 6px 14px color-mix(in srgb, var(--h) 60%, transparent); z-index: 1; }
-
-.mk-tray {
-  grid-area: tray; min-height: 0; max-height: 27vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  background: var(--cream); border-radius: var(--radius-card); padding: var(--space-2);
-  box-shadow: inset 0 -5px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft);
-}
-.mk-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 6px; }
-/* Standing up, the tray keeps one height whatever it holds (eleven animals
-   or three voices), so the beans above it and the friend never move. (Few
-   choices sit in its middle; auto margins, unlike centring, never hide the
-   top row when there are many.) */
-@media (max-aspect-ratio: 1/1) {
-  .mk-tray { height: min(27vh, calc(var(--big) * 2.6)); display: flex; flex-direction: column; }
-  .mk-opts { margin-block: auto; }
-}
-/* (a tablet's tray is wide: two rows hold every category) */
-@media (max-aspect-ratio: 1/1) and (min-width: 600px) { .mk-tray { height: calc(var(--big) * 1.5 + 4px); } }
-.mk-chip {
-  position: relative; aspect-ratio: 1; border-radius: 24%; min-width: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
-  font-size: 11.5px; font-weight: 700; color: #7A4A22; transition: transform .1s;
-}
-.mk-chip img { width: 128%; max-width: none; height: auto; margin: -8% 0 -10%; pointer-events: none; }
-.mk-chip i { width: 68%; aspect-ratio: 1; border-radius: 30%; box-shadow: inset 0 -4px 0 rgba(0,0,0,.1), 0 0 0 2.5px #fff, 0 3px 6px rgba(120,80,30,.25); }
-.mk-chip em { font-family: var(--emoji); font-style: normal; font-size: 28px; line-height: 1.1; }
-.mk-chip:active { transform: scale(.93); }
-.mk-chip { border-radius: 50%; background: #FFFDF6; box-shadow: 0 3px 0 var(--cream-edge); }
-.mk-chip.on { background: #fff; box-shadow: inset 0 0 0 4px #5BC75E, 0 3px 0 var(--cream-edge); }
-
-.mk-done {
-  --h: #3CC46A;                                   /* (green: go on, like every Next) */
-  grid-area: done; justify-self: center; position: relative; margin-bottom: 4px;
-  display: flex; align-items: center; gap: 10px; padding: 9px 34px 13px 26px; border-radius: 28px;
-  background: radial-gradient(125% 110% at 30% 8%, color-mix(in srgb, var(--h) 55%, #fff), var(--h) 55%, color-mix(in srgb, var(--h) 80%, #0B2A3A));
-  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--h) 45%, #fff), inset 0 -6px 0 rgba(0,0,0,.14), 0 0 0 3px color-mix(in srgb, var(--h) 70%, #0B2A3A), 0 0 22px rgba(255,236,160,.9);
-  color: #fff; font-size: var(--fs-xl); font-weight: 700; text-shadow: 0 3px 0 #1F8A4C;
-  transition: transform .12s;
-}
-.mk-done::before { content: ""; position: absolute; left: 9%; top: 10%; width: 16%; height: 16%; border-radius: 50%; background: rgba(255,255,255,.7); transform: rotate(-20deg); }
-.mk-done [data-ic] { width: 1.25em; height: 1.25em; display: grid; color: #5BE36B; filter: drop-shadow(0 2px 0 #1F8A34); }
-.mk-done [data-ic] svg { width: 100%; height: 100%; }
-.mk-done:active { transform: scale(.95); }
-.mk-done { animation: glow 1.8s ease-in-out infinite; }
-@keyframes glow { 50% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--h) 45%, #fff), inset 0 -6px 0 rgba(0,0,0,.14), 0 0 0 3px color-mix(in srgb, var(--h) 70%, #0B2A3A), 0 0 38px 8px rgba(255,236,160,1); } }
-
-@media (min-aspect-ratio: 1/1) {
-  #maker.active {
-    grid-template: "stage beans" minmax(0, 1fr) "tray beans" auto "done done" auto / minmax(0, 1fr) clamp(170px, 26vw, 290px);
-    column-gap: 16px;
-  }
-  .mk-beans { grid-template-columns: 1fr 1fr; align-content: center; gap: 10px; }
-  .mk-tray { max-height: 22vh; justify-self: center; max-width: 100%; }
-  .mk-opts { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: clamp(58px, 9vh, 82px); overflow-x: auto; }
-  .mk-name { margin-left: 0; }
-}
+.pick-card:focus-visible { outline: 5px solid var(--gold); outline-offset: 5px; }
+.pick-art { display: block; width: 100%; margin-top: -6%; }
+/* the name and the title are read off the card, so they grow with it */
+.pick-name { font-size: clamp(17px, calc(var(--card) * .125), calc(var(--big) * .46)); font-weight: 700; line-height: 1.1; }
+.pick-species { font-size: clamp(11px, calc(var(--card) * .072), calc(var(--big) * .26)); font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
 
 /* ============================================================
    The menu screens all share one frame (AF.UI.hud):
@@ -218,9 +154,9 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
   position: absolute; left: 50%; bottom: 17%; translate: -50% 0; white-space: nowrap;
   padding: .12em .9em .18em; border-radius: var(--radius-pill); font-size: max(1.05em, var(--fs-xs)); font-weight: 700; color: #fff;
   background: linear-gradient(color-mix(in srgb, var(--c) 70%, #fff), var(--c)); border: .12em solid #fff;
-  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, #2A1404); paint-order: stroke fill;
-  text-shadow: 0 .08em 0 color-mix(in srgb, var(--c) 60%, #2A1404);
-  box-shadow: 0 .18em 0 color-mix(in srgb, var(--c) 60%, #2A1404), 0 .3em .5em rgba(20,40,60,.2);
+  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, var(--deep)); paint-order: stroke fill;
+  text-shadow: 0 .08em 0 color-mix(in srgb, var(--c) 60%, var(--deep));
+  box-shadow: 0 .18em 0 color-mix(in srgb, var(--c) 60%, var(--deep)), 0 .3em .5em rgba(20,40,60,.2);
 }
 .isl-stars {
   position: absolute; left: 50%; bottom: -2%; translate: -50% 0; display: inline-flex; align-items: center; gap: .25em;
@@ -285,13 +221,14 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 
 /* ---------- 2b. Daily Journey: today's three games ---------- */
 #journey { gap: var(--space-3); }
-.jy-list { flex: none; display: flex; flex-direction: column; --gap: var(--space-4); gap: var(--gap); width: min(calc(var(--big) * 5.6), 100%); margin: var(--space-3) auto 0; }
+.jy-list { --road: #D9B97E;                    /* the road between stops, before it is walked */
+  flex: none; display: flex; flex-direction: column; --gap: var(--space-4); gap: var(--gap); width: min(calc(var(--big) * 5.6), 100%); margin: var(--space-3) auto 0; }
 .jy-card { display: flex; align-items: center; gap: var(--space-4); min-height: calc(var(--big) * .88); padding: var(--space-2) var(--space-4) var(--space-3) var(--space-3); text-align: left; animation: drop-in .5s var(--spring) backwards; animation-delay: calc(var(--i) * 80ms); }
 .jy-card .jelly { width: clamp(56px, 15vmin, calc(var(--big) * .72)); font-size: 28px; }
 .jy-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .jy-text b { font-size: var(--fs-lg); line-height: 1.15; color: var(--ink-brown); }
-.jy-text small { font-size: var(--fs-xs); font-weight: 600; color: #9A7A55; }
-.jy-end { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #B79A72; }
+.jy-text small { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-mute); }
+.jy-end { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--ink-mute); }
 .jy-end svg { width: 70%; height: 70%; }
 .jy-card.is-done .jy-end { color: #fff; background: var(--go); box-shadow: 0 3px 0 var(--go-dark); }
 .jy-card.is-next { box-shadow: inset 0 -6px 0 var(--cream-2), 0 0 0 4px var(--gold), 0 6px 0 var(--cream-edge), 0 0 26px rgba(255,214,90,.8); }
@@ -304,13 +241,13 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
 .jy-stop { position: relative; flex: none; display: grid; }
 .jy-num {
   position: absolute; left: -8px; top: -8px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-  font-style: normal; font-size: 15px; font-weight: 700; color: #fff; background: #B79A72; box-shadow: 0 0 0 3px #fff, 0 2px 4px rgba(60,40,20,.3);
+  font-style: normal; font-size: 15px; font-weight: 700; color: #fff; background: var(--ink-mute); box-shadow: 0 0 0 3px #fff, 0 2px 4px rgba(60,40,20,.3);
 }
 .jy-card.is-next .jy-num { background: var(--go); }
 .jy-card.is-done .jy-num { background: var(--gold-dark); }
 .jy-card + .jy-card::before {
   content: ""; position: absolute; z-index: -1; left: calc(var(--space-3) + var(--jw) / 2 - 3px); bottom: 100%; width: 6px; height: calc(var(--gap) + 12px);
-  border-radius: 3px; background: #D9B97E; box-shadow: 0 0 0 2px rgba(255,255,255,.75);
+  border-radius: 3px; background: var(--road); box-shadow: 0 0 0 2px rgba(255,255,255,.75);
 }
 .jy-card.is-done + .jy-card::before { background: var(--gold); }
 .jy-card:not(.is-next):not(.is-done) .jelly { filter: saturate(.8); }
@@ -349,13 +286,13 @@ body.still .jy-end.jy-go { animation: none; }
 
 /* ---------- 2c. one island: a subject on each painted islet ---------- */
 .lm { position: absolute; z-index: 1; width: 25%; translate: -50% -66%; display: grid; justify-items: center; animation: drop-in .55s var(--spring) backwards; animation-delay: calc(var(--i) * 90ms); }
-.lm-ic { position: relative; z-index: 1; width: 62%; font-size: calc(var(--bw) * .06); animation: bob 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -.7s); box-shadow: inset 0 0 0 2px rgba(255,255,255,.6), 0 0 0 3px var(--hd), 0 calc(var(--bw) * .012) 0 color-mix(in srgb, var(--h) 60%, #0B2A3A), 0 calc(var(--bw) * .03) calc(var(--bw) * .025) rgba(10,40,60,.35); }
+.lm-ic { position: relative; z-index: 1; width: 62%; font-size: calc(var(--bw) * .06); animation: bob 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -.7s); box-shadow: inset 0 0 0 2px rgba(255,255,255,.6), 0 0 0 3px var(--hd), 0 calc(var(--bw) * .012) 0 color-mix(in srgb, var(--h) 60%, var(--deep)), 0 calc(var(--bw) * .03) calc(var(--bw) * .025) rgba(10,40,60,.35); }
 .lm-name {
   margin-top: 4%; position: relative; z-index: 2; white-space: nowrap;
   padding: .08em .8em .14em; border-radius: var(--radius-pill); font-weight: 700; font-size: clamp(14px, calc(var(--bw) * .036), 22px); color: #fff;
   background: linear-gradient(color-mix(in srgb, var(--c) 70%, #fff), var(--c)); border: 2px solid #fff;
-  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, #2A1404); paint-order: stroke fill;
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--c) 55%, #2A1404); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, #2A1404);
+  -webkit-text-stroke: .16em color-mix(in srgb, var(--c) 40%, var(--deep)); paint-order: stroke fill;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--c) 55%, var(--deep)); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, var(--deep));
 }
 .lm-stars { font-size: clamp(16px, calc(var(--bw) * .04), 26px); margin-top: 3px; padding: 1px 6px 2px; border-radius: 99px; background: rgba(255,255,255,.85); }
 /* (stages still to win are mid grey, not white on white: a started subject never looks empty) */
@@ -417,8 +354,18 @@ body.still .jy-end.jy-go { animation: none; }
 
 /* ---------- 4. game: back · the game's sign · home, then the friend and a bubble ---------- */
 #play { gap: var(--space-2); }
-.play-hud { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.play-hud .sign { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-xl); }
+/* Back, the game's name and Home are the screen's frame, and a frame
+   stays above what it frames — the menu screens' HUD already does. An
+   answer card springs in from below and, on anything bigger than a
+   phone, rises 61-139px up into this row on the way: for four or five
+   frames of every round the middle of Home belonged to a card. Raising
+   the row costs nothing and the card still passes behind it. */
+.play-hud { position: relative; z-index: var(--z-hud); flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+/* The game's name is the one sign the row may have to cut short, so it is
+   the one sign that clips. `clip` with a margin the width of the sweet
+   that stands off each end keeps the words inside the plaque without
+   slicing its two sweets in half, as `hidden` did on every game screen. */
+.play-hud .sign { flex: 0 1 auto; min-width: 0; overflow: clip; overflow-clip-margin: var(--sign-pip); text-overflow: ellipsis; font-size: var(--fs-xl); }
 .play-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 2vmin, 16px); }
 .play-top { display: flex; align-items: center; gap: var(--space-2); flex: none; }
 .play-guide { display: flex; align-items: center; gap: var(--space-1); flex: 1; min-width: 0; }
@@ -433,7 +380,7 @@ body.still .jy-end.jy-go { animation: none; }
   position: relative; display: inline-flex; align-items: center; gap: var(--space-3); max-width: 100%; min-height: 56px;
   padding: 8px 8px 9px 18px; border-radius: 24px; background: #fff;
   box-shadow: 0 4px 0 rgba(120,100,70,.22), var(--shadow-soft);
-  font-size: var(--fs-md); color: #3A2410; animation: none;
+  font-size: var(--fs-md); color: var(--ink-brown); animation: none;
 }
 .speech.prompt::before { display: block; left: -10px; border-right-color: #fff; }
 .speech.prompt b { color: #E0611B; }
@@ -464,6 +411,12 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   gap: var(--space-2); text-align: center;
   padding: max(var(--space-5), env(safe-area-inset-top)) max(var(--space-4), env(safe-area-inset-right)) calc(var(--space-5) + env(safe-area-inset-bottom)) max(var(--space-4), env(safe-area-inset-left));
 }
+/* Open "Try at home" on a small phone and the card is taller than the
+   screen. Centred and clipped, that lost the top of the stars and the
+   bottom of the buttons with no way to reach either; it scrolls instead,
+   and `safe` keeps the top reachable when it does. */
+.result-card { overflow-y: auto; overflow-x: clip; }
+@supports (justify-content: safe center) { .result-card { justify-content: safe center; } }
 .result-stars { display: flex; align-items: flex-end; gap: var(--space-2); }
 .result-stars i { width: clamp(58px, 18vmin, calc(var(--big) * 1.1)); aspect-ratio: 1; display: grid; color: rgba(255,255,255,.7); filter: drop-shadow(0 4px 0 rgba(120,90,40,.25)); }
 .result-stars i:nth-child(2) { width: clamp(70px, 22vmin, calc(var(--big) * 1.32)); margin-bottom: 6%; }
@@ -476,7 +429,7 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .result-tip { max-width: calc(var(--big) * 4.6); font-size: var(--fs-sm); line-height: 1.4; color: var(--ink-brown); }
 .result-tip summary {
   display: inline-flex; align-items: center; gap: .35em; min-height: 36px; padding: .2em .95em .25em; border-radius: 99px; cursor: pointer; list-style: none;
-  font-size: var(--fs-xs); font-weight: 700; color: #7A5A35; background: rgba(255,255,255,.78); box-shadow: 0 2px 0 var(--cream-edge);
+  font-size: var(--fs-xs); font-weight: 700; color: var(--ink-mute); background: rgba(255,255,255,.78); box-shadow: 0 2px 0 var(--cream-edge);
 }
 .result-tip summary::-webkit-details-marker { display: none; }
 .result-tip summary::after { content: ""; width: .45em; height: .45em; margin-top: -.15em; border: solid currentColor; border-width: 0 .14em .14em 0; rotate: 45deg; transition: rotate .2s; }
@@ -503,14 +456,14 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .tutor-hero { width: clamp(150px, 40vmin, calc(var(--big) * 2.6)); }
 .tutor-char { width: 100%; }
 .tutor-text { max-width: calc(var(--big) * 4.4); margin: 0; padding: var(--space-3) var(--space-5) var(--space-4); font-size: var(--fs-md); line-height: 1.35; color: var(--ink-brown); }
-.tutor-text { background: linear-gradient(#FFFBF1, var(--cream)); border-radius: var(--radius-card); box-shadow: inset 0 -6px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft); }
+.tutor-text { background: linear-gradient(var(--cream-hi), var(--cream)); border-radius: var(--radius-card); box-shadow: inset 0 -6px 0 var(--cream-2), 0 6px 0 var(--cream-edge), var(--shadow-soft); }
 .tutor-dots { display: flex; justify-content: center; gap: 8px; }
 .tutor-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(61,139,242,.3); }
 .tutor-dots i.on { background: var(--nav); transform: scale(1.3); }
 .tutor-skip { position: absolute; top: max(var(--gutter), env(safe-area-inset-top)); right: max(var(--gutter), env(safe-area-inset-right)); min-height: 48px; padding: 0 18px; border-radius: var(--radius-pill); background: rgba(255,255,255,.75); font-size: var(--fs-sm); font-weight: 700; color: var(--ink-brown); }
 
 /* ---------- small sheets: gate, speech choice, break time ---------- */
-.sheet-card:not(.result-card):not(.tutor-card):not(.grown-card) { background: linear-gradient(#FFFBF1, var(--cream)); box-shadow: inset 0 -6px 0 var(--cream-2), 0 8px 0 var(--cream-edge), var(--shadow-soft); }
+.sheet-card:not(.result-card):not(.tutor-card):not(.grown-card) { background: linear-gradient(var(--cream-hi), var(--cream)); box-shadow: inset 0 -6px 0 var(--cream-2), 0 8px 0 var(--cream-edge), var(--shadow-soft); }
 .result-char.sm, #limit-char { width: clamp(110px, 30vmin, 170px); margin: -14px auto -4px; }
 .result-btns.plain { opacity: 1; translate: none; pointer-events: auto; gap: var(--space-3); flex-wrap: wrap; }
 .gate-opts { display: grid; grid-template-columns: repeat(3, var(--tap-min)); justify-content: center; gap: 8px; }
@@ -546,10 +499,10 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .grown-card > * { flex: none; }
 .g-top { align-self: stretch; }
 .g-list { display: flex; flex-direction: column; gap: var(--space-3); width: min(600px, 100%); }
-.g-row { background: linear-gradient(#FFFBF1, var(--cream)); border-radius: 22px; box-shadow: 0 5px 0 var(--cream-edge), var(--shadow-soft); color: var(--ink-brown); }
+.g-row { background: linear-gradient(var(--cream-hi), var(--cream)); border-radius: 22px; box-shadow: 0 5px 0 var(--cream-edge), var(--shadow-soft); color: var(--ink-brown); }
 .g-row > summary, .g-flat { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding: 0 var(--space-4) 0 var(--space-3); font-size: 18px; font-weight: 700; cursor: pointer; list-style: none; }
 .g-row > summary::-webkit-details-marker { display: none; }
-.g-row > summary::after { content: ""; margin-left: auto; width: 10px; height: 10px; border-right: 3px solid #A88E6A; border-bottom: 3px solid #A88E6A; rotate: -45deg; transition: rotate var(--dur-medium); }
+.g-row > summary::after { content: ""; margin-left: auto; width: 10px; height: 10px; border-right: 3px solid var(--ink-mute); border-bottom: 3px solid var(--ink-mute); rotate: -45deg; transition: rotate var(--dur-medium); }
 .g-row[open] > summary::after { rotate: 45deg; }
 .g-ic { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px; color: var(--h); --ia: #fff; background: color-mix(in srgb, var(--h) 16%, #fff); }
 .g-ic svg { width: 72%; height: 72%; }
@@ -560,7 +513,7 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .stat em { font-family: var(--emoji); font-style: normal; font-size: 20px; }
 .stat b { font-size: clamp(18px, 4.6vmin, 24px); }
 .stat span { font-size: 13.5px; color: var(--ink-soft); font-weight: 600; }
-.grown-h { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: #7A5A35; margin: 16px 2px 8px; }
+.grown-h { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-mute); margin: 16px 2px 8px; }
 .grown-progress { margin-top: var(--space-3); }
 .prog-area { background: #fff; border-radius: 16px; padding: 10px 13px 8px; margin-bottom: 8px; }
 .prog-head { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
@@ -592,7 +545,16 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 }
 @media (min-aspect-ratio: 1/1) and (max-height: 520px) { .sign { font-size: var(--fs-xl); } }
 
-@media (max-width: 380px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+/* A narrow phone: the report's rows stop fighting over the width. The
+   summary puts its label above its value, and a subject's name and blurb
+   take the row to themselves with the bar and the count under them —
+   rather than four or five wrapped lines in a 93px column beside a bar
+   floating halfway up it. */
+@media (max-width: 380px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .prog-row { grid-template-columns: minmax(0, 1fr) 46px; grid-template-areas: "name name" "bar num"; row-gap: 4px; }
+  .prog-name { grid-area: name; } .prog-bar { grid-area: bar; } .prog-num { grid-area: num; }
+}
 
 /* painted level stones: gold, the next one blue and glowing, grey with a padlock */
 .lv-stone { position: absolute; inset: -8% -4%; width: 108%; height: 116%; object-fit: contain; filter: drop-shadow(0 4px 4px rgba(60,40,10,.3)); }
@@ -603,15 +565,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .lv-chest .chest-art, .lm-chest .chest-art, .jy-chest .chest-art { width: 100%; }
 .lv-chest.open { filter: drop-shadow(0 0 calc(var(--u) * .2) #FFE98A); }
 
-/* the maker's painted category buttons, with their name underneath */
-.bean.painted { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; border-radius: 0; text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 0 6px rgba(0,0,0,.35); }
-.bean.painted > img.pic { width: 100%; height: auto; aspect-ratio: 1; }
-.bean.painted span { font-size: max(12px, min(var(--fs-xs), 3.6vmin));   /* (six beans share a phone's width) */ color: #fff; -webkit-text-stroke: .18em color-mix(in srgb, var(--h) 70%, #0B2A3A); paint-order: stroke; }
-.bean.painted.on { scale: 1.1; transform: none; box-shadow: none; }
-.bean.painted.on > img.pic { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 4px 4px rgba(20,40,60,.3)); }
-.mk-chip img { width: 92%; max-width: none; height: auto; margin: 0; }
-.mk-none { width: 46%; color: #C9B48E; display: grid; } .mk-none svg { width: 100%; height: 100%; }
-
 /* narrow phones: the sign gets its own row under the buttons, so a long
    name ("Daily Journey") never runs into the friend's card */
 @media (max-width: 480px) and (max-aspect-ratio: 1/1) {
@@ -620,7 +573,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   #home .hud { grid-template-areas: "left mid right"; }
   #home .hud-mid { margin-top: 0; }
 }
-.mk-name { position: relative; z-index: 2; }
 
 /* ---------- game icons: in the title sign, on every open stone, the ready card ---------- */
 .sign .sign-ic { height: 1.25em; width: auto; vertical-align: -.3em; margin: -.2em .3em -.2em -.35em; filter: drop-shadow(0 2px 2px rgba(40,20,5,.35)); }
@@ -628,13 +580,13 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .lv-node.is-done .lv-kind.small { left: 84%; bottom: 66%; width: 38%; }
 .ready-card {
   position: absolute; z-index: 20; left: 50%; top: 46%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 14px 30px 18px; border-radius: 30px; background: linear-gradient(#FFFDF6, #FFF0D2);
+  padding: 14px 30px 18px; border-radius: 30px; background: linear-gradient(var(--cream-hi), var(--cream-2));
   box-shadow: 0 0 0 5px #fff, 0 0 0 9px var(--c), 0 18px 40px rgba(20,40,60,.35);
   animation: ready-in .5s var(--spring) both; transition: opacity .25s, scale .25s;
 }
 .ready-card img { width: clamp(90px, 26vmin, calc(var(--big) * 1.5)); height: auto; filter: drop-shadow(0 6px 6px rgba(40,30,10,.25)); }
 .ready-kind { font-size: var(--fs-sm); font-weight: 700; color: #fff; background: var(--c); padding: .1em .9em .16em; border-radius: 99px; }
-.ready-card b { font-size: var(--fs-xl); color: #3A2410; }
+.ready-card b { font-size: var(--fs-xl); color: var(--ink-brown); }
 .ready-card.out { opacity: 0; scale: .8; }
 @keyframes ready-in { from { opacity: 0; scale: .5; rotate: -6deg; } }
 /* result badge beside the friend */
@@ -646,7 +598,7 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   position: fixed; inset: 0; z-index: 25; display: none; place-items: center; padding: 20px;
   /* (v4.2: a solid cover, not a 92–95% one over a full-screen blur: it looks
      the same, a calm wash with nothing behind it, and costs nothing per frame) */
-  background: radial-gradient(circle at 50% 42%, #FFFAE3, #FFEDC4 45%, #C9EAFD);
+  background: radial-gradient(circle at 50% 42%, #FFF6CB, var(--p-pink-light) 48%, #D9C6FF);
   backdrop-filter: none; -webkit-backdrop-filter: none; text-align: center;
 }
 .party.is-on { display: grid; animation: screen-in .35s ease-out; }
@@ -654,8 +606,8 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .party-pic { width: clamp(110px, 32vmin, calc(var(--big) * 1.9)); height: auto; filter: drop-shadow(0 8px 10px rgba(80,50,10,.3)); animation: pop-in .6s var(--spring) .1s backwards, bob 1.8s ease-in-out .8s infinite; }
 .party-hero { width: clamp(140px, 40vmin, calc(var(--big) * 2.4)); }
 .party-char { width: 100%; margin: 0; }
-.party-text.logo-text { font-size: var(--fs-3xl); color: #5A2E0E; text-shadow: none; animation: pop-in .5s var(--spring) .2s both; }
-.party-sub { color: #5B3A1E; text-shadow: none; background: #fff; padding: .35em 1.2em .45em; border-radius: 99px; box-shadow: 0 4px 0 var(--cream-edge); font-size: var(--fs-sm); font-weight: 700; margin-top: 8px; }
+.party-text.logo-text { font-size: var(--fs-3xl); color: var(--wood-dark); text-shadow: none; animation: pop-in .5s var(--spring) .2s both; }
+.party-sub { color: var(--ink-brown); text-shadow: none; background: #fff; padding: .35em 1.2em .45em; border-radius: 99px; box-shadow: 0 4px 0 var(--cream-edge); font-size: var(--fs-sm); font-weight: 700; margin-top: 8px; }
 
 /* ---------- a lesson's steps, under the game's sign ---------- */
 .steps {
@@ -664,7 +616,7 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   background: rgba(255,255,255,.72); box-shadow: 0 3px 0 rgba(120,100,70,.18);
 }
 .steps[hidden] { display: none; }
-.step { position: relative; display: flex; align-items: center; gap: 4px; font-size: var(--fs-xs); font-weight: 700; color: #9A7A55; }
+.step { position: relative; display: flex; align-items: center; gap: 4px; font-size: var(--fs-xs); font-weight: 700; color: var(--ink-mute); }
 /* steps still to come are grey (with a thin edge, so a pale picture keeps its shape) */
 .step img { width: clamp(22px, 6vmin, 32px); height: auto; filter: grayscale(1) opacity(.5) drop-shadow(0 1px 0 rgba(60,40,20,.35)); }
 .step + .step::before { content: ""; width: clamp(8px, 2.4vmin, 18px); height: 4px; border-radius: 2px; background: #E2C894; margin-right: 2px; }
@@ -680,10 +632,14 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .step.now img { filter: none; scale: 1.2; }
 .step:not(.now) span { display: none; }          /* only the step being played says its name */
 @media (min-width: 700px) { .step:not(.now) span { display: inline; } }
-@media (max-height: 520px) and (orientation: portrait) { .steps { display: none; } }
+/* Where the road is PUT is the game screen's business: the result sheet
+   shows the same road, in its own grid, and must keep it. (It did not:
+   on a phone on its side the rule below took the result's road out of
+   flow and dropped it on top of "Well done!".) */
+@media (max-height: 520px) and (orientation: portrait) { #play .steps { display: none; } }
 /* a phone on its side: the road sits at the foot of the left column, under the friend */
 @media (orientation: landscape) and (max-height: 520px) {
-  .steps {
+  #play .steps {
     position: absolute; z-index: 4; margin: 0; gap: 2px; padding: 3px 8px;
     left: max(var(--gutter), env(safe-area-inset-left)); bottom: max(6px, env(safe-area-inset-bottom));
     max-width: clamp(130px, 24vw, 280px);
@@ -711,8 +667,8 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
    so it no longer looks open. */
 .tab[data-t] { --h: var(--nav); }
 .tab.locked {
-  filter: none; color: #9A7A55; text-shadow: none;
-  background: linear-gradient(#FFFBF1, #F1E3C4); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 4px 0 var(--cream-edge);
+  filter: none; color: var(--ink-mute); text-shadow: none;
+  background: linear-gradient(var(--cream-hi), var(--cream-2)); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 4px 0 var(--cream-edge);
 }
 .tab.locked .tab-lock { color: #C29A62; --ia: #6E5232; }
 .tab.locked .tab-stars i:not(.tab-lock) { filter: grayscale(1) opacity(.45); }
@@ -753,15 +709,28 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 /* (a symbol as well as a colour: the status never rests on colour alone) */
 .topic.sure::before { content: "✓ "; } .topic.going::before { content: "• "; } .topic.help::before { content: "! "; } .topic.not::before { content: "– "; }
 /* the summary a busy grown-up reads first */
-.grown-sum { display: grid; gap: 5px; background: #fff; border-radius: 16px; padding: 11px 14px 12px; margin-bottom: 10px; box-shadow: inset 0 0 0 2px #EADBB8; }
-.grown-sum p { margin: 0; font-size: 15.5px; line-height: 1.4; color: var(--ink-brown); }
-.grown-sum b { display: inline-block; min-width: 6.4em; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #7A5A35; }
+/* The label opens a column the value keeps: a hanging indent, so a value
+   too long for one line wraps under itself instead of running back under
+   its own label ("Next  Phonics · Step 1 · a b / c d"). The width is in
+   rem so the label and the indent are the same length although they are
+   set at different sizes. */
+.grown-sum { --sum-label: 5.8rem; display: grid; gap: 5px; background: #fff; border-radius: 16px; padding: 11px 14px 12px; margin-bottom: 10px; box-shadow: inset 0 0 0 2px #EADBB8; }
+.grown-sum p { margin: 0; font-size: 15.5px; line-height: 1.4; color: var(--ink-brown); padding-left: var(--sum-label); text-indent: calc(var(--sum-label) * -1); }
+/* (text-indent is inherited, and an inline-block starts a line of its own:
+   without this the label would hang 5.8rem out of the card.) */
+.grown-sum b { display: inline-block; min-width: var(--sum-label); padding-right: var(--space-2); text-indent: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-mute); }
 .grown-sum small { font-size: 13.5px; color: var(--ink-soft); }
+/* a narrow phone: there is no room for two columns, so the label sits
+   above its value and the value gets the whole width */
+@media (max-width: 380px) {
+  .grown-sum p { padding-left: 0; text-indent: 0; }
+  .grown-sum b { display: block; min-width: 0; padding-right: 0; }
+}
 /* a lesson's road, as the child sees it */
 .how-road { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; vertical-align: middle; }
 .how-step { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 4px; border-radius: 99px; background: #fff; font-size: 14px; font-weight: 700; color: var(--ink-brown); box-shadow: 0 2px 0 var(--cream-edge); }
 .how-step img { width: 24px; height: 24px; object-fit: contain; }
-.how-arrow { font-style: normal; font-weight: 700; color: #B79A72; }
+.how-arrow { font-style: normal; font-weight: 700; color: var(--ink-mute); }
 .prac-stars { display: inline-flex; gap: 1px; vertical-align: -3px; margin-left: 4px; }
 .prac-stars i { width: 16px; height: 16px; display: inline-grid; }
 .grown-how p, .grown-how li { font-size: 16px; line-height: 1.5; color: var(--ink-brown); }
@@ -779,7 +748,10 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
   .play-guide { flex-direction: column; align-items: flex-start; gap: 0; }
   .play-friend { width: clamp(64px, 21vh, 170px); margin: 0 0 -6px 4px; }
   /* (the maze and coding boards need the width more than the question does) */
-  #play:has(.stage-maze, .stage-code) .play-top { flex-basis: clamp(130px, 18vw, 220px); }
+  /* (the ceiling grows with the screen, like every other size in the app:
+     a fixed 220px left "Line up the arrows, then press Go" at one or two
+     words a line on a laptop, beside half a screen of empty grass) */
+  #play:has(.stage-maze, .stage-code) .play-top { flex-basis: clamp(130px, 18vw, calc(var(--big) * 2.4)); }
   .prompt-col { width: 100%; }
   .speech.prompt { font-size: var(--fs-md); min-height: 48px; }
   .speech.prompt::before { left: 26px; top: -12px; margin-top: 0; border: 9px solid transparent; border-bottom: 13px solid #fff; border-top: 0; }   /* the tail points up, at the friend */
@@ -803,24 +775,6 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 @media (max-width: 360px) {
   .play-hud .sign { padding-inline: .55em; }
   .play-hud .sign .sign-ic { display: none; }     /* (the ready card showed the game's picture) */
-}
-
-/* ---------- the maker on its side: the beans clear the friend's card,
-   Done stands under them, the friend gets the height ---------- */
-@media (min-aspect-ratio: 1/1) {
-  .mk-beans { padding-top: calc(var(--face) + var(--space-3)); }
-}
-@media (orientation: landscape) and (max-height: 560px) {
-  #maker.active, #maker.leaving {
-    grid-template: "stage beans" minmax(0, 1fr) "tray done" auto / minmax(0, 1fr) clamp(180px, 30vw, 300px);
-    gap: var(--space-2) var(--space-3);
-  }
-  .mk-beans { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding-top: calc(var(--face) + var(--space-2)); }
-  .mk-tray { max-height: none; align-self: end; }
-  .mk-opts { grid-auto-columns: clamp(52px, 15vh, 76px); }
-  .mk-done { justify-self: stretch; justify-content: center; align-self: end; padding: 8px 14px 11px; margin-bottom: 0; }
-  .mk-stage { padding-top: 0; }
-  .mk-name { margin-left: calc(var(--btn) + var(--space-2)); }
 }
 
 /* ---------- Today's Study on its side: the friend on the left, the three
@@ -946,4 +900,154 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
     position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
   }
   #play:has(.stage-maze, .stage-code) .play-top { flex-basis: clamp(130px, 20vw, 210px); padding-top: calc(var(--btn) + var(--space-2)); }
+}
+
+/* ============ the Birthday Quest (party edition) ============
+   Today's Study has three stops and the chest sits below them. The quest
+   has six, so the road scrolls on its own and the cake stays in view. */
+/* The road scrolls up and down and only up and down. The next stop stands
+   1.03 of itself and wears a gold ring, which is wider than the column:
+   that made the road draggable sideways by a few pixels and sliced the
+   ring flat at both edges. Room for the ring, and no sideways scroll. */
+#journey.is-quest .jy-list {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: clip; overscroll-behavior: contain;
+  /* the growth is a share of the card, so the room left for it is a share
+     of the row, never less than a comfortable edge on a small phone */
+  --gap: var(--space-2); padding: 0 max(var(--space-2), 1.6%) var(--space-2);
+}
+#journey.is-quest .jy-card { min-height: calc(var(--big) * .66); }
+#journey.is-quest .jy-card .jelly { width: clamp(48px, 12vmin, calc(var(--big) * .6)); }
+#journey.is-quest .jy-foot { flex: none; container-type: normal; padding-bottom: var(--space-3); }
+#journey.is-quest .jy-char { width: clamp(64px, 22vw, 120px); }
+#journey.is-quest .jy-chest { width: auto; margin-bottom: 0; }
+
+/* ---- the road answers ----
+   v2 of the quest moved a lot and said nothing: every return from a
+   stop re-ran the whole screen's zoom AND re-dropped all six cards,
+   while the one thing that had actually changed — the stop just
+   walked — was simply found already gold. So now the road stays
+   still on the way back and that one stop plays out instead, in the
+   app's own spring. Everything here is decoration: it is off under
+   "Bubbles, confetti & wiggles" and under the device's reduce-motion
+   setting (motion.css), and the road is correct without any of it. */
+
+/* six stops arrive a little quicker than three do */
+#journey.is-quest .jy-card { animation-delay: calc(var(--i) * 55ms); }
+
+/* a tap is answered where the finger is, not only by the next screen */
+#journey.is-quest .pq-stop:active { transform: scale(.95); }
+#journey.is-quest .pq-stop.is-picked { animation: pq-dip .3s var(--spring); }
+@keyframes pq-dip { 40% { transform: scale(.93); } }
+
+/* coming back: the road is already there */
+.jy-list.is-back .jy-card { animation: none; }
+
+/* ...except the stop just walked, which lands, takes its stars one by
+   one, fills the road behind it in gold and hands the play button on */
+.jy-list.is-back .pq-stop.is-won { animation: pq-won .55s var(--spring) .18s backwards; }
+@keyframes pq-won { 0% { transform: scale(.9); } 55% { transform: scale(1.05); } }
+.pq-stop.is-won .jy-stars i.on { animation: pop-in .4s var(--spring) backwards; }
+.pq-stop.is-won .jy-stars i.on:nth-child(1) { animation-delay: .34s; }
+.pq-stop.is-won .jy-stars i.on:nth-child(2) { animation-delay: .46s; }
+.pq-stop.is-won .jy-stars i.on:nth-child(3) { animation-delay: .58s; }
+/* the line down to the next stop: gold wipes over the sand it was */
+.pq-stop.is-won + .jy-card::before {
+  background: linear-gradient(var(--gold) 50%, var(--road) 50%); background-size: 100% 200%;
+  animation: pq-fill .45s ease-out .48s backwards;
+}
+@keyframes pq-fill { from { background-position: 0 100%; } }
+/* the next stop takes over (never faded out: it is the one thing to tap) */
+.jy-list.is-back .pq-stop.is-next { animation: pq-next .5s var(--spring) .5s backwards; }
+@keyframes pq-next { 0% { transform: scale(.93); } 60% { transform: scale(1.04); } }
+
+/* and the cake is one stop closer */
+.pq-cake.is-bump img { animation: pq-bump .6s var(--spring) .3s backwards; }
+@keyframes pq-bump { 0% { translate: 0 0; scale: 1 1; } 35% { translate: 0 -14%; scale: 1.08 .94; } 70% { translate: 0 0; scale: .96 1.04; } }
+.pq-cake.is-bump .pq-cake-label { animation: pop-in .4s var(--spring) .34s backwards; }
+
+body.still .jy-list.is-back .pq-stop.is-won, body.still .jy-list.is-back .pq-stop.is-next,
+body.still .pq-stop.is-won .jy-stars i.on, body.still .pq-stop.is-won + .jy-card::before,
+body.still #journey.is-quest .pq-stop.is-picked,
+body.still .pq-cake.is-bump img, body.still .pq-cake.is-bump .pq-cake-label { animation: none; }
+
+/* the cake stands where Today's Study keeps its treasure chest */
+.pq-cake { display: grid; justify-items: center; gap: 2px; padding: 0; border: 0; background: none; }
+.pq-cake img { width: clamp(64px, 19vw, 104px); height: auto; display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
+.pq-cake:not(.is-ready) { opacity: .7; pointer-events: none; }
+.pq-cake.is-ready { animation: pulse 1.6s ease-in-out infinite; }
+body.still .pq-cake.is-ready { animation: none; }
+.pq-cake-label { font-size: var(--fs-xs); font-weight: 800; white-space: nowrap; color: var(--ink-brown); background: #fff; border-radius: 99px; padding: .1em .8em .15em; box-shadow: var(--shadow-soft); }
+
+/* the keepsake: a certificate a grown-up would screenshot */
+.pq-sheet .pq-cert { text-align: center; max-width: min(520px, 94vw); padding: var(--space-4) var(--space-4) var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-1); max-height: 94svh; overflow-y: auto; }
+.pq-cert-banner { width: clamp(120px, 42vw, 220px); height: auto; }
+.pq-cert-title { margin: 0; font-size: var(--fs-2xl); font-weight: 900; line-height: 1.1; color: var(--p-purple-deep); }
+.pq-cert-host { margin: 0; font-size: var(--fs-xs); font-weight: 700; color: var(--ink-mute); text-wrap: balance; }
+.pq-cert-hero { display: flex; align-items: flex-end; justify-content: center; gap: var(--space-2); width: 100%; }
+.pq-cert-hero img { width: clamp(40px, 13vw, 68px); height: auto; }
+.pq-cert-char { width: clamp(96px, 34vw, 160px); }
+.pq-cert-who { margin: 0; display: flex; flex-direction: column; }
+.pq-cert-who b { font-size: var(--fs-xl); color: var(--ink-brown); }
+.pq-cert-who small { font-size: var(--fs-xs); color: var(--ink-mute); }
+.pq-cert-did { margin: 0; font-size: var(--fs-sm); font-weight: 700; color: var(--ink-brown); }
+.pq-cert-score { margin: var(--space-1) 0 0; display: flex; align-items: center; gap: .4em; font-size: var(--fs-lg); font-weight: 900; color: var(--ink-brown); }
+.pq-cert-score img { width: clamp(28px, 8vw, 40px); height: auto; }
+.pq-cert-road { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+.pq-road-stop { display: flex; flex-direction: column; align-items: center; gap: 2px; width: clamp(56px, 17vw, 74px); }
+.pq-road-stop img { width: 70%; height: auto; }
+.pq-road-stop span { font-size: max(10px, var(--fs-xs)); line-height: 1.1; color: var(--ink-mute); font-weight: 700; }
+.pq-cert-foot { margin: var(--space-2) 0 0; font-size: max(10px, var(--fs-xs)); color: var(--ink-mute); }
+/* The keepsake is long and this button is the only way out of it, so on a
+   screen where the card has to scroll the button rides its bottom edge
+   instead of waiting below the fold. (Where it all fits, sticky does
+   nothing: the button simply sits where it is.) */
+.pq-cert-go { margin-top: var(--space-3); position: sticky; bottom: 0; z-index: 1; }
+
+/* once the quest is done the certificate stays one tap away, beside Today's Study */
+.pq-again { display: inline-flex; align-items: center; gap: .4em; }
+.pq-again img { width: 1.6em; height: auto; }
+
+/* landscape: the road must use the whole column, or six cards fall off the bottom */
+@media (orientation: landscape) and (max-height: 560px),
+       (orientation: landscape) and (min-height: 561px) and (min-aspect-ratio: 5/4) {
+  #journey.is-quest .jy-list { align-self: stretch; max-height: 100%; }
+}
+
+/* ---------- the keepsake on a screen held sideways ----------
+   The certificate is one tall column, which is right standing up and
+   useless sideways: on a phone turned over only the banner, the title
+   and the friend were on screen, and the stars, the road walked and
+   the one button out all waited below the fold. It now takes the same
+   two columns the result sheet and how-to-play take at this shape —
+   the picture on the left, everything read on the right — so the whole
+   keepsake is in view and a grown-up can photograph it. (Only a phone
+   on its side: a tablet or a laptop has the height for the column, and
+   a certificate reads better as one.) */
+@media (orientation: landscape) and (max-height: 560px) {
+  .sheet.full > .pq-cert {
+    display: grid; align-content: center; justify-content: center; justify-items: center;
+    grid-template:
+      "banner title" auto
+      "banner host"  auto
+      "hero   who"   auto
+      "hero   did"   auto
+      "hero   score" auto
+      "hero   road"  auto
+      "hero   foot"  auto
+      "hero   go"    auto / auto minmax(0, calc(var(--big) * 4.6));
+    column-gap: clamp(var(--space-4), 4vw, var(--space-7)); row-gap: var(--space-1);
+  }
+  .pq-cert-banner { grid-area: banner; width: clamp(96px, 26vh, 190px); }
+  .pq-cert-title  { grid-area: title; }
+  .pq-cert-host   { grid-area: host; }
+  .pq-cert-hero   { grid-area: hero; align-self: center; width: auto; }
+  .pq-cert-who    { grid-area: who; }
+  .pq-cert-did    { grid-area: did; }
+  .pq-cert-score  { grid-area: score; }
+  .pq-cert-road   { grid-area: road; margin-top: var(--space-1); }
+  .pq-cert-foot   { grid-area: foot; margin-top: var(--space-1); }
+  .pq-cert-go     { grid-area: go; margin-top: var(--space-2); }
+  .pq-cert-char     { width: clamp(80px, 30vh, 170px); }
+  .pq-cert-hero img { width: clamp(32px, 11vh, 62px); }
+  .pq-road-stop     { width: clamp(46px, 9vh, 74px); }
 }

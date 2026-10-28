@@ -2,14 +2,14 @@
 
 ## Mission
 
-Revamp the Animal Friends interface so every menu level feels like one coherent product and follows `UI_REDESIGN_SPEC.md`.
+Revamp the Animal Friends interface so every menu level feels like one coherent product and follows `docs/UI_REDESIGN_SPEC.md`.
 
 Before coding, read:
 1. `README.md`
-2. `UI_REDESIGN_SPEC.md`
+2. `docs/UI_REDESIGN_SPEC.md`
 
 Treat `README.md` as the source of truth for existing product behavior and architecture.
-Treat `UI_REDESIGN_SPEC.md` as the source of truth for interface presentation and interaction consistency.
+Treat `docs/UI_REDESIGN_SPEC.md` as the source of truth for interface presentation and interaction consistency.
 
 ## Non-negotiables
 

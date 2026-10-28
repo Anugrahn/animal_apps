@@ -12,7 +12,7 @@ for its Wink home-learning programme: short daily lessons that each walk from
 a new idea to using it (concept → practice → problem-solving → review), a
 "Today's Study" plan of two subjects a day, and a review at the end of every
 stage. The extras keep the earlier Lingokids-shaped content model
-(`animal-friends-v2/interface/lingokids_content_architecture.md`). All content
+(`animal-friends-v2/docs/art/lingokids_content_architecture.md`). All content
 and art are original; nothing of Wink's or Lingokids' is used, and the app is
 not affiliated with either.
 
@@ -37,7 +37,7 @@ project_apps/
 
 | Folder | What it is | Start with |
 |---|---|---|
-| [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 4 core subjects (121 lessons) and 9 extras (97 levels), 16 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/TUTORIAL.md) |
+| [`animal-friends-v2/`](animal-friends-v2/) | **The current app.** 4 core subjects (121 lessons) and 9 extras (97 levels), 16 game engines, painted characters, installable PWA | [README](animal-friends-v2/README.md), [TUTORIAL](animal-friends-v2/docs/TUTORIAL.md) |
 | [`animal-friends-v2/interface/`](animal-friends-v2/interface/) | Reference images, UI mock-ups, ChatGPT prompts used to make the art, and the original art sheets before they were cut up | see [Design and art pipeline](#design-and-art-pipeline) |
 
 ---
@@ -59,7 +59,7 @@ only five queued connections, so with many pictures loading at once some
 requests get refused and the pictures show as broken.
 
 Full setup steps for grown-ups, including USB port-forwarding to a phone, are in
-[TUTORIAL.md](animal-friends-v2/TUTORIAL.md).
+[TUTORIAL.md](animal-friends-v2/docs/TUTORIAL.md).
 
 ### Deep links for testing
 
@@ -129,7 +129,7 @@ animal-friends-v2/
 - Don't add a framework, a build step or a package dependency, and keep the
   app working offline. See [`animal-friends-v2/CLAUDE.md`](animal-friends-v2/CLAUDE.md)
   for the full list of rules and
-  [`UI_REDESIGN_SPEC.md`](animal-friends-v2/UI_REDESIGN_SPEC.md) for the
+  [`UI_REDESIGN_SPEC.md`](animal-friends-v2/docs/UI_REDESIGN_SPEC.md) for the
   visual system.
 
 ---
@@ -167,11 +167,11 @@ transparent background). Each sheet is cut into single WebP pictures under
 |---|---|
 | `animal-friends-v2/interface/*.png` | First reference images: home screen, level map, character setting, icons, maze and memory cards |
 | `animal-friends-v2/interface/new_interface/` | Storyboard and menu/game mock-ups behind the v2.5 redesign |
-| `animal-friends-v2/interface/DESIGN_PROMPTS.md` | The style lock and the prompts for full screens and backgrounds |
-| `animal-friends-v2/interface/ASSET_PROMPTS.md` | Prompts for the character pose and island asset sheets |
-| `animal-friends-v2/interface/GAME_NEEDS.md` | Every picture each game still needs, island by island, with ready-to-paste sheet prompts |
+| `animal-friends-v2/docs/art/DESIGN_PROMPTS.md` | The style lock and the prompts for full screens and backgrounds |
+| `animal-friends-v2/docs/art/ASSET_PROMPTS.md` | Prompts for the character pose and island asset sheets |
+| `animal-friends-v2/docs/art/GAME_NEEDS.md` | Every picture each game still needs, island by island, with ready-to-paste sheet prompts |
 | `animal-friends-v2/interface/assets/` | The raw sheets: `background/`, `main/`, `icon_characters/`, `island_environment/`, `sheets/`, `game-needs/` |
-| `animal-friends-v2/interface/lingokids_content_architecture.md` | Research report the curriculum is mapped against |
+| `animal-friends-v2/docs/art/lingokids_content_architecture.md` | Research report the curriculum is mapped against |
 
 If a background picture is replaced, the points measured on it (`ISLETS` in
 `core/world.js`, `PATH` in `core/levels.js`) have to be measured again. The

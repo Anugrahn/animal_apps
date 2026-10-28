@@ -1,7 +1,7 @@
 """Cuts generated art sheets into single pictures for the app.
    python3 cut.py <sheets dir> <out dir> [ASSET_SHEETS.md] [sheet-name ...]
 
-A sheet (see animal-friends-v2/interface/ASSET_SHEETS.md) is a transparent
+A sheet (see animal-friends-v2/docs/art/ASSET_SHEETS.md) is a transparent
 PNG of objects in rows, left to right, top to bottom. Each object becomes
 <out dir>/<file>.webp, named by the table at the end of ASSET_SHEETS.md, at
 most 300 px across like the rest of art/pic/.
@@ -19,7 +19,7 @@ from PIL import Image
 from scipy import ndimage
 
 SHEETS, OUT = sys.argv[1], sys.argv[2]
-MD = sys.argv[3] if len(sys.argv) > 3 else os.path.join(os.path.dirname(__file__), '../../animal-friends-v2/interface/ASSET_SHEETS.md')
+MD = sys.argv[3] if len(sys.argv) > 3 else os.path.join(os.path.dirname(__file__), '../../animal-friends-v2/docs/art/ASSET_SHEETS.md')
 ONLY = set(sys.argv[4:])
 SIZE, PAD = 300, 6
 

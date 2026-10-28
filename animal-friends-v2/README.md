@@ -18,7 +18,7 @@ islands, glossy "jelly" icons, and games played with soft clay pieces on a
 wooden tray. See "Look and feel" and "How it moves" below.
 
 Still no build step and no dependencies to install. To play, see
-[TUTORIAL.md](TUTORIAL.md). The short version: double-click `start.command`
+[docs/TUTORIAL.md](docs/TUTORIAL.md). The short version: double-click `start.command`
 (Mac) or `start.bat` (Windows), or just open `index.html`.
 
 v1 lived in `../animal-friends/` until v3.5.2; it is still in the git history (commit `d28a71f` or earlier).
@@ -338,7 +338,7 @@ deliberately not imitated. Everything here is original.
 
 Every menu level was rebuilt to match `interface/new_interface/`
 (`Animal Friends App Storyboard Mockup.png`, `main_menu.png`, `Menu.png`,
-`games.png`), following `CLAUDE.md` and `UI_REDESIGN_SPEC.md`.
+`games.png`), following `CLAUDE.md` and `docs/UI_REDESIGN_SPEC.md`.
 
 - **One frame everywhere** (`AF.UI.hud` in `core/ui.js`): Back (Settings at
   Home) top-left, a wooden sign with the screen's name, the friend's face with
@@ -385,7 +385,7 @@ shown at a three-quarter turn.
 ### v2.7: painted backgrounds
 
 `art/bg-*.jpg` are the seven backgrounds made from
-`interface/DESIGN_PROMPTS.md` Part 3 (originals in
+`docs/art/DESIGN_PROMPTS.md` Part 3 (originals in
 `interface/assets/background/`): meadow (home, maker, grown-ups), one per
 area behind its games (abc, stem, heart, play), the islets (an island's
 subjects) and the dirt path (level maps). Subjects are placed on the painted
@@ -455,7 +455,7 @@ they are for a birthday, not this app.
   to a map; "Play again" and "Next" keep that. The result shows a trophy (3
   stars), medal (2) or thumbs up (1).
 - Still emoji: animals, food, nature, places, things and vehicles (153 pictures,
-  listed in `interface/GAME_NEEDS.md`).
+  listed in `docs/art/GAME_NEEDS.md`).
 
 ### v3.4: a natural recorded voice
 

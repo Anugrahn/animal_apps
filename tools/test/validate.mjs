@@ -213,7 +213,7 @@ const out = await p.evaluate((ids) => {
   }
   const unpainted = [...emojis].filter(e => !painted(e));
   info.push(`emoji: ${emojis.size} used, ${unpainted.length} not painted: ${unpainted.join(' ')}`);
-  if (unpainted.length) info.push('        (a picture with no painting falls back to the device\'s own flat emoji — interface/ASSET_NEEDS_learning-pictures.md)');
+  if (unpainted.length) info.push('        (a picture with no painting falls back to the device\'s own flat emoji — docs/art/ASSET_NEEDS_learning-pictures.md)');
   return { bad, info };
 }, ids);
 out.bad.forEach(x => console.log('PROBLEM ' + x));

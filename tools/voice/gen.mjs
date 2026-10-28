@@ -172,7 +172,24 @@ function publish(quiet) {
   // drop recordings no line uses any more. More than a quarter at once is
   // more likely a mistake than a content change, so that needs --prune
   // (after changing POST, for example).
-  const keep = new Set(jobs.map(j => (playing(j.o) || j.o) + '.mp3').concat(['silence.mp3', 'index.js', 'files.js']));
+  /* The Indonesian clips are made by record_id.mjs, not from phrases.json,
+     so every one of them would look unused here. Keeping them by name is
+     what stops this sweep deleting an hour of recording that it knows
+     nothing about. */
+  const idClips = (() => {
+    try {
+      const V = {}; const src = fs.readFileSync(new URL('index.js', OUT), 'utf8');
+      new Function('window', src)(V);
+      const C = (V.AF && V.AF.VOICE) || {};
+      const lines = JSON.parse(fs.readFileSync(new URL('./id_phrases.json', import.meta.url), 'utf8'));
+      const id = new Set((lines.lines || []).concat(lines.party || []));
+      return Object.values(C.clipsId || {}).concat(
+        Object.entries(C.clips || {}).filter(([t]) => id.has(t)).map(([, f]) => f));
+    } catch (e) { return []; }
+  })();
+  const keep = new Set(jobs.map(j => (playing(j.o) || j.o) + '.mp3')
+    .concat(idClips.map(f => f + '.mp3'))
+    .concat(['silence.mp3', 'index.js', 'files.js']));
   const stale = fs.readdirSync(OUT).filter(f => !keep.has(f));
   const clipCount = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).length;
   if (stale.length > clipCount / 4 && !process.argv.includes('--prune')) {

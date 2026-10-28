@@ -10,3 +10,5 @@ too-fast.txt
 __pycache__/
 redo.txt
 qa.json
+id-voice-samples/
+.venv-piper/

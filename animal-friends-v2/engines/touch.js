@@ -264,7 +264,7 @@
     const live = () => Array.from(sky.querySelectorAll('.pop-b:not(.gone)'));
 
     function prompt() {
-      E.talk(S, cur.say, cur.sound ? { onEnd: () => { if (S.alive) AF.Audio.sound(cur.sound); } } : null);
+      E.talk(S, cur.say, { sound: cur.sound });
     }
 
     function next() {

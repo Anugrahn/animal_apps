@@ -217,10 +217,26 @@
      loading fails or is cut short: that newer line would then fall back to
      the device's voice. */
   let turn = 0;
+  /* Stopping a line from memory in its tracks leaves the sound half way
+     up a wave, and a speaker reports that step as a click right after
+     the friend's voice. It is faded out over FADE first: short enough
+     that the voice still stops at once, long enough to be silent. */
+  const FADE = 0.015;
   function stopClip() {
     turn++;
     if (clip) { clip.onended = clip.onerror = null; try { clip.pause(); } catch (e) {} }
-    if (source) { source.onended = null; try { source.stop(); } catch (e) {} source = null; }
+    if (source) {
+      source.onended = null;
+      const c = sourceGain && ctx;
+      if (c) {
+        const t = c.currentTime;
+        sourceGain.gain.cancelScheduledValues(t);
+        sourceGain.gain.setValueAtTime(sourceGain.gain.value, t);
+        sourceGain.gain.linearRampToValueAtTime(0, t + FADE);
+      }
+      try { source.stop(c ? c.currentTime + FADE : 0); } catch (e) { /* already over */ }
+      source = null; sourceGain = null;
+    }
   }
 
   /* Lines played from memory (v4.2). The player has to load a file before
@@ -243,7 +259,7 @@
   const size = (b) => b.length * b.numberOfChannels * 4;
   let kept = 0;
   const queue = [];                           // files waiting to be decoded, one at a time
-  let source = null, decoding = false;
+  let source = null, sourceGain = null, decoding = false;
 
   function decodeNext() {
     if (decoding || !queue.length || !unlocked) return;
@@ -280,11 +296,12 @@
     if (b && c && c.state === 'running') {
       buffers.delete(file); buffers.set(file, b);           // (kept longest: the lines said most)
       const s = source = c.createBufferSource();
+      const g = sourceGain = c.createGain();                // (so stopClip can fade it out instead of cutting it dead)
       s.buffer = b;
       s.playbackRate.value = clipRate(pitch);               // (lower and slower, or higher and quicker, as the player does)
-      s.connect(c.destination);
+      s.connect(g).connect(c.destination);
       const mine = turn;
-      s.onended = () => { if (mine === turn) { source = null; end(); } };
+      s.onended = () => { if (mine === turn) { source = sourceGain = null; end(); } };
       s.start();
       return true;
     }

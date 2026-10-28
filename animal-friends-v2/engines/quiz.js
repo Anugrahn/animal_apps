@@ -69,7 +69,7 @@
     let cur = null, locked = false, wrong = 0, last = null;
 
     function prompt() {
-      E.talk(S, cur.say, cur.sound ? { onEnd: () => { if (S.alive) AF.Audio.sound(cur.sound); } } : null);
+      E.talk(S, cur.say, { sound: cur.sound });
     }
 
     function next() {

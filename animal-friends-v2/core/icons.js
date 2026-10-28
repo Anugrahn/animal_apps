@@ -201,6 +201,10 @@
      has a painting of its own (a scene: the puppy opening its gift). */
   const GRAPHEME = /\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}\uFE0F?|\p{Emoji_Modifier})*/gu;
   const look = (e) => EMOJI[e] || EMOJI[e.replace(/\uFE0F/g, '')] || EMOJI[e + '\uFE0F'];
+  /* Paintings a child reads as the same thing, counted as one by
+     Icon.looksLike. pic/leg is painted as a foot, so "foot" and "leg"
+     are one picture until the leg is repainted. */
+  const ALIKE = { 'pic/leg': 'pic/foot' };
   function emojiPics(root) {
     const list = root.querySelectorAll ? Array.from(root.querySelectorAll(EMOJI_IN)) : [];
     if (root.matches && root.matches(EMOJI_IN)) list.push(root);
@@ -232,6 +236,15 @@
     has(name) { return !!G[name]; },
     painted(name) { return PAINT[name] ? `art/${PAINT[name]}.webp` : ''; },
     svg: svg,
+
+    /** What a child sees when a learning emoji is painted: the picture
+        it becomes, with two paintings they cannot tell apart counted as
+        one (ALIKE). '' when the emoji has no painting. Content asks this
+        so one round never offers the same picture twice. */
+    looksLike(e) {
+      const p = look(String(e == null ? '' : e).trim());
+      return p ? (ALIKE[p] || p) : '';
+    },
 
     /** A glossy squircle. Falls back to showing `alt` (an emoji) if
         there is no glyph by that name. */

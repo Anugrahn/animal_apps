@@ -289,9 +289,19 @@
     if (el) el.innerHTML = html;
   };
 
-  /** Talk + a little "talking" wobble from the character. */
+  /** Talk + a little "talking" wobble from the character.
+      `opts.sound` is a letter sound said after the words ("Which letter
+      says" … /s/). It is the rest of the question, so it is marked as
+      one too: a child who answers over it stops it, where before the
+      chime rang on top of the letter. */
   AF.Engines.talk = function (S, text, opts) {
+    const o = Object.assign({ question: true }, opts);
+    if (o.sound) {
+      const sound = o.sound;
+      delete o.sound;
+      o.onEnd = () => { if (S.alive) AF.Audio.sound(sound, { question: true }); };
+    }
     AF.Art.react(S.charEl, 'talk');
-    AF.Audio.say(text, Object.assign({ question: true }, opts));
+    AF.Audio.say(text, o);
   };
 })(window.AF = window.AF || {});

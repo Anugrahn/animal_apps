@@ -16,8 +16,22 @@
 (function (AF) {
   'use strict';
 
-  const W = AF.WORDS, PR = AF.Pairs;
+  const W = AF.WORDS, PR = AF.Pairs, U = AF.U;
   const many = (n, item) => Array.from({ length: n }, () => item);
+
+  /** Deal a story's questions afresh every time it is played.
+      The story engine hands its `quiz` straight to the choose engine
+      (engines/media.js), which lays the cards out in the order it is given —
+      and written by hand the right answer always ended up in the first seat.
+      Twenty questions, twenty times card one: a child soon stops listening and
+      just taps the first card. `Object.assign` in media.js reads this getter,
+      so the cards are shuffled again for every play. */
+  const deal = (list) => list.map(r => {
+    const opts = r.options;
+    const out = Object.assign({}, r);
+    Object.defineProperty(out, 'options', { get: () => U.shuffle(opts), enumerable: true, configurable: true });
+    return out;
+  });
 
   /* ---------------- Maze ---------------- */
 

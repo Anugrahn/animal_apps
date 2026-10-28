@@ -186,6 +186,23 @@
     }
   };
 
+  /* Two words can be painted alike — 🐟 and 🐠 are one fish, and the
+     body group's leg is painted as a foot — and a round that offered
+     both would show the same card twice ("there's a leg and also a
+     leg"). `seenAs` is what a child sees, `oneEach` keeps one word per
+     picture and drops whatever looks like `like` (the answer, already
+     in the round). */
+  const seenAs = (x) => AF.Icon.looksLike(x.e) || x.e || x.w;
+  function oneEach(words, like) {
+    const seen = [seenAs(like)];
+    return U.shuffle(words).filter(x => {
+      const k = seenAs(x);
+      if (seen.indexOf(k) >= 0) return false;
+      seen.push(k);
+      return true;
+    });
+  }
+
   const Gen = AF.Gen = {
     shape: shape, swatch: swatch, row: row,
     /** n number cards near `answer` (always including it), between lo and hi */
@@ -197,7 +214,7 @@
     find(words, n, ask) {
       return (ctx) => {
         const t = U.one(words.filter(x => x.w !== ctx.last));
-        const others = U.pick(words, n - 1 + (ctx.stretch ? 1 : 0), [t]);
+        const others = U.pick(oneEach(words, t), n - 1 + (ctx.stretch ? 1 : 0));
         return {
           say: ask ? ask.say(t.w, t) : `Find the ${t.w}.`, text: ask ? ask.text(t.w, t) : `Find the <b>${t.w}</b>`,
           options: U.shuffle([t].concat(others)).map(o => ({ key: o.w, emoji: o.e, label: ask && ask.label ? o.w : undefined })),
@@ -516,8 +533,8 @@
       return () => {
         const gi = U.one(groups.map((g, i) => i).filter(i => i !== prev));
         prev = gi;
-        const same = U.pick(groups[gi], 3);
         const other = U.one(groups[U.one(groups.map((g, i) => i).filter(i => i !== gi))]);
+        const same = U.pick(oneEach(groups[gi], other), 3);
         return {
           say: 'Which one does not belong?', text: 'Which one does <b>not</b> belong?',
           options: U.shuffle(same.concat([other])).map(o => ({ key: o.w, emoji: o.e })),
@@ -550,7 +567,7 @@
         return {
           say: 'Put the sounds together.', sound: AF.blend(t.w),
           text: `Put the sounds together: <b>${t.w.split('').join(' · ')}</b>`,
-          options: U.shuffle([t].concat(U.pick(words, n - 1, [t]))).map(o => ({ key: o.w, emoji: o.e })),
+          options: U.shuffle([t].concat(U.pick(oneEach(words, t), n - 1))).map(o => ({ key: o.w, emoji: o.e })),
           answer: t.w, praise: t.w
         };
       };

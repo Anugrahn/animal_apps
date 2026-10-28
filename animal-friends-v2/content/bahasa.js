@@ -29,12 +29,17 @@
   /* How the letters are called (EYD) — what the voice says. */
   const NAME = { a: 'a', b: 'be', c: 'ce', d: 'de', e: 'e', f: 'ef', g: 'ge', h: 'ha', i: 'i', j: 'je', k: 'ka', l: 'el', m: 'em',
     n: 'en', o: 'o', p: 'pe', q: 'ki', r: 'er', s: 'es', t: 'te', u: 'u', v: 've', w: 'we', x: 'eks', y: 'ye', z: 'zet' };
-  /* A word that starts with each letter, and its picture. q and x have
-     no everyday children's word: they are taught as shapes only. */
+  /* A word that starts with each letter, and its picture. Two rules, and
+     the whole table was read against them on 2026-10-27: the word is one a
+     four-year-old already says, and the picture is a painting, not the
+     device's own flat emoji. q and x have no everyday children's word and
+     are taught as shapes only; v (vas) and z (zebra) are still waiting for
+     their paintings. Letter by letter, and the judgement calls left for the
+     owner, in interface/ASSET_NEEDS_learning-pictures.md. */
   const ABC = {
     a: ['apel', '🍎'], b: ['bola', '⚽'], c: ['ceri', '🍒'], d: ['domba', '🐑'], e: ['elang', '🦅'], f: ['foto', '🖼️'],
     g: ['gajah', '🐘'], h: ['hidung', '👃'], i: ['ikan', '🐟'], j: ['jeruk', '🍊'], k: ['kucing', '🐱'], l: ['lampu', '💡'],
-    m: ['mobil', '🚗'], n: ['nanas', '🍍'], o: ['ombak', '🌊'], p: ['pisang', '🍌'], r: ['rumah', '🏠'], s: ['sapi', '🐮'],
+    m: ['mobil', '🚗'], n: ['nanas', '🍍'], o: ['obat', '💊'], p: ['pisang', '🍌'], r: ['rumah', '🏠'], s: ['sapi', '🐮'],
     t: ['topi', '🎩'], u: ['ular', '🐍'], v: ['vas', '🏺'], w: ['wortel', '🥕'], y: ['ya', '👍'], z: ['zebra', '🦓']
   };
   const SHAPE_NOTE = { q: 'Ekornya lurus ke bawah.', x: 'Bentuknya seperti tanda silang.' };

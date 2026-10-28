@@ -311,7 +311,10 @@ body.still .jy-end.jy-go { animation: none; }
 .play-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 2vmin, 16px); }
 .play-top { display: flex; align-items: center; gap: var(--space-2); flex: none; }
 .play-guide { display: flex; align-items: center; gap: var(--space-1); flex: 1; min-width: 0; }
-.play-friend { flex: none; width: clamp(88px, 25vmin, 150px); position: relative; z-index: 1; margin: -4% -2% -6% -3%; }
+/* He leans into Back and into his own speech bubble on purpose; leaning
+   on them must not mean answering for them (ui.css turns the artwork
+   itself off; this keeps the box he leans with off too). */
+.play-friend { flex: none; width: clamp(88px, 25vmin, 150px); position: relative; z-index: 1; margin: -4% -2% -6% -3%; pointer-events: none; }
 .play-char { width: 100%; }
 .prompt-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
 /* the bubble: white, a tail towards the friend, the green "hear it again" button at the end */

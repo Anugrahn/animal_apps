@@ -85,6 +85,20 @@
   --radius-card: 28px;
   --radius-jelly: 32%;
 
+  /* ---------- layer order ----------
+     Every stacking decision names one of these, so raising a thing is a
+     choice made here and not a number invented on one screen. (Numbers
+     still written out elsewhere are older than this block; nothing new
+     may be added that is not named here.) */
+  --z-behind: -1;      /* a shadow or a stump, drawn behind its own thing */
+  --z-scenery: 0;      /* the painted background and the island props */
+  --z-screen: 1;       /* the screen itself */
+  --z-stage: 2;        /* what the child plays with: islands, landmarks, stones */
+  --z-hud: 3;          /* the frame round a screen: back, title, stars */
+  --z-home: 4;         /* Home, which must stay reachable over the frame */
+  --z-sheet: 25;       /* a full-screen sheet: the result, how to play, grown-ups */
+  --z-fx: 30;          /* confetti and sparkles, which never take a tap */
+
   --shadow-soft: 0 10px 24px rgba(44, 40, 70, .14);
   --shadow-raised: 0 8px 0 rgba(120, 80, 30, .22), 0 16px 26px rgba(44, 40, 70, .16);
 
@@ -147,6 +161,22 @@ button {
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 button:disabled { opacity: .4; cursor: default; }
+
+/* ---------- what a finger may land on ----------
+   A child taps where the picture is, and the topmost element at that
+   point is what answers. Painted artwork, scenery and titles are
+   decoration: they are drawn over and around the controls on purpose
+   (the friend leans on his speech bubble, a stone sits proud of its
+   level, the stump he stands on hangs below him), so none of them may
+   be a hit target — the tap has to fall through to the control under
+   it. The pictures stay inside their buttons, so each button still
+   answers on its whole face. One rule here, instead of one patch per
+   screen; where a picture IS the toy to tap (the island props a child
+   pokes), the later rule turns it back on. */
+img[alt=""], svg[aria-hidden="true"], [aria-hidden="true"] > img,
+.ch, .ch-paint, .ch-flat, .ch-body, .ch-img,
+.logo, .logo-text, .sign-wrap, .speech:not(button) { pointer-events: none; }
+
 /* read by screen readers, not shown */
 .vh { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 [hidden] { display: none !important; }

@@ -199,10 +199,17 @@
   let clip = null;                            // the one player, reused
   const norm = (t) => String(t).replace(/\s+/g, ' ').trim();
 
-  function clipFor(text) {
+  /* Five texts are both an English line and an Indonesian one — the letter
+     `a`, and `bat` `bus` `do` `to`, which are syllables of obat, bus, kado
+     and topi. A clip is keyed by its text, so one of the two would have to
+     be said in the wrong voice: English "a" is "ay" where the Indonesian
+     lesson teaches "ah", and `a` is the first letter of the first Bahasa
+     lesson. `clipsId` holds the Indonesian take for those few. */
+  function clipFor(text, indonesian) {
     const V = AF.VOICE;
     if (!V) return null;
     const t = norm(text);
+    if (indonesian && V.clipsId && V.clipsId[t]) return V.clipsId[t];
     if (V.clips[t]) return V.clips[t];
     const name = AF.Profile.character && AF.Profile.character.name;
     if (name && t.indexOf(name) >= 0) {
@@ -416,7 +423,7 @@
 
       const start = () => {
         if (mine !== saying) return;           // newer speech has taken over
-        const file = clipFor(text);
+        const file = clipFor(text, id);
         if (file && playClip(file, pitch, end, speak)) {
           // (a safety net in case the player never reports the end)
           timer = setTimeout(end, 2500 + text.length * 120);
@@ -439,7 +446,7 @@
         each starts the moment it is said. Indonesian lines are recorded
         too, so they are got ready the same way. */
     /** True once a line is decoded and starts without loading (for the tests). */
-    ready(text) { const f = clipFor(text); return !!(f && buffers.has(f)); },
+    ready(text, lang) { const f = clipFor(text, lang === 'id'); return !!(f && buffers.has(f)); },
 
     preload(lines) {
       if (!canBuffer) return;

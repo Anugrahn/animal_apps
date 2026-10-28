@@ -18,9 +18,13 @@
   'use strict';
 
   let voice = null;
-  /* Bahasa Indonesia lessons are spoken by the device's own Indonesian
-     voice (the recordings in voice/ are English). `lang` is the language
-     of the level being played; app.js sets it. */
+  /* Bahasa Indonesia is recorded too (2026-10-28), with an Indonesian
+     voice, so every phone hears the same one: before that the device chose,
+     and a child heard Damayanti on an iPhone, one of Google's voices —
+     sometimes a man's — on Android, and an English reader on a phone with
+     no Indonesian voice at all. `voiceId` is now only the fallback, for a
+     line that has no recording. `lang` is the language of the level being
+     played; app.js sets it. */
   let voiceId = null;
   let lang = 'en';
   let unlocked = false;
@@ -186,9 +190,11 @@
 
   /* ---------- the recorded voice ----------
      voice/index.js (made by tools/voice) lists a warm, natural voice
-     recording for nearly every line the app says: AF.VOICE.clips maps a
-     line to its file, and AF.VOICE.named does the same for lines with
-     the friend's name in them, once per ready-made name. A line with no
+     recording for nearly every line the app says, in English and in
+     Bahasa Indonesia alike: AF.VOICE.clips maps a line to its file, and
+     AF.VOICE.named does the same for lines with the friend's name in
+     them, once per ready-made name. A line is looked up by its own text,
+     so nothing here has to know which language it is in. A line with no
      recording (a name the child typed, say) uses the device's voice. */
   let clip = null;                            // the one player, reused
   const norm = (t) => String(t).replace(/\s+/g, ' ').trim();
@@ -410,7 +416,7 @@
 
       const start = () => {
         if (mine !== saying) return;           // newer speech has taken over
-        const file = id ? null : clipFor(text);
+        const file = clipFor(text);
         if (file && playClip(file, pitch, end, speak)) {
           // (a safety net in case the player never reports the end)
           timer = setTimeout(end, 2500 + text.length * 120);
@@ -430,13 +436,13 @@
     busy() { return talking !== 0; },
 
     /** Gets recorded lines ready ahead of time (the first ones first), so
-        each starts the moment it is said. Indonesian lines are the
-        device's voice: nothing to get ready. */
+        each starts the moment it is said. Indonesian lines are recorded
+        too, so they are got ready the same way. */
     /** True once a line is decoded and starts without loading (for the tests). */
     ready(text) { const f = clipFor(text); return !!(f && buffers.has(f)); },
 
     preload(lines) {
-      if (!canBuffer || lang === 'id') return;
+      if (!canBuffer) return;
       queue.length = 0;                       // (what a level left behind waits no more: this one's lines come first)
       (lines || []).slice(0, 60).forEach(t => { const f = clipFor(t); if (f) getReady(f); });
     },

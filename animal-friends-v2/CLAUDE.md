@@ -25,9 +25,13 @@ Treat `UI_REDESIGN_SPEC.md` as the source of truth for interface presentation an
 - Preserve star scoring, unlocking, profile migration and saved progress.
   (Decided 2026-10-13: a misheard word never costs a star, and a level that
   already has stars is never locked. Keep both.)
-- Bahasa Indonesia is spoken by the device's Indonesian voice (`lang: 'id'`,
-  `AF.Audio.setLang`); never record it with the English voice, and never give
-  it a speaking (`speak`) step.
+- Bahasa Indonesia is recorded with an Indonesian voice (decided 2026-10-28 by
+  the owner, reversing his own earlier rule that the device should say it): the
+  clips in `voice/` are made by `tools/voice/record_id.mjs` with macOS
+  Damayanti, so every phone hears the same voice. Never record it with the
+  English voice, and never give it a speaking (`speak`) step. `lang: 'id'` and
+  `AF.Audio.setLang` stay as they are: they still pick the device's Indonesian
+  voice, which is now only the fallback for a line that has no recording.
 - Preserve the current no-build-step approach.
 - Do not introduce a framework or package dependency.
 - Keep the app functional offline.

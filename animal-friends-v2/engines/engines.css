@@ -841,8 +841,16 @@ body:is([data-screen="area"], [data-screen="subject-map"]) .props img:nth-child(
 /* On a wide screen the props stand in the empty sides, clear of every
    control: there a child can tap one and it wiggles with a pop (app.js). */
 @media (min-aspect-ratio: 5/4) {
-  body:is([data-screen="area"], [data-screen="subject-map"]) .props { z-index: 2; }
+  body:is([data-screen="area"], [data-screen="subject-map"]) .props { z-index: var(--z-stage); }
   body:is([data-screen="area"], [data-screen="subject-map"]) .props img { pointer-events: auto; cursor: pointer; }
+}
+/* ...except on a phone on its side, where the left side is not empty at
+   all: the stage pills move there and stand in a column. The prop in
+   that corner was drawn on top of them and took their taps, so on a
+   map it stands down — the same way the third prop stands down in a
+   game. (The other two are clear of it.) */
+@media (orientation: landscape) and (max-height: 560px) {
+  body:is([data-screen="area"], [data-screen="subject-map"]) .props img:nth-child(1) { display: none; }
 }
 .props img.wiggle { animation: bob 4s ease-in-out infinite, prop-wiggle .7s var(--spring); }
 @keyframes prop-wiggle { 25% { rotate: -12deg; scale: 1.14; } 50% { rotate: 9deg; scale: 1.08; } 75% { rotate: -5deg; } }

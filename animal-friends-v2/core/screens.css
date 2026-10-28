@@ -178,7 +178,11 @@ img.mk-podium.stump { position: absolute; left: 50%; bottom: 2%; width: 86%; tra
   #home .world { padding-bottom: max(var(--space-2), env(safe-area-inset-bottom)); }
   #home .hero { padding-bottom: calc(var(--tap-min) + var(--space-3)); }
   #home .home-char { width: min(100cqw, 52cqh, 400px); }
-  #home .journey { position: absolute; left: 50%; bottom: max(var(--space-2), env(safe-area-inset-bottom)); translate: -50% 0; padding: 0; }
+  /* Here the pill has no name on it and the two buttons are narrow enough
+     to share a line — and they must: floated over the middle of the world,
+     a second row of them came up over the friend's face. (A shrink-to-fit
+     flex box is measured without its gap, so the gap alone wrapped them.) */
+  #home .journey { position: absolute; left: 50%; bottom: max(var(--space-2), env(safe-area-inset-bottom)); translate: -50% 0; padding: 0; flex-wrap: nowrap; }
   #home .jr-pill { font-size: var(--fs-md); padding-left: 20px; }
 }
 /* Here the pill is lifted out of the column and floated over the middle

@@ -101,3 +101,45 @@ The models download on first use, about 2 GB for Chatterbox and 300 MB for Whisp
   little lower or higher.
 - **Offline:** `voice/files.js` lists the clips `sw.js` stores for offline
   use.
+
+## Bahasa Indonesia (`*_id.mjs`)
+
+Indonesian is recorded separately, with the macOS voice **Damayanti**, so
+every phone hears the same voice instead of whatever it happens to have
+(decided 2026-10-28 by the owner, reversing his earlier rule that the device
+should say it). Nothing is sent anywhere: `say` is built into macOS.
+
+```sh
+cd tools/voice
+node harvest_id.mjs ../../animal-friends-v2 id_phrases.json      # the lines
+node calibrate.mjs id_phrases.json /tmp/cal 150 170 190          # pick -r
+node record_id.mjs id_phrases.json 170 /tmp/idvoice ../../animal-friends-v2
+node publish_id.mjs /tmp/idvoice/id_clips.json ../../animal-friends-v2 [--party]
+node verify_id.mjs /tmp/idvoice/id_clips.json /tmp/idvoice/final-r170 ../../animal-friends-v2
+```
+
+- **`harvest_id.mjs`** loads `engines/base.js`, `content/bank.js`,
+  `engines/lesson.js`, `content/bahasa.js` and `content/party.js` in Node (no
+  browser) and collects every line an Indonesian level speaks: every spoken
+  field of every level, each question generator sampled until it stops turning
+  up anything new, and the lines the engines say themselves — a lesson's step
+  cards, tracing, `Susun kata, …`, each letter said as it is traced, each
+  syllable as its tile is tapped. 1,183 lines as of 2026-10-28.
+- **`calibrate.mjs`** records a stratified sample at several `say -r` rates and
+  reports the words a minute each lands on *after* `post.py`. `-r 170` was
+  chosen: its raw takes sit at 128 wpm, just above post.py's 125 target, so it
+  stretches least (1.15x) and the voice stays natural.
+- **`record_id.mjs`** names clips exactly as `gen.mjs` does
+  (`sha1("<voice>|<speed>|<text>")[:12]`, then `sha1("<f>|kids-125-v3")[:12]`),
+  so the app looks an Indonesian line up by its own text like any other.
+  It refuses to write anything if a name would collide.
+- **`publish_id.mjs`** adds the lines to `voice/index.js` and `voice/files.js`
+  without touching the English entries. A text that is **both** an English and
+  an Indonesian line keeps its English clip ("a", "bat", "bus", "do", "to"):
+  one text can only have one recording.
+- **`verify_id.mjs`** checks every clip exists, is a real MP3, is a sane
+  length, and that the 26 single letters are audio and not silence.
+
+`gen.mjs` knows nothing about these clips. Running it will drop them from
+`voice/index.js` and may delete the MP3s as unused — re-run `record_id.mjs`
+and `publish_id.mjs` after any `gen.mjs` run, or teach `gen.mjs` to keep them.

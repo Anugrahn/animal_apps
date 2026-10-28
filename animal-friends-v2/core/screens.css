@@ -896,7 +896,11 @@ body.still .pq-cake.is-ready { animation: none; }
 .pq-road-stop img { width: 70%; height: auto; }
 .pq-road-stop span { font-size: max(10px, var(--fs-xs)); line-height: 1.1; color: var(--ink-mute); font-weight: 700; }
 .pq-cert-foot { margin: var(--space-2) 0 0; font-size: max(10px, var(--fs-xs)); color: var(--ink-mute); }
-.pq-cert-go { margin-top: var(--space-3); }
+/* The keepsake is long and this button is the only way out of it, so on a
+   screen where the card has to scroll the button rides its bottom edge
+   instead of waiting below the fold. (Where it all fits, sticky does
+   nothing: the button simply sits where it is.) */
+.pq-cert-go { margin-top: var(--space-3); position: sticky; bottom: 0; z-index: 1; }
 
 /* once the quest is done the certificate stays one tap away, beside Today's Study */
 .pq-again { display: inline-flex; align-items: center; gap: .4em; }
@@ -906,4 +910,43 @@ body.still .pq-cake.is-ready { animation: none; }
 @media (orientation: landscape) and (max-height: 560px),
        (orientation: landscape) and (min-height: 561px) and (min-aspect-ratio: 5/4) {
   #journey.is-quest .jy-list { align-self: stretch; max-height: 100%; }
+}
+
+/* ---------- the keepsake on a screen held sideways ----------
+   The certificate is one tall column, which is right standing up and
+   useless sideways: on a phone turned over only the banner, the title
+   and the friend were on screen, and the stars, the road walked and
+   the one button out all waited below the fold. It now takes the same
+   two columns the result sheet and how-to-play take at this shape —
+   the picture on the left, everything read on the right — so the whole
+   keepsake is in view and a grown-up can photograph it. (Only a phone
+   on its side: a tablet or a laptop has the height for the column, and
+   a certificate reads better as one.) */
+@media (orientation: landscape) and (max-height: 560px) {
+  .sheet.full > .pq-cert {
+    display: grid; align-content: center; justify-content: center; justify-items: center;
+    grid-template:
+      "banner title" auto
+      "banner host"  auto
+      "hero   who"   auto
+      "hero   did"   auto
+      "hero   score" auto
+      "hero   road"  auto
+      "hero   foot"  auto
+      "hero   go"    auto / auto minmax(0, calc(var(--big) * 4.6));
+    column-gap: clamp(var(--space-4), 4vw, var(--space-7)); row-gap: var(--space-1);
+  }
+  .pq-cert-banner { grid-area: banner; width: clamp(96px, 26vh, 190px); }
+  .pq-cert-title  { grid-area: title; }
+  .pq-cert-host   { grid-area: host; }
+  .pq-cert-hero   { grid-area: hero; align-self: center; width: auto; }
+  .pq-cert-who    { grid-area: who; }
+  .pq-cert-did    { grid-area: did; }
+  .pq-cert-score  { grid-area: score; }
+  .pq-cert-road   { grid-area: road; margin-top: var(--space-1); }
+  .pq-cert-foot   { grid-area: foot; margin-top: var(--space-1); }
+  .pq-cert-go     { grid-area: go; margin-top: var(--space-2); }
+  .pq-cert-char     { width: clamp(80px, 30vh, 170px); }
+  .pq-cert-hero img { width: clamp(32px, 11vh, 62px); }
+  .pq-road-stop     { width: clamp(46px, 9vh, 74px); }
 }

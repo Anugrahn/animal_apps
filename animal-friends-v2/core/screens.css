@@ -354,7 +354,13 @@ body.still .jy-end.jy-go { animation: none; }
 
 /* ---------- 4. game: back · the game's sign · home, then the friend and a bubble ---------- */
 #play { gap: var(--space-2); }
-.play-hud { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+/* Back, the game's name and Home are the screen's frame, and a frame
+   stays above what it frames — the menu screens' HUD already does. An
+   answer card springs in from below and, on anything bigger than a
+   phone, rises 61-139px up into this row on the way: for four or five
+   frames of every round the middle of Home belonged to a card. Raising
+   the row costs nothing and the card still passes behind it. */
+.play-hud { position: relative; z-index: var(--z-hud); flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 /* The game's name is the one sign the row may have to cut short, so it is
    the one sign that clips. `clip` with a margin the width of the sweet
    that stands off each end keeps the words inside the plaque without

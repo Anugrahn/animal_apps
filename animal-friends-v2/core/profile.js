@@ -286,10 +286,12 @@
         ever opens levels — "Open every level" is the setting the
         grown-up area already has, and a level with stars was never
         locked anyway, so nothing a guest won can be taken back. */
+    /* Finishing the quest opens the rest of the app, but NOT every level:
+       a guest who walks on afterwards should still earn their way along a
+       map, the way the levels were written to be met. */
     finishQuest() {
       const q = Profile.quest();
       if (!q.finished) { q.finished = true; q.at = Date.now(); save(); }
-      if (!Profile.setting('open')) Profile.setSetting('open', true);
       return q;
     },
 

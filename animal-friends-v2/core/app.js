@@ -834,6 +834,11 @@
       } else then();
     };
 
+    // The sixth stop ends the quest, and the cake IS the result. Showing a
+    // result sheet first would make a child tap past one celebration to
+    // reach another, so the cake comes straight away.
+    if (questDone) { leave(null); return; }
+
     AF.Levels.showResult({
       title: title,
       stars: stars,

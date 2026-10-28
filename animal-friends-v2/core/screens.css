@@ -556,10 +556,14 @@ body.lite .sheet.full { backdrop-filter: none; -webkit-backdrop-filter: none; ba
 .step.now img { filter: none; scale: 1.2; }
 .step:not(.now) span { display: none; }          /* only the step being played says its name */
 @media (min-width: 700px) { .step:not(.now) span { display: inline; } }
-@media (max-height: 520px) and (orientation: portrait) { .steps { display: none; } }
+/* Where the road is PUT is the game screen's business: the result sheet
+   shows the same road, in its own grid, and must keep it. (It did not:
+   on a phone on its side the rule below took the result's road out of
+   flow and dropped it on top of "Well done!".) */
+@media (max-height: 520px) and (orientation: portrait) { #play .steps { display: none; } }
 /* a phone on its side: the road sits at the foot of the left column, under the friend */
 @media (orientation: landscape) and (max-height: 520px) {
-  .steps {
+  #play .steps {
     position: absolute; z-index: 4; margin: 0; gap: 2px; padding: 3px 8px;
     left: max(var(--gutter), env(safe-area-inset-left)); bottom: max(6px, env(safe-area-inset-bottom));
     max-width: clamp(130px, 24vw, 280px);

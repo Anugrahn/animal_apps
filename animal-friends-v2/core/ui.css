@@ -35,6 +35,11 @@
   --space-5: 24px; --space-6: 32px; --space-7: 48px;
 
   --tap-min: 72px;            /* hit area of any child control */
+  /* A screen's name plaque wears a leaf standing off each end. The one
+     sign that has to cut its words short (a game's title) clips, and
+     clipping at the box would slice those leaves in half — so it clips
+     this much further out instead. */
+  --sign-pip: .5em;
   --tap-primary: 88px;        /* hit area of the main action */
 
   /* ---------- the fluid scale (v4.2) ----------

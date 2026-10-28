@@ -117,8 +117,14 @@
   #home .journey { position: absolute; left: 50%; bottom: max(var(--space-2), env(safe-area-inset-bottom)); translate: -50% 0; padding: 0; }
   #home .jr-pill { font-size: var(--fs-md); padding-left: 20px; }
 }
-@media (min-aspect-ratio: 1/1) and (max-height: 520px) and (max-width: 760px) {
-  #home .jr-text { display: none; }          /* (the stars and the play button say it; the button's name still does) */
+/* Here the pill is lifted out of the column and floated over the middle
+   of the world, so its width is no longer anybody's business but its
+   own: with its name on it it reached across the two bottom islands and
+   answered for them. The stars and the play button say what it is, and
+   its name still does for a screen reader. (This used to stop at 760px,
+   which left every wider landscape phone covering its own islands.) */
+@media (min-aspect-ratio: 1/1) and (max-height: 520px) {
+  #home .jr-text { display: none; }
 }
 .world {
   position: relative; flex: 1; min-height: 0; display: grid; gap: 0 var(--space-3);
@@ -183,7 +189,11 @@
 .hero .speech { max-width: 46cqw; font-size: var(--fs-md); }
 
 /* Daily Journey: one pill that plays the next game; three stars show today's progress */
-.journey { position: relative; z-index: 2; flex: none; display: flex; justify-content: center; padding: var(--space-2) var(--space-3) max(var(--space-4), env(safe-area-inset-bottom)); }
+/* Two buttons stand here once the quest is walked (Today's Study and the
+   keepsake). On a 320–375px phone they were wider than the screen and
+   both hung off its edges, so they wrap instead of shrinking: a child's
+   button never gets smaller to fit. */
+.journey { position: relative; z-index: var(--z-stage); flex: none; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; column-gap: var(--space-2); row-gap: var(--space-2); padding: var(--space-2) 0 max(var(--space-4), env(safe-area-inset-bottom)); }
 /* (a deeper teal than other "go" buttons: white words on it read at 3.3:1, not 1.8:1) */
 .jr-pill { min-height: var(--tap-min); padding: 0 10px 0 28px; gap: 14px; font-size: var(--fs-lg); box-shadow: 0 6px 0 #1FA88A, 0 12px 20px rgba(10,60,50,.3); }
 .btn.go.jr-pill { background: linear-gradient(#1DB898, #0E9F86); box-shadow: 0 6px 0 #0A7563, 0 12px 20px rgba(10,60,50,.3); text-shadow: 0 2px 0 #0A7563; }
